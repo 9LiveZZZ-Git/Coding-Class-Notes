@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 5: Frame Feedback &amp; Signed Distance Functions &mdash; Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch05">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 5: Frame Feedback &amp; Signed Distance Functions</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar: progress + theme toggle -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 5: Frame Feedback &amp; Signed Distance Functions</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Self-referencing systems and mathematical shape description</p>
+
+      <!-- ===============================================================
+           5.1 INTRODUCTION
+           =============================================================== -->
+      <h2 id="introduction">5.1 Introduction</h2>
+
+      <p>In the previous chapter we explored fractals &mdash; shapes that contain copies of themselves at every scale, generated through mathematical iteration. In this chapter we encounter two techniques that are equally fundamental to creative computing but operate in very different ways: <strong>frame feedback</strong> and <strong>signed distance functions</strong>. At first glance these topics may seem unrelated, but they share a deep connection: both are techniques for building visual complexity from simple, self-referential processes.</p>
+
+      <p>Frame feedback creates complexity through <em>temporal</em> self-reference. Each frame of animation feeds back into the next, accumulating transformations over time. A simple circle, drawn once, becomes a spiraling tunnel of echoes. A small perturbation becomes an intricate fractal-like pattern. The image <em>remembers</em> its past and uses that memory as the raw material for its future.</p>
+
+      <p>Signed distance functions (SDFs) create complexity through <em>spatial</em> self-reference. An SDF describes a shape not by listing its pixels or vertices, but by defining, for every point in space, how far that point is from the shape&rsquo;s boundary. This single, continuous function encodes everything about the shape &mdash; its interior, exterior, and boundary &mdash; and can be combined with other SDFs through simple arithmetic to build elaborate composite forms.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Self-reference as a creative engine.</strong> Frame feedback feeds the output of one frame into the input of the next. SDFs describe shapes in terms of distance &mdash; a relationship between a point and a boundary. Both techniques derive their power from defining things <em>in terms of themselves or their relationships</em>, rather than by explicit construction. This is the same principle that makes fractals and recursion so visually rich.</p>
+      </div>
+
+      <p>These two techniques also represent different stages of the graphics pipeline. Frame feedback is fundamentally about <em>pixel-level persistence</em> &mdash; reading and writing to a framebuffer over time. Signed distance functions are about <em>shape description</em> &mdash; encoding geometry as a mathematical function that can be evaluated per-pixel in a shader. When you combine both &mdash; drawing SDF shapes into a feedback system &mdash; you get a remarkably expressive creative instrument with very little code.</p>
+
+      <p>By the end of this chapter you will be able to:</p>
+      <ul>
+        <li>Explain the concept of a framebuffer and use <code>createFramebuffer()</code> in p5.js</li>
+        <li>Implement the five-step frame feedback loop</li>
+        <li>Control feedback behavior through decay, scale, and rotation parameters</li>
+        <li>Derive and apply the 2D rotation matrix</li>
+        <li>Implement frame feedback in GLSL with chromatic aberration</li>
+        <li>Define what a signed distance function is and explain the meaning of its sign</li>
+        <li>Write SDF functions for common primitives (circle, box, line, ring)</li>
+        <li>Combine SDFs using boolean operations and smooth blending</li>
+        <li>Render SDF shapes with anti-aliased edges, contour lines, and glow effects</li>
+        <li>Combine feedback and SDFs into a unified creative system</li>
+      </ul>
+
+      <!-- ===============================================================
+           5.2 A BRIEF HISTORY OF VIDEO ART
+           =============================================================== -->
+      <h2 id="video-art-history">5.2 A Brief History of Video Feedback Art</h2>
+
+      <p>Before we dive into the technical details, it is worth understanding where frame feedback comes from. The technique has its roots in one of the most influential movements in twentieth-century art: <strong>video art</strong>.</p>
+
+      <p>Video feedback was discovered almost by accident, shortly after closed-circuit television became available in the 1960s. When a video camera is pointed at the monitor displaying its own output, a visual feedback loop is created. The image the camera captures includes the image on the screen, which includes the image the camera captured a moment ago, which includes the image from a moment before that &mdash; an infinite regression of images nested within images. The result is a swirling, often psychedelic pattern that seems to have a life of its own.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Nam June Paik</strong> (1932&ndash;2006) is widely regarded as the founder of video art. A Korean-American artist who began as a musician and performance artist in the Fluxus movement, Paik was among the first to use television as an artistic medium. His installations, such as <em>TV Buddha</em> (1974) &mdash; in which a Buddha statue contemplates its own closed-circuit image on a television screen &mdash; explored the philosophical implications of electronic self-reference. Paik recognized that video feedback was not merely a technical curiosity but a metaphor for consciousness, memory, and the recursive nature of perception.</p>
+      </div>
+
+      <p><strong>Steina and Woody Vasulka</strong> were pioneers of electronic image processing who made video feedback central to their artistic practice throughout the 1970s and 80s. Working at The Kitchen in New York City &mdash; an artist-run space they co-founded &mdash; the Vasulkas treated the video signal as a material to be sculpted. They built custom electronic circuits to transform the feedback signal in real time, producing works of extraordinary visual complexity. Steina&rsquo;s <em>Allvision</em> series used mirrored spheres and rotating cameras to create feedback environments that enveloped the viewer. Woody&rsquo;s investigations into &ldquo;the grammar of electronic image&rdquo; laid theoretical groundwork for understanding how electronic signals produce visual form.</p>
+
+      <p>What made video feedback so compelling to these artists was its <em>emergent</em> quality. Small changes in the physical setup &mdash; tilting the camera slightly, adjusting the zoom, changing the brightness &mdash; produced dramatic and unpredictable changes in the pattern. The system was exquisitely sensitive to initial conditions, much like the chaotic systems we studied in earlier chapters. The artist became a performer, tuning a self-organizing visual system rather than drawing predetermined images.</p>
+
+      <p>Digital frame feedback gives us the same creative power with far greater precision. Instead of physically adjusting a camera and monitor, we specify exact mathematical transformations: a rotation of 0.015 radians, a scale factor of 0.995, a decay rate of 0.98. We can reproduce any state exactly, vary parameters smoothly, and combine feedback with other techniques like SDFs and shaders. The creative spirit of Paik and the Vasulkas lives on in every frame feedback sketch.</p>
+
+      <!-- ===============================================================
+           5.3 FRAMEBUFFERS
+           =============================================================== -->
+      <h2 id="framebuffers">5.3 Framebuffers</h2>
+
+      <p>To understand frame feedback, we first need to understand <strong>framebuffers</strong> &mdash; the technical infrastructure that makes feedback possible.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Framebuffer</strong> &mdash; A region of memory (typically on the GPU) that holds the pixel data for a complete image. Your screen displays one framebuffer &mdash; the &ldquo;default&rdquo; or &ldquo;screen&rdquo; framebuffer. When we create additional framebuffers, we get off-screen surfaces that can be drawn to and read from independently. Think of a framebuffer as a secondary canvas that exists in GPU memory but is not directly visible until you choose to display it.</p>
+      </div>
+
+      <p>Normally when you call drawing commands in p5.js, you draw directly to the screen. The pixels you produce are immediately visible. But sometimes you need to draw to an off-screen surface &mdash; to capture an image for later use, to apply post-processing effects, or to create feedback loops. This is what framebuffers are for.</p>
+
+      <p>In p5.js with WEBGL mode, the function <code>createFramebuffer()</code> creates an off-screen framebuffer object:</p>
+
+      <pre><code>let fbo;
+
+function setup() {
+  createCanvas(600, 600, WEBGL);
+  fbo = createFramebuffer();
+}</code></pre>
+
+      <p>The framebuffer <code>fbo</code> is now a secondary drawing surface with the same dimensions as your canvas. You can draw into it by wrapping your drawing commands between <code>fbo.begin()</code> and <code>fbo.end()</code>:</p>
+
+      <pre><code>fbo.begin();
+// Everything drawn here goes into the framebuffer, not the screen
+fill(255, 0, 0);
+circle(0, 0, 100);
+fbo.end();
+
+// Now display the framebuffer's contents on screen
+texture(fbo);
+noStroke();
+plane(width, height);</code></pre>
+
+      <p>The critical capability of a framebuffer for feedback is that it <em>persists between frames</em>. Unlike the main canvas, which is typically cleared with <code>background()</code> every frame, a framebuffer retains its pixel data from the previous frame unless you explicitly clear it. This persistence is what makes feedback possible: you can read the previous frame&rsquo;s image from the framebuffer and draw a transformed version of it back into the same framebuffer.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Framebuffers in p5.js require <strong>WEBGL mode</strong>. If you create your canvas with <code>createCanvas(600, 600)</code> (no third argument), you are in 2D mode and <code>createFramebuffer()</code> will not work. Always use <code>createCanvas(600, 600, WEBGL)</code> when working with framebuffers. Also note that in WEBGL mode, the coordinate origin is at the <em>center</em> of the canvas, not the top-left corner.</p>
+      </div>
+
+      <p>Here is a minimal example that demonstrates framebuffer persistence. We draw a small circle at the mouse position each frame, but never clear the framebuffer. The circles accumulate, creating a painting tool:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Framebuffer Painting</span>
+        </div>
+        <textarea class="cm-editor">let fbo;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  fbo = createFramebuffer();
+}
+
+function draw() {
+  background(0);
+
+  // Draw into the framebuffer
+  fbo.begin();
+  // Don't clear! Previous content persists.
+  push();
+  fill(255, 180, 50);
+  noStroke();
+  let mx = mouseX - width / 2;
+  let my = mouseY - height / 2;
+  circle(mx, my, 12);
+  pop();
+  fbo.end();
+
+  // Display the framebuffer on screen
+  push();
+  texture(fbo);
+  noStroke();
+  plane(width, height);
+  pop();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Move your mouse over the canvas after clicking Run. Each frame draws a small orange circle at the mouse position, and because the framebuffer is never cleared, all previous circles remain visible. This is not yet feedback &mdash; we are not transforming the previous contents &mdash; but it demonstrates the persistence that feedback requires.</p>
+
+      <div class="quiz" data-id="ch05-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What distinguishes a framebuffer from the default screen canvas?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch05-q1" value="a"> A framebuffer can only hold black-and-white images</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q1" value="b"> A framebuffer is always larger than the screen canvas</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q1" value="c" data-correct> A framebuffer is an off-screen surface that persists between frames and can be used as a texture</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q1" value="d"> A framebuffer runs on the CPU while the screen canvas runs on the GPU</label></li>
+        </ul>
+        <div class="explanation">
+          <p>A framebuffer is an off-screen region of GPU memory that retains its pixel data between frames. Unlike the screen canvas (which is typically cleared each frame with <code>background()</code>), a framebuffer preserves its contents, and those contents can be used as a texture for further drawing &mdash; which is exactly what makes feedback possible.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           5.4 THE FRAME FEEDBACK LOOP
+           =============================================================== -->
+      <h2 id="feedback-loop">5.4 The Frame Feedback Loop</h2>
+
+      <p>Now we arrive at the core technique. Frame feedback is a process in which the output of one frame becomes part of the input for the next frame. The image feeds back into itself, accumulating transformations over time. The result is a visual system with <em>memory</em> &mdash; the current frame depends on every frame that came before it.</p>
+
+      <p>The feedback loop has five steps that repeat every frame:</p>
+      <ol>
+        <li><strong>Begin</strong> drawing into the framebuffer</li>
+        <li><strong>Draw the framebuffer&rsquo;s own previous contents</strong> back into itself, with a <em>transformation</em> applied (scale, rotation, fade)</li>
+        <li><strong>Draw new content</strong> on top (shapes, lines, particles &mdash; whatever you want to add this frame)</li>
+        <li><strong>End</strong> drawing into the framebuffer</li>
+        <li><strong>Display</strong> the framebuffer on screen</li>
+      </ol>
+
+      <p>Step 2 is where the magic happens. By drawing the previous frame back into the current frame with a slight transformation, every pixel from the previous frame is captured, shifted, and preserved. New content drawn in step 3 gets added to this accumulation. On the next frame, that new content itself gets transformed and preserved, creating a chain of echoes stretching back through time.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The five-step feedback pattern.</strong> Begin &rarr; draw previous frame with transform &rarr; draw new content &rarr; end &rarr; display. This pattern is the foundation of all frame feedback systems. The character of the visual output is determined by the transformation applied in step 2 (scale, rotation, decay) and the content drawn in step 3. Memorize this pattern &mdash; you will use it throughout this chapter and beyond.</p>
+      </div>
+
+      <p>The character of the feedback is controlled by three parameters:</p>
+
+      <p><strong>Decay rate:</strong> How quickly old content fades away. In p5.js, this is controlled by the <code>tint()</code> alpha value. A tint alpha of 255 means no fade at all &mdash; the image never loses brightness, and will eventually saturate to white. This is almost never what you want. An alpha of 240 produces rapid fade (short trails). Values around 248&ndash;253 give pleasingly long trails that eventually disappear. The decay rate determines the <em>temporal depth</em> of your feedback &mdash; how many frames back in history are still visible.</p>
+
+      <p><strong>Spatial transformation:</strong> What geometric change is applied to the previous frame. The most common transformations are:</p>
+      <ul>
+        <li><strong>Scale &gt; 1:</strong> Content zooms outward &mdash; the image appears to recede into a tunnel</li>
+        <li><strong>Scale &lt; 1:</strong> Content zooms inward &mdash; creating a vortex or shrinking spiral</li>
+        <li><strong>Rotation:</strong> Content spirals around the center</li>
+        <li><strong>Translation:</strong> Content drifts in a consistent direction</li>
+      </ul>
+
+      <p><strong>New content:</strong> What you draw each frame. Simple shapes work remarkably well because the feedback itself adds complexity. A single small circle becomes an infinite spiral of echoes. A line becomes a fan of converging or diverging rays. Resist the temptation to draw complex shapes &mdash; let the feedback do the work.</p>
+
+      <p>Here is the complete feedback loop in p5.js. Move your mouse over the canvas to paint with the feedback system:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Frame Feedback Loop</span>
+        </div>
+        <textarea class="cm-editor">let fbo;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  fbo = createFramebuffer();
+}
+
+function draw() {
+  background(0);
+
+  // --- Begin feedback ---
+  fbo.begin();
+
+  // Step 2: Draw previous frame with transformation
+  push();
+  tint(255, 250);        // Slight fade (decay)
+  scale(1.005);          // Slight zoom outward
+  rotate(0.01);          // Slight rotation
+  texture(fbo);
+  noStroke();
+  plane(width, height);
+  pop();
+
+  // Step 3: Draw new content at mouse position
+  push();
+  fill(255, 160, 40);
+  noStroke();
+  let mx = mouseX - width / 2;
+  let my = mouseY - height / 2;
+  circle(mx, my, 14);
+  pop();
+
+  fbo.end();
+  // --- End feedback ---
+
+  // Step 5: Display the framebuffer
+  push();
+  texture(fbo);
+  noStroke();
+  plane(width, height);
+  pop();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Try modifying the parameters in the code above. Change <code>scale(1.005)</code> to <code>scale(0.995)</code> to reverse the zoom direction. Increase the rotation from <code>0.01</code> to <code>0.03</code> for a faster spiral. Change the tint alpha from <code>250</code> to <code>240</code> for shorter trails or <code>254</code> for longer ones. Each combination produces a distinctly different visual character.</p>
+
+      <p>The following table summarizes the effect of common parameter ranges:</p>
+
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Low Value</th><th>High Value</th><th>Creative Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tint alpha</td><td>230 (fast fade)</td><td>254 (slow fade)</td><td>Controls trail length and visual density</td></tr>
+          <tr><td>Scale</td><td>0.97 (zoom in)</td><td>1.03 (zoom out)</td><td>Vortex vs. tunnel, convergence vs. divergence</td></tr>
+          <tr><td>Rotation</td><td>-0.05 (clockwise)</td><td>0.05 (counter-clockwise)</td><td>Spiral tightness and direction</td></tr>
+        </tbody>
+      </table>
+
+      <div class="quiz" data-id="ch05-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In the five-step feedback loop, what happens in step 2?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch05-q2" value="a"> New shapes are drawn on top of the framebuffer</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q2" value="b" data-correct> The framebuffer&rsquo;s previous contents are drawn back into itself with a transformation</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q2" value="c"> The framebuffer is cleared to black</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q2" value="d"> The framebuffer is displayed on the screen</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Step 2 is the heart of the feedback loop: the framebuffer&rsquo;s own previous contents are drawn back into itself with a transformation (such as a slight scale, rotation, and fade). This is what creates the accumulating trail of echoes that gives feedback its distinctive visual character.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           5.5 THE ROTATION MATRIX
+           =============================================================== -->
+      <h2 id="rotation-matrix">5.5 The Rotation Matrix</h2>
+
+      <p>The feedback examples above use p5.js&rsquo;s built-in <code>rotate()</code> function, which handles the mathematics for us. But when we move to GLSL shaders, we need to construct the rotation ourselves. This is one of the most important mathematical tools in computer graphics, and it is worth understanding how it works from first principles.</p>
+
+      <h3>5.5.1 Deriving the 2D Rotation Matrix</h3>
+
+      <p>Consider a point $(x, y)$ in the plane. We want to rotate it by angle $\theta$ around the origin to get a new point $(x', y')$. To derive the formula, we express the point in polar coordinates: $x = r\cos\alpha$ and $y = r\sin\alpha$, where $r$ is the distance from the origin and $\alpha$ is the current angle.</p>
+
+      <p>After rotation by $\theta$, the new angle is $\alpha + \theta$, and the distance $r$ stays the same (rotation does not change distance). So:</p>
+
+      <p>$$x' = r\cos(\alpha + \theta) = r(\cos\alpha\cos\theta - \sin\alpha\sin\theta) = x\cos\theta - y\sin\theta$$</p>
+      <p>$$y' = r\sin(\alpha + \theta) = r(\sin\alpha\cos\theta + \cos\alpha\sin\theta) = x\sin\theta + y\cos\theta$$</p>
+
+      <p>We can write this as a matrix multiplication:</p>
+
+      <p>$$\begin{pmatrix} x' \\ y' \end{pmatrix} = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix} \begin{pmatrix} x \\ y \end{pmatrix}$$</p>
+
+      <p>This $2 \times 2$ matrix is the <strong>rotation matrix</strong>. It has several important properties:</p>
+      <ul>
+        <li>It preserves distances: $|p'| = |p|$ (rotation is an <strong>isometry</strong>)</li>
+        <li>It preserves angles between vectors</li>
+        <li>Its determinant is 1 (no scaling or flipping)</li>
+        <li>Its inverse is its transpose (or equivalently, negate $\theta$)</li>
+        <li>Composing two rotations is equivalent to adding their angles</li>
+      </ul>
+
+      <h3>5.5.2 The Rotation Matrix in GLSL</h3>
+
+      <p>In GLSL, we construct the rotation matrix using <code>mat2</code>. There is a subtlety here that catches many beginners: GLSL fills matrices <strong>column by column</strong>, not row by row. The constructor <code>mat2(a, b, c, d)</code> creates:</p>
+
+      <p>$$\begin{pmatrix} a & c \\ b & d \end{pmatrix}$$</p>
+
+      <p>So to create our rotation matrix $\begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}$, we write:</p>
+
+      <pre><code>float c = cos(angle);
+float s = sin(angle);
+mat2 rot = mat2(c, s, -s, c);</code></pre>
+
+      <p>Note the order: <code>mat2(c, s, -s, c)</code> &mdash; not <code>mat2(c, -s, s, c)</code>. The first two arguments fill the first <em>column</em> $(c, s)$, and the second two fill the second column $(-s, c)$. This gives us the matrix we want.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>GLSL matrix column-major order.</strong> The most common rotation matrix bug is writing <code>mat2(cos(a), -sin(a), sin(a), cos(a))</code> &mdash; which looks like the mathematical notation but is <em>wrong</em> in GLSL because the arguments fill columns, not rows. The correct form is <code>mat2(cos(a), sin(a), -sin(a), cos(a))</code>. If your rotation goes in the wrong direction, this is almost certainly the problem.</p>
+      </div>
+
+      <p>To combine rotation with scaling (as we need for feedback), simply multiply the sine and cosine by the scale factor:</p>
+
+      <pre><code>vec2 scaleRotate(vec2 p, float scale, float angle) {
+  float c = cos(angle) * scale;
+  float s = sin(angle) * scale;
+  return mat2(c, s, -s, c) * p;
+}</code></pre>
+
+      <p>This single matrix simultaneously rotates and scales, which is exactly the transformation we need for video feedback.</p>
+
+      <div class="quiz" data-id="ch05-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In GLSL, <code>mat2(a, b, c, d)</code> constructs a matrix with columns <code>(a,b)</code> and <code>(c,d)</code>. Which of the following creates a correct 2D rotation matrix for angle <code>t</code>?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch05-q3" value="a"> <code>mat2(cos(t), -sin(t), sin(t), cos(t))</code></label></li>
+          <li class="option"><label><input type="radio" name="ch05-q3" value="b" data-correct> <code>mat2(cos(t), sin(t), -sin(t), cos(t))</code></label></li>
+          <li class="option"><label><input type="radio" name="ch05-q3" value="c"> <code>mat2(sin(t), cos(t), -cos(t), sin(t))</code></label></li>
+          <li class="option"><label><input type="radio" name="ch05-q3" value="d"> <code>mat2(cos(t), sin(t), sin(t), -cos(t))</code></label></li>
+        </ul>
+        <div class="explanation">
+          <p>Since GLSL fills matrices column-by-column, <code>mat2(cos(t), sin(t), -sin(t), cos(t))</code> creates columns $(cos, sin)$ and $(-sin, cos)$, yielding the rotation matrix $\begin{pmatrix} \cos t & -\sin t \\ \sin t & \cos t \end{pmatrix}$.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           5.6 FRAME FEEDBACK IN GLSL
+           =============================================================== -->
+      <h2 id="feedback-glsl">5.6 Frame Feedback in GLSL</h2>
+
+      <p>The p5.js feedback loop we built in Section 5.4 works well, but it has limitations. The <code>tint()</code> and <code>scale()</code> functions apply uniform transformations to the entire image. For more creative control &mdash; per-pixel distortions, color channel separation, non-linear warping &mdash; we need to implement the feedback transformation in a <strong>fragment shader</strong>.</p>
+
+      <p>The idea is the same as before: sample the previous frame&rsquo;s image at transformed coordinates, apply decay, and output the result. But instead of using p5.js transforms, we do the coordinate transformation ourselves in GLSL, giving us complete control over every aspect of the process.</p>
+
+      <h3>5.6.1 The Basic GLSL Feedback Shader</h3>
+
+      <p>In a GLSL feedback shader, the previous frame is passed as a texture uniform (typically called <code>u_feedback</code> or <code>u_backbuffer</code>). The shader samples this texture at transformed UV coordinates to create the feedback effect. Here is a basic example:</p>
+
+      <pre><code>precision mediump float;
+
+varying vec2 vTexCoord;
+uniform sampler2D u_feedback;
+uniform float u_time;
+
+void main() {
+  vec2 uv = vTexCoord;
+  vec2 center = uv - 0.5;
+
+  // Rotation
+  float angle = 0.015;
+  float c = cos(angle);
+  float s = sin(angle);
+  center = mat2(c, s, -s, c) * center;
+
+  // Scale (slight zoom inward)
+  center *= 0.995;
+
+  // Sample previous frame at transformed coordinates
+  vec2 feedUV = center + 0.5;
+  vec4 prev = texture2D(u_feedback, feedUV);
+
+  // Decay
+  prev *= 0.985;
+
+  gl_FragColor = prev;
+}</code></pre>
+
+      <p>This shader does the same thing as our p5.js feedback loop &mdash; rotate, scale, and fade &mdash; but with per-pixel precision. Each pixel independently computes where in the previous frame it should sample from, applies a decay factor, and outputs the result.</p>
+
+      <h3>5.6.2 Chromatic Aberration</h3>
+
+      <p>One of the most visually striking effects unique to the GLSL approach is <strong>chromatic aberration</strong> &mdash; separating the red, green, and blue channels and transforming each one slightly differently. In physical optics, chromatic aberration occurs because different wavelengths of light refract by different amounts through a lens. We can simulate this by sampling each color channel from a slightly different position:</p>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Feedback with Chromatic Aberration</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform sampler2D u_backbuffer;
+
+vec2 scaleRotate(vec2 p, float s, float a) {
+  float cs = cos(a) * s;
+  float sn = sin(a) * s;
+  return mat2(cs, sn, -sn, cs) * p;
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec2 centered = uv - 0.5;
+
+  float scale = 0.992;
+  float angle = 0.02;
+
+  // Sample each channel at slightly different transforms
+  vec2 uvR = scaleRotate(centered, scale * 0.998, angle * 0.9) + 0.5;
+  vec2 uvG = scaleRotate(centered, scale, angle) + 0.5;
+  vec2 uvB = scaleRotate(centered, scale * 1.002, angle * 1.1) + 0.5;
+
+  float r = texture2D(u_backbuffer, uvR).r * 0.98;
+  float g = texture2D(u_backbuffer, uvG).g * 0.985;
+  float b = texture2D(u_backbuffer, uvB).b * 0.99;
+
+  // Draw a bright seed dot at center
+  float d = length(centered);
+  float dot = smoothstep(0.015, 0.005, d);
+  float pulse = 0.5 + 0.5 * sin(u_time * 2.0);
+
+  r += dot * pulse;
+  g += dot * (1.0 - pulse);
+  b += dot * 0.5;
+
+  gl_FragColor = vec4(r, g, b, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p>The chromatic aberration creates rainbow halos and color separation as the feedback evolves. Each color channel spirals at a slightly different rate, so the channels gradually separate over successive frames. The red channel spirals slightly slower (scale factor 0.998, angle factor 0.9) while the blue channel spirals slightly faster (scale 1.002, angle 1.1). Over many frames, this small difference accumulates into dramatic color separation.</p>
+
+      <h3>5.6.3 Feedback Design Parameters</h3>
+
+      <p>The following table summarizes the key parameters for GLSL feedback and their visual effects:</p>
+
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Effect</th><th>Typical Range</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Scale</td><td>Zoom direction (&gt;1 outward, &lt;1 inward)</td><td>0.97 &ndash; 1.03</td></tr>
+          <tr><td>Angle</td><td>Spiral rotation per frame</td><td>&minus;0.05 to 0.05 radians</td></tr>
+          <tr><td>Fade/Decay</td><td>How quickly old content disappears</td><td>0.96 &ndash; 0.995 multiplier</td></tr>
+          <tr><td>Channel separation</td><td>Chromatic aberration amount</td><td>0.001 &ndash; 0.01 difference between channels</td></tr>
+        </tbody>
+      </table>
+
+      <p>When designing time-varying parameters for feedback, the tool <a href="https://graphtoy.com" target="_blank">graphtoy.com</a> is invaluable. You can type mathematical expressions and instantly see their graphs. Try expressions like <code>sin(t * 0.3) * 0.01 + 0.99</code> for a gently pulsing scale, or <code>sin(t * 0.5) * sin(t * 0.31)</code> for a complex beating pattern. Seeing the shape of your parameter functions before plugging them into a shader saves enormous time.</p>
+
+      <!-- ===============================================================
+           5.7 WHAT IS A SIGNED DISTANCE FUNCTION?
+           =============================================================== -->
+      <h2 id="sdf-intro">5.7 What Is a Signed Distance Function?</h2>
+
+      <p>We now turn to the second major topic of this chapter: <strong>signed distance functions</strong> (SDFs). If frame feedback is about building complexity through time, SDFs are about building complexity through space &mdash; describing shapes not by their outlines or vertices, but by a single mathematical function that encodes the entire geometry.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Signed Distance Function (SDF)</strong> &mdash; A function $f(p)$ that, given any point $p$ in space, returns the shortest distance from that point to the surface (boundary) of a shape. The &ldquo;signed&rdquo; part means the function returns:</p>
+        <ul>
+          <li><strong>Positive values</strong> when the point is <strong>outside</strong> the shape</li>
+          <li><strong>Negative values</strong> when the point is <strong>inside</strong> the shape</li>
+          <li><strong>Zero</strong> when the point is exactly <strong>on the boundary</strong></li>
+        </ul>
+      </div>
+
+      <p>Why are SDFs so useful? Consider the alternatives for describing a circle of radius 0.3 centered at the origin. In an imperative drawing system, you might call <code>circle(0, 0, 0.3)</code> &mdash; a command that produces pixels but gives you no way to query the shape mathematically. In a polygon-based system, you might approximate the circle with 64 line segments &mdash; a representation that loses the shape&rsquo;s perfect smoothness. With an SDF, you write:</p>
+
+      <p>$$f(p) = |p| - 0.3$$</p>
+
+      <p>This single expression encodes <em>everything</em> about the circle. Points where $|p| < 0.3$ are inside (negative). Points where $|p| > 0.3$ are outside (positive). Points where $|p| = 0.3$ are on the boundary (zero). And the absolute value of $f(p)$ tells you exactly how far you are from the nearest point on the circle &mdash; information that is extraordinarily useful for rendering effects like anti-aliased edges, glow, outlines, and shadows.</p>
+
+      <p>SDFs are the native language of shader-based rendering. Because a fragment shader runs independently for every pixel, and an SDF can be evaluated independently for every point, the two are a natural match. Each pixel evaluates the SDF at its coordinates and uses the distance value to determine its color. There is no need for geometry buffers, vertex lists, or rasterization &mdash; the shape exists purely as a mathematical function.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Inigo Quilez</strong> is the most important figure in the practical development of SDFs for real-time graphics. A Spanish mathematician and software engineer who co-created ShaderToy, Quilez compiled an extensive catalog of 2D and 3D SDF primitives at <a href="https://iquilezles.org/articles/distfunctions2d/" target="_blank">iquilezles.org</a> that has become the definitive reference for shader artists worldwide. His work demonstrated that SDFs, combined with a technique called ray marching, could render complex 3D scenes entirely within a fragment shader &mdash; with no geometry, no meshes, and no traditional 3D pipeline. Nearly every SDF formula used in this chapter comes from or is inspired by Quilez&rsquo;s work.</p>
+      </div>
+
+      <!-- ===============================================================
+           5.8 SDF PRIMITIVES
+           =============================================================== -->
+      <h2 id="sdf-primitives">5.8 SDF Primitives</h2>
+
+      <p>Just as complex drawings are built from simple shapes, complex SDFs are built from simple <strong>primitives</strong> &mdash; the basic building blocks of signed distance geometry. Let us examine the most common 2D SDF primitives, understand how each formula works, and see them rendered in a shader.</p>
+
+      <h3>5.8.1 Circle</h3>
+
+      <p>The simplest and most fundamental SDF is the circle. A circle centered at the origin with radius $r$:</p>
+
+      <p>$$f(p) = |p| - r$$</p>
+
+      <pre><code>float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}</code></pre>
+
+      <p>The logic is transparent: <code>length(p)</code> gives the distance from point $p$ to the origin. Subtracting the radius shifts the zero-crossing to the circle&rsquo;s boundary. Points inside the circle have $|p| < r$, so the result is negative. Points outside have $|p| > r$, so the result is positive.</p>
+
+      <p>To move the circle to a different center position $c$, simply subtract the center before evaluating: <code>sdCircle(p - c, r)</code>. This &ldquo;translate by subtraction&rdquo; pattern works for all SDFs.</p>
+
+      <h3>5.8.2 Box (Rectangle)</h3>
+
+      <p>A 2D box centered at the origin with half-dimensions $b = (b_x, b_y)$:</p>
+
+      <p>$$f(p) = |\max(|p| - b, 0)| + \min(\max(|p|_x - b_x,\; |p|_y - b_y),\; 0)$$</p>
+
+      <pre><code>float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}</code></pre>
+
+      <p>This formula, from Inigo Quilez, is more complex than the circle but handles all cases correctly:</p>
+      <ul>
+        <li><code>abs(p)</code> exploits the box&rsquo;s four-fold symmetry &mdash; we only need to consider one quadrant</li>
+        <li><code>abs(p) - b</code> gives the signed distance in each axis independently</li>
+        <li><code>length(max(d, 0.0))</code> handles the exterior &mdash; the Euclidean distance from the nearest corner or edge</li>
+        <li><code>min(max(d.x, d.y), 0.0)</code> handles the interior &mdash; the (negative) distance to the nearest edge from inside</li>
+      </ul>
+
+      <h3>5.8.3 Line Segment</h3>
+
+      <p>A line segment from point $a$ to point $b$:</p>
+
+      <pre><code>float sdSegment(vec2 p, vec2 a, vec2 b) {
+  vec2 pa = p - a;
+  vec2 ba = b - a;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h);
+}</code></pre>
+
+      <p>The <code>dot(pa, ba) / dot(ba, ba)</code> projects point $p$ onto the line defined by $a$ and $b$. The <code>clamp</code> restricts this projection to the segment endpoints, so points beyond the ends measure distance to the nearest endpoint rather than the infinite line.</p>
+
+      <h3>5.8.4 Ring (Annulus)</h3>
+
+      <p>A ring &mdash; the region between two concentric circles &mdash; has a beautifully simple SDF. Given an outer radius $R$ and a thickness $t$:</p>
+
+      <pre><code>float sdRing(vec2 p, float R, float t) {
+  return abs(length(p) - R) - t;
+}</code></pre>
+
+      <p>The inner expression <code>length(p) - R</code> gives the SDF of a circle at radius $R$. Taking the <code>abs()</code> of that turns the signed distance into an unsigned distance from the circle &mdash; it is zero on the circle and positive everywhere else. Subtracting the thickness $t$ then &ldquo;inflates&rdquo; that circle into a ring of width $2t$.</p>
+
+      <p>Here is a shader that renders all four primitives side by side:</p>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>SDF Primitives</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+float sdSegment(vec2 p, vec2 a, vec2 b) {
+  vec2 pa = p - a;
+  vec2 ba = b - a;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h);
+}
+
+float sdRing(vec2 p, float R, float t) {
+  return abs(length(p) - R) - t;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // Four primitives in four quadrants
+  float circle = sdCircle(uv - vec2(-0.25, 0.2), 0.12);
+  float box    = sdBox(uv - vec2(0.25, 0.2), vec2(0.1, 0.08));
+
+  float anim = sin(u_time) * 0.05;
+  float seg = sdSegment(uv - vec2(-0.25, -0.2),
+    vec2(-0.1, -0.05 + anim), vec2(0.1, 0.05 - anim));
+  float ring = sdRing(uv - vec2(0.25, -0.2), 0.1, 0.02);
+
+  // Combine all shapes with union (min)
+  float d = min(min(circle, box), min(seg - 0.01, ring));
+
+  // Render with smooth edge and contour lines
+  vec3 col = vec3(0.95);
+  col = mix(vec3(0.2, 0.5, 0.9), col, smoothstep(0.0, 0.003, d));
+  col *= 0.9 + 0.1 * cos(80.0 * d); // contour lines
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p>The shader above draws a circle, a box, a line segment, and a ring. The contour lines (produced by <code>cos(80.0 * d)</code>) visualize the distance field &mdash; you can see how the distance value changes smoothly as you move away from each shape. The line segment animates slightly so you can see it in motion.</p>
+
+      <!-- ===============================================================
+           5.9 RENDERING WITH SDFs
+           =============================================================== -->
+      <h2 id="sdf-rendering">5.9 Rendering with SDFs</h2>
+
+      <p>Having an SDF gives you a distance value for every pixel, but you still need to convert that distance into a visible color. The way you do this conversion determines the visual style of your rendering. SDFs support a wide range of rendering techniques, from sharp geometric shapes to soft glowing forms.</p>
+
+      <h3>5.9.1 Sharp Edges with step()</h3>
+
+      <p>The simplest rendering: color the pixel white if the distance is negative (inside the shape) and black if positive (outside):</p>
+
+      <pre><code>vec3 col = d < 0.0 ? vec3(1.0) : vec3(0.0);
+// Or equivalently:
+vec3 col = vec3(1.0 - step(0.0, d));</code></pre>
+
+      <p>This produces a perfectly sharp boundary with no anti-aliasing. On high-resolution screens the result looks fine, but on standard displays the edges will appear jagged (aliased).</p>
+
+      <h3>5.9.2 Anti-aliased Edges with smoothstep()</h3>
+
+      <p>The workhorse of SDF rendering is <code>smoothstep()</code>, which creates a smooth transition over a small distance range:</p>
+
+      <pre><code>vec3 col = vec3(1.0 - smoothstep(0.0, 0.005, d));</code></pre>
+
+      <p>The transition zone (from 0.0 to 0.005 in this example) should be approximately one pixel wide in UV space. For a 400-pixel canvas with UV coordinates ranging roughly from &minus;0.5 to 0.5, one pixel is about $1/400 = 0.0025$, so a <code>smoothstep</code> width of 0.003 to 0.005 gives a pleasantly anti-aliased edge.</p>
+
+      <h3>5.9.3 Contour Lines</h3>
+
+      <p>Contour lines visualize the distance field as a topographic map. Apply a periodic function to the distance value:</p>
+
+      <pre><code>// Contour lines using cos
+col *= 0.8 + 0.2 * cos(100.0 * d);
+
+// Contour lines using fract
+float contour = fract(d * 20.0);
+col *= smoothstep(0.0, 0.05, contour) * smoothstep(1.0, 0.95, contour);</code></pre>
+
+      <p>The <code>cos</code> approach creates soft, sinusoidal undulations. The <code>fract</code> approach creates sharper bands. Both reveal the structure of the distance field, showing how distance varies smoothly across the entire image.</p>
+
+      <h3>5.9.4 Glow Effects</h3>
+
+      <p>SDFs make glow effects trivial. The glow intensity is simply the inverse of the distance &mdash; bright near the shape, fading with distance:</p>
+
+      <pre><code>// Simple glow
+vec3 glow = vec3(0.02 / abs(d));
+
+// Colored glow with falloff control
+vec3 glow = vec3(1.0, 0.5, 0.2) * (0.01 / (abs(d) + 0.001));</code></pre>
+
+      <p>The <code>+ 0.001</code> prevents division by zero exactly on the boundary. The glow falls off as $1/d$, which is physically motivated (light intensity decreases with distance from the source).</p>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>SDF Rendering Techniques</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // Animated circle
+  float r = 0.15 + 0.03 * sin(u_time * 1.5);
+  float d = sdCircle(uv, r);
+
+  // Background: dark gradient
+  vec3 col = vec3(0.05, 0.05, 0.1);
+
+  // 1. Interior color
+  vec3 interior = vec3(0.1, 0.3, 0.8);
+  col = mix(interior, col, smoothstep(-0.005, 0.005, d));
+
+  // 2. Contour lines in the distance field
+  col *= 0.85 + 0.15 * cos(60.0 * d);
+
+  // 3. Bright white border at d = 0
+  col = mix(col, vec3(1.0), 1.0 - smoothstep(0.0, 0.005, abs(d)));
+
+  // 4. Outer glow
+  col += vec3(0.3, 0.5, 1.0) * (0.005 / (abs(d) + 0.005));
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p>This shader demonstrates four rendering layers simultaneously: a filled interior, contour lines, a sharp white border, and an outer glow. All four derive from the same distance value $d$. This is the power of SDFs &mdash; one distance function supports unlimited rendering effects.</p>
+
+      <!-- ===============================================================
+           5.10 BOOLEAN OPERATIONS
+           =============================================================== -->
+      <h2 id="boolean-ops">5.10 Boolean Operations on SDFs</h2>
+
+      <p>One of the most powerful aspects of signed distance functions is how naturally they compose. You can combine two SDFs using simple arithmetic to create union, intersection, and subtraction &mdash; the same boolean operations used in constructive solid geometry (CSG), but implemented with a single line of code.</p>
+
+      <h3>5.10.1 Union (OR)</h3>
+
+      <p>The union of two shapes includes all points that are inside <em>either</em> shape. In SDF terms, a point is inside the union if its distance to either shape is negative. The combined SDF is simply the minimum of the two distances:</p>
+
+      <pre><code>float opUnion(float d1, float d2) {
+  return min(d1, d2);
+}</code></pre>
+
+      <p>This works because the minimum selects the closest shape boundary. If a point is inside shape A (distance negative) and outside shape B (distance positive), the minimum picks the negative value, correctly indicating the point is inside the union.</p>
+
+      <h3>5.10.2 Intersection (AND)</h3>
+
+      <p>The intersection includes only points that are inside <em>both</em> shapes. The combined SDF is the maximum:</p>
+
+      <pre><code>float opIntersection(float d1, float d2) {
+  return max(d1, d2);
+}</code></pre>
+
+      <p>A point is inside both shapes only if both distances are negative. The maximum of two negative numbers is the less negative one &mdash; which is correct, since the intersection boundary is the farthest boundary from the deepest interior.</p>
+
+      <h3>5.10.3 Subtraction (NOT)</h3>
+
+      <p>Subtraction removes one shape from another. To subtract shape B from shape A, negate B&rsquo;s SDF and take the maximum with A:</p>
+
+      <pre><code>float opSubtraction(float d1, float d2) {
+  return max(d1, -d2);
+}</code></pre>
+
+      <p>Negating <code>d2</code> flips the inside and outside of shape B. Taking the maximum with <code>d1</code> then keeps only the region that is inside A but outside B.</p>
+
+      <h3>5.10.4 Smooth Union</h3>
+
+      <p>The boolean operations above produce sharp creases where shapes meet. For organic, blobby shapes, we want a smooth blend. The <strong>smooth minimum</strong> (or &ldquo;smooth union&rdquo;) function, also from Inigo Quilez, creates a smooth transition:</p>
+
+      <pre><code>float opSmoothUnion(float d1, float d2, float k) {
+  float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+  return mix(d2, d1, h) - k * h * (1.0 - h);
+}</code></pre>
+
+      <p>The parameter $k$ controls the smoothness of the blend. Larger values produce a more gradual, blobby merge; smaller values approach the sharp union. A value of $k = 0.1$ produces a noticeable but subtle blend; $k = 0.3$ creates very organic, melted-together shapes.</p>
+
+      <div class="quiz" data-id="ch05-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">To compute the intersection (AND) of two SDFs <code>d1</code> and <code>d2</code>, you use:</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch05-q4" value="a"> <code>min(d1, d2)</code></label></li>
+          <li class="option"><label><input type="radio" name="ch05-q4" value="b" data-correct> <code>max(d1, d2)</code></label></li>
+          <li class="option"><label><input type="radio" name="ch05-q4" value="c"> <code>d1 + d2</code></label></li>
+          <li class="option"><label><input type="radio" name="ch05-q4" value="d"> <code>d1 * d2</code></label></li>
+        </ul>
+        <div class="explanation">
+          <p>Intersection keeps only points inside <em>both</em> shapes (both distances negative). The <code>max()</code> of two negative numbers gives the less negative one, correctly placing the boundary at the farthest surface. Union uses <code>min()</code>, and subtraction uses <code>max(d1, -d2)</code>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>SDF Boolean Operations</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+float opSmoothUnion(float d1, float d2, float k) {
+  float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+  return mix(d2, d1, h) - k * h * (1.0 - h);
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // Animated circle orbiting a box
+  vec2 circPos = vec2(sin(u_time) * 0.2, cos(u_time) * 0.15);
+  float circle = sdCircle(uv - circPos, 0.13);
+  float box    = sdBox(uv, vec2(0.1, 0.1));
+
+  // Smooth union of both
+  float d = opSmoothUnion(circle, box, 0.12);
+
+  // Color based on signed distance
+  vec3 col = vec3(1.0) - sign(d) * vec3(0.1, 0.4, 0.7);
+  col *= 1.0 - exp(-4.0 * abs(d));           // darken near boundary
+  col *= 0.85 + 0.15 * cos(120.0 * d);       // contour lines
+  col = mix(col, vec3(1.0),
+    1.0 - smoothstep(0.0, 0.005, abs(d)));    // white border
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p>Watch how the circle and box smoothly merge as they approach each other. The smooth union creates a blobby bridge between the shapes, as if they were made of soft wax melting together. The contour lines reveal how the distance field warps in the blending region. Try changing <code>opSmoothUnion</code> to <code>min</code> (sharp union), <code>max</code> (intersection), or <code>max(box, -circle)</code> (subtraction) to see the other boolean operations in action.</p>
+
+      <!-- ===============================================================
+           5.11 MORPHING BETWEEN SHAPES
+           =============================================================== -->
+      <h2 id="sdf-morphing">5.11 Morphing Between Shapes</h2>
+
+      <p>Because SDFs are just numbers &mdash; continuous, smooth scalar values &mdash; you can interpolate between them to create seamless shape morphing. The GLSL <code>mix()</code> function performs linear interpolation: <code>mix(a, b, t)</code> returns $a \cdot (1 - t) + b \cdot t$. When applied to two SDF values, it smoothly transitions from one shape to another as $t$ goes from 0 to 1.</p>
+
+      <p>$$d_{\text{morph}} = (1 - t) \cdot d_1 + t \cdot d_2$$</p>
+
+      <p>When $t = 0$, the result is purely shape 1. When $t = 1$, it is purely shape 2. At $t = 0.5$, it is a 50/50 blend &mdash; a form that is half-circle, half-box, or whatever your two primitives are. The intermediate shapes are mathematically meaningful distance fields, not just pixel-level crossfades, so edges remain sharp and the rendering techniques from Section 5.9 (glow, contour lines, anti-aliasing) work perfectly throughout the morph.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>SDF morphing vs. pixel morphing.</strong> A pixel-level crossfade between two images blends their colors: at $t = 0.5$, every pixel is a ghostly 50% overlay. SDF morphing blends the <em>geometry</em>: at $t = 0.5$, you get a crisp shape that is geometrically halfway between the two originals. The boundary of the intermediate shape is well-defined and smooth, because the interpolated SDF is itself a valid distance field (approximately). This is a fundamentally different and more powerful form of interpolation.</p>
+      </div>
+
+      <p>To create an animated morph, drive $t$ with a time-based oscillation:</p>
+
+      <pre><code>float t = 0.5 + 0.5 * sin(u_time);  // oscillates 0 to 1
+float d = mix(sdCircle(uv, 0.2), sdBox(uv, vec2(0.15)), t);</code></pre>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>SDF Shape Morphing</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+float sdRing(vec2 p, float R, float t) {
+  return abs(length(p) - R) - t;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // Three shapes to morph between
+  float circle = sdCircle(uv, 0.22);
+  float box    = sdBox(uv, vec2(0.18, 0.18));
+  float ring   = sdRing(uv, 0.2, 0.04);
+
+  // Cycle through shapes over time
+  float phase = mod(u_time * 0.5, 3.0);
+  float d;
+  if (phase < 1.0) {
+    d = mix(circle, box, phase);
+  } else if (phase < 2.0) {
+    d = mix(box, ring, phase - 1.0);
+  } else {
+    d = mix(ring, circle, phase - 2.0);
+  }
+
+  // Render with glow and edge
+  vec3 bg = vec3(0.06, 0.06, 0.12);
+  vec3 shape = vec3(0.9, 0.4, 0.2);
+  vec3 col = mix(shape, bg, smoothstep(-0.003, 0.003, d));
+
+  // Glow
+  col += vec3(0.8, 0.3, 0.1) * (0.004 / (abs(d) + 0.004));
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p>The shader cycles through three shapes: circle, box, and ring. Watch how the transitions are geometrically smooth &mdash; the rounded corners of the box emerge naturally as the circle morphs, and the ring&rsquo;s hole opens up as the solid box dissolves. These intermediate forms are not pre-designed; they emerge from the mathematics of linear interpolation applied to distance fields.</p>
+
+      <!-- ===============================================================
+           5.12 COMBINING FEEDBACK WITH SDFs
+           =============================================================== -->
+      <h2 id="feedback-sdf">5.12 Combining Feedback with SDFs</h2>
+
+      <p>We have now mastered both frame feedback and signed distance functions independently. The most exciting creative possibilities emerge when we combine them: draw SDF shapes into a feedback system, so that each frame&rsquo;s mathematically crisp shapes become the raw material for the next frame&rsquo;s spiral of echoes.</p>
+
+      <p>The approach is straightforward: use the five-step feedback loop from Section 5.4, and in step 3 (draw new content), render an SDF shape using the techniques from Sections 5.8&ndash;5.10. The SDF gives you precise, anti-aliased shapes with glow and contour effects. The feedback accumulates and transforms them over time. Together, they produce visuals of remarkable richness from very little code.</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Feedback + SDF Shapes</span>
+        </div>
+        <textarea class="cm-editor">let fbo;
+let sdfShader;
+
+let vertSrc = `
+attribute vec3 aPosition;
+attribute vec2 aTexCoord;
+varying vec2 vTexCoord;
+void main() {
+  vTexCoord = aTexCoord;
+  vec4 pos = vec4(aPosition, 1.0);
+  pos.xy = pos.xy * 2.0 - 1.0;
+  gl_Position = pos;
+}`;
+
+let fragSrc = `
+precision mediump float;
+varying vec2 vTexCoord;
+uniform sampler2D u_feedback;
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+void main() {
+  vec2 uv = vTexCoord;
+  vec2 centered = uv - 0.5;
+
+  // Feedback: rotate and scale previous frame
+  float angle = 0.018;
+  float sc = 0.994;
+  float c = cos(angle) * sc;
+  float s = sin(angle) * sc;
+  vec2 feedUV = mat2(c, s, -s, c) * centered + 0.5;
+
+  vec4 prev = texture2D(u_feedback, feedUV) * 0.975;
+
+  // SDF scene in normalized coords
+  vec2 p = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // Mouse-driven circle
+  vec2 mp = (u_mouse - 0.5 * u_resolution) / u_resolution.y;
+  float d = sdCircle(p - mp, 0.03);
+
+  // Small orbiting box
+  vec2 bPos = vec2(sin(u_time)*0.2, cos(u_time*0.7)*0.15);
+  float bx = sdBox(p - bPos, vec2(0.02, 0.02));
+  d = min(d, bx);
+
+  // Render SDF with glow
+  vec3 sdf = vec3(0.8, 0.4, 0.1) * (0.003 / (abs(d) + 0.003));
+  sdf += vec3(1.0, 0.8, 0.5) * smoothstep(0.005, 0.0, d);
+
+  // Combine feedback + new SDF content
+  vec3 col = max(prev.rgb, sdf);
+
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  sdfShader = createShader(vertSrc, fragSrc);
+  fbo = createFramebuffer();
+}
+
+function draw() {
+  fbo.begin();
+  shader(sdfShader);
+  sdfShader.setUniform('u_feedback', fbo);
+  sdfShader.setUniform('u_time', millis() / 1000.0);
+  sdfShader.setUniform('u_resolution', [width, height]);
+  sdfShader.setUniform('u_mouse', [mouseX, mouseY]);
+  quad(-1, -1, 1, -1, 1, 1, -1, 1);
+  fbo.end();
+
+  image(fbo, -width/2, -height/2, width, height);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>This sketch combines everything we have learned in this chapter. A custom fragment shader performs both the feedback transformation <em>and</em> the SDF rendering in a single pass. The mouse-driven circle and the orbiting box are rendered with SDF glow, and the feedback system captures their trails, rotates them, scales them inward, and fades them over time. Move your mouse to paint spiraling trails of glowing shapes.</p>
+
+      <div class="quiz" data-id="ch05-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">When combining SDF rendering with frame feedback, at which step of the five-step feedback loop do you draw the SDF shapes?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch05-q5" value="a"> Step 1: Begin drawing into the framebuffer</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q5" value="b"> Step 2: Draw previous frame with transformation</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q5" value="c" data-correct> Step 3: Draw new content on top</label></li>
+          <li class="option"><label><input type="radio" name="ch05-q5" value="d"> Step 5: Display the framebuffer on screen</label></li>
+        </ul>
+        <div class="explanation">
+          <p>New content &mdash; including SDF shapes &mdash; is drawn in step 3 of the feedback loop, after the previous frame has been drawn back with a transformation (step 2). This new content is then captured by the framebuffer and will be part of the feedback transformation on the next frame.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           CHAPTER QUIZ
+           =============================================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 5 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of frame feedback and signed distance functions.</p>
+
+        <div class="quiz" data-id="ch05-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">In a frame feedback system, what happens if the tint alpha is set to exactly 255 (no decay)?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch05-fq1" value="a"> The feedback produces no visible trails</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq1" value="b"> The feedback creates perfectly stable patterns</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq1" value="c" data-correct> The image accumulates brightness without fading and will eventually saturate to white</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq1" value="d"> The framebuffer is cleared every frame</label></li>
+          </ul>
+          <div class="explanation"><p>With no decay (alpha = 255), pixel values never decrease. Each frame adds new content without removing old content, and the slight scale/rotation transformation cannot reduce brightness. Over time, the image saturates to solid white. A decay value slightly below 255 (such as 248&ndash;253) is essential for maintaining visual balance.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch05-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">What does a signed distance function return for a point that is inside the shape?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch05-fq2" value="a"> A positive value representing the distance to the center</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq2" value="b" data-correct> A negative value representing the distance to the nearest boundary</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq2" value="c"> Zero</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq2" value="d"> The RGB color of the shape</label></li>
+          </ul>
+          <div class="explanation"><p>An SDF returns a <em>negative</em> value for points inside the shape, a <em>positive</em> value for points outside, and zero for points exactly on the boundary. The magnitude (absolute value) is the distance to the nearest point on the boundary.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch05-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">Which SDF combination operation uses <code>min(d1, d2)</code>?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch05-fq3" value="a" data-correct> Union &mdash; includes points inside either shape</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq3" value="b"> Intersection &mdash; includes only points inside both shapes</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq3" value="c"> Subtraction &mdash; removes one shape from another</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq3" value="d"> Smooth union &mdash; blends shapes with a smooth transition</label></li>
+          </ul>
+          <div class="explanation"><p>Union uses <code>min()</code> because a point is inside the union if it is inside <em>either</em> shape &mdash; that is, if the minimum of the two distances is negative. Intersection uses <code>max()</code>, subtraction uses <code>max(d1, -d2)</code>, and smooth union uses the polynomial smooth minimum formula.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch05-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">In GLSL, <code>mat2(1, 2, 3, 4)</code> creates a matrix. Which element is in row 1, column 2?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch05-fq4" value="a"> 1</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq4" value="b"> 2</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq4" value="c" data-correct> 3</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq4" value="d"> 4</label></li>
+          </ul>
+          <div class="explanation"><p>GLSL fills matrices <strong>column by column</strong>. So <code>mat2(1, 2, 3, 4)</code> creates columns $(1, 2)$ and $(3, 4)$, yielding the matrix $\begin{pmatrix}1 & 3 \\ 2 & 4\end{pmatrix}$. Row 1, column 2 (using 1-based indexing) is the element 3.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch05-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">Who are the pioneering video artists most closely associated with analog video feedback in the 1960s&ndash;70s?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch05-fq5" value="a"> Inigo Quilez and Ken Perlin</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq5" value="b"> Casey Reas and Ben Fry</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq5" value="c" data-correct> Nam June Paik and Steina &amp; Woody Vasulka</label></li>
+            <li class="option"><label><input type="radio" name="ch05-fq5" value="d"> Vera Moln&aacute;r and Frieder Nake</label></li>
+          </ul>
+          <div class="explanation"><p>Nam June Paik is widely regarded as the founder of video art, and the Vasulkas (Steina and Woody) made video feedback central to their practice. Both worked extensively with the feedback loop created by pointing a camera at a monitor displaying its own output. Quilez and Perlin are graphics researchers; Reas and Fry created Processing; Moln&aacute;r and Nake were early computer art pioneers.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+      <!-- ===============================================================
+           CODE CHALLENGES
+           =============================================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <div class="code-challenge" data-id="ch05-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1: SDF Circle Function</div>
+        <p class="prompt">Write a function called <code>sdCircle</code> that takes three parameters: <code>px</code>, <code>py</code> (the point coordinates) and <code>r</code> (the radius). It should return the signed distance from the point $(px, py)$ to a circle of radius $r$ centered at the origin. Recall the formula: $d = \sqrt{px^2 + py^2} - r$.</p>
+        <textarea class="cm-editor">function sdCircle(px, py, r) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "sdCircle(0, 0, 0.3)", "expected": -0.3},
+          {"call": "sdCircle(0.3, 0, 0.3)", "expected": 0},
+          {"call": "sdCircle(0.5, 0, 0.3)", "expected": 0.2},
+          {"call": "sdCircle(0.3, 0.4, 0.5)", "expected": 0},
+          {"call": "sdCircle(0, 0, 1.0)", "expected": -1.0}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch05-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2: SDF Union and Intersection</div>
+        <p class="prompt">Write two functions: <code>sdfUnion(d1, d2)</code> that returns the union (minimum) of two SDF distances, and <code>sdfIntersection(d1, d2)</code> that returns the intersection (maximum).</p>
+        <textarea class="cm-editor">function sdfUnion(d1, d2) {
+  // Your code here
+
+}
+
+function sdfIntersection(d1, d2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "sdfUnion(0.5, 0.3)", "expected": 0.3},
+          {"call": "sdfUnion(-0.1, 0.2)", "expected": -0.1},
+          {"call": "sdfUnion(-0.5, -0.2)", "expected": -0.5},
+          {"call": "sdfIntersection(0.5, 0.3)", "expected": 0.5},
+          {"call": "sdfIntersection(-0.1, 0.2)", "expected": 0.2},
+          {"call": "sdfIntersection(-0.5, -0.2)", "expected": -0.2}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch05-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3: 2D Rotation</div>
+        <p class="prompt">Write a function <code>rotate2D(x, y, angle)</code> that rotates the point $(x, y)$ by <code>angle</code> radians around the origin. Return an array <code>[newX, newY]</code>. Use the formulas: $x' = x\cos\theta - y\sin\theta$ and $y' = x\sin\theta + y\cos\theta$. Round each result to 4 decimal places using <code>Math.round(val * 10000) / 10000</code>.</p>
+        <textarea class="cm-editor">function rotate2D(x, y, angle) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "rotate2D(1, 0, 0)", "expected": [1, 0]},
+          {"call": "rotate2D(1, 0, Math.PI/2)", "expected": [0, 1]},
+          {"call": "rotate2D(0, 1, Math.PI/2)", "expected": [-1, 0]},
+          {"call": "rotate2D(1, 0, Math.PI)", "expected": [-1, 0]},
+          {"call": "rotate2D(3, 4, 0)", "expected": [3, 4]}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch05-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge 4: SDF Subtraction</div>
+        <p class="prompt">Write a function <code>sdfSubtraction(d1, d2)</code> that returns the SDF distance for subtracting shape 2 from shape 1. The formula is <code>max(d1, -d2)</code>. This keeps the interior of shape 1 that is <em>outside</em> shape 2.</p>
+        <textarea class="cm-editor">function sdfSubtraction(d1, d2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "sdfSubtraction(-0.5, -0.3)", "expected": 0.3},
+          {"call": "sdfSubtraction(-0.5, 0.2)", "expected": -0.2},
+          {"call": "sdfSubtraction(0.1, -0.3)", "expected": 0.3},
+          {"call": "sdfSubtraction(0.5, 0.5)", "expected": 0.5},
+          {"call": "sdfSubtraction(-0.8, -0.2)", "expected": 0.2}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- ===============================================================
+           EXERCISES
+           =============================================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 5.1: Feedback Parameter Explorer</div>
+        <p class="prompt">Modify the frame feedback sketch below to use <code>mouseX</code> to control the rotation angle (mapped to the range &minus;0.05 to 0.05) and <code>mouseY</code> to control the scale (mapped to the range 0.97 to 1.03). Use <code>map()</code> in p5.js to perform the mapping. This turns the sketch into a real-time feedback instrument that you can &ldquo;play&rdquo; with the mouse.</p>
+        <textarea class="cm-editor">let fbo;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  fbo = createFramebuffer();
+}
+
+function draw() {
+  background(0);
+
+  // Map mouse to feedback parameters
+  let angle = 0.01;  // TODO: map mouseX
+  let sc = 1.005;    // TODO: map mouseY
+
+  fbo.begin();
+  push();
+  tint(255, 250);
+  scale(sc);
+  rotate(angle);
+  texture(fbo);
+  noStroke();
+  plane(width, height);
+  pop();
+
+  push();
+  fill(255, 160, 40);
+  noStroke();
+  circle(0, 0, 10);
+  pop();
+  fbo.end();
+
+  push();
+  texture(fbo);
+  noStroke();
+  plane(width, height);
+  pop();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let fbo;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  fbo = createFramebuffer();
+}
+
+function draw() {
+  background(0);
+
+  // Map mouse to feedback parameters
+  let angle = map(mouseX, 0, width, -0.05, 0.05);
+  let sc = map(mouseY, 0, height, 0.97, 1.03);
+
+  fbo.begin();
+  push();
+  tint(255, 250);
+  scale(sc);
+  rotate(angle);
+  texture(fbo);
+  noStroke();
+  plane(width, height);
+  pop();
+
+  push();
+  fill(255, 160, 40);
+  noStroke();
+  circle(0, 0, 10);
+  pop();
+  fbo.end();
+
+  push();
+  texture(fbo);
+  noStroke();
+  plane(width, height);
+  pop();
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 5.2: SDF Composition</div>
+        <p class="prompt">Create a GLSL shader that draws a &ldquo;face&rdquo; using only SDF primitives and boolean operations. Use a circle for the head, two smaller circles for eyes, and <code>sdBox</code> for a mouth. Use subtraction to cut the eyes and mouth out of the head, or smooth union to build them additively. Animate at least one element using <code>u_time</code> (for example, make the eyes blink by shrinking their radius periodically).</p>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // TODO: Build a face from SDF primitives
+  float d = sdCircle(uv, 0.3); // head
+
+  vec3 col = vec3(1.0 - smoothstep(0.0, 0.005, d));
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" data-mode="glsl" readonly>precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // Head
+  float head = sdCircle(uv, 0.3);
+
+  // Eyes (blink with sin)
+  float blink = 0.04 * abs(sin(u_time * 2.0));
+  float eyeL = sdCircle(uv - vec2(-0.1, 0.08), 0.04 + blink);
+  float eyeR = sdCircle(uv - vec2( 0.1, 0.08), 0.04 + blink);
+
+  // Mouth
+  float mouth = sdBox(uv - vec2(0.0, -0.1), vec2(0.12, 0.02));
+
+  // Subtract eyes and mouth from head
+  float d = max(head, -min(min(eyeL, eyeR), mouth));
+
+  // Coloring
+  vec3 skin = vec3(1.0, 0.85, 0.6);
+  vec3 bg = vec3(0.1, 0.1, 0.15);
+  vec3 col = mix(skin, bg, smoothstep(-0.003, 0.003, d));
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 5.3: Distance Field Visualization</div>
+        <p class="prompt">Write a shader that visualizes the raw distance field of an SDF, not just the shape itself. Map positive distances to warm colors (reds/oranges) and negative distances to cool colors (blues). Add contour lines using <code>cos()</code> or <code>fract()</code>. Use at least two SDF primitives combined with a boolean operation. The goal is to make the distance field itself beautiful and informative.</p>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // TODO: Create an SDF scene and visualize its distance field
+  float d = sdCircle(uv, 0.2);
+
+  // TODO: Map distance to warm/cool colors with contour lines
+  vec3 col = vec3(d);
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" data-mode="glsl" readonly>precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // SDF scene: union of circle and animated box
+  float anim = sin(u_time) * 0.15;
+  float circle = sdCircle(uv - vec2(anim, 0.0), 0.15);
+  float box    = sdBox(uv - vec2(-anim, 0.0), vec2(0.1, 0.1));
+  float d = min(circle, box); // union
+
+  // Map distance to color: warm outside, cool inside
+  vec3 warm = vec3(1.0, 0.4, 0.1);
+  vec3 cool = vec3(0.1, 0.3, 0.9);
+  vec3 col = d > 0.0 ? warm : cool;
+
+  // Darken based on absolute distance
+  col *= 1.0 - exp(-6.0 * abs(d));
+
+  // Contour lines
+  col *= 0.8 + 0.2 * cos(80.0 * d);
+
+  // Bright white line at boundary
+  col = mix(col, vec3(1.0),
+    1.0 - smoothstep(0.0, 0.005, abs(d)));
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- ===============================================================
+           CHAPTER NAVIGATION
+           =============================================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch04/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 4: Creative Fractals &amp; Coloring</span>
+        </a>
+        <a href="../ch06/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 6: GLSL Patterns &amp; Cellular Automata</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

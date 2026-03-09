@@ -1,0 +1,2628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 10: Flow Fields &amp; Computer Vision — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch10">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 10: Flow Fields &amp; Computer Vision</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 10: Flow Fields &amp; Computer Vision</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Perlin noise, vector fields, 3D rendering, machine learning pose detection, and interactive visual effects</p>
+
+      <!-- ===============================================
+           SECTION 10.1 — NOISE AND RANDOMNESS
+           =============================================== -->
+      <h2 id="noise-randomness">10.1 Noise and Randomness</h2>
+
+      <p>Randomness is one of the most powerful tools in a creative coder's toolkit. It introduces unpredictability,
+        organic variation, and the sense of life that purely deterministic systems lack. But not all randomness
+        is created equal. In this section we compare two fundamental sources of randomness available in p5.js &mdash;
+        <code>random()</code> and <code>noise()</code> &mdash; and explore why the distinction matters profoundly
+        for generative art.</p>
+
+      <h3>10.1.1 The Problem with <code>random()</code></h3>
+
+      <p>The built-in <code>random()</code> function in p5.js (and JavaScript's <code>Math.random()</code>) produces
+        <strong>uniformly distributed pseudorandom numbers</strong>. Each call returns a value that bears no
+        relationship to the previous or next value. Mathematically, if we sample a sequence
+        $r_0, r_1, r_2, \ldots$ from <code>random()</code>, the autocorrelation between consecutive samples
+        is essentially zero:</p>
+
+      <p>$$\text{Corr}(r_i, r_{i+1}) \approx 0$$</p>
+
+      <p>This means that if you use <code>random()</code> to control a visual property over time or space &mdash;
+        say, the y-position of a line graph &mdash; the result looks jagged and noisy, like television static.
+        There is no spatial or temporal coherence. Adjacent pixels or successive frames have completely
+        unrelated values.</p>
+
+      <p>For many artistic purposes, this harsh randomness is undesirable. Nature rarely looks purely random.
+        Clouds, mountain ridges, ocean waves, wood grain, and marble veins all exhibit <em>structured
+        randomness</em> &mdash; variation that is locally smooth but globally unpredictable.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Ken Perlin</strong> invented Perlin noise in 1983 while working on the film <em>Tron</em>
+          at MAGI/Synthavision. He was frustrated that computer-generated textures looked too "machine-like"
+          and needed a way to create naturalistic procedural textures for 3D surfaces. His noise function
+          earned him an Academy Award for Technical Achievement in 1997. Perlin later improved the algorithm
+          in 2002 with "simplex noise," which is computationally cheaper in higher dimensions.</p>
+      </div>
+
+      <h3>10.1.2 Perlin Noise: Coherent Randomness</h3>
+
+      <p><strong>Perlin noise</strong> is a <em>gradient noise</em> function that produces smooth, continuous
+        pseudorandom values. Unlike <code>random()</code>, Perlin noise takes a <em>coordinate</em> as input
+        and returns a value that changes smoothly as the coordinate changes. Nearby inputs produce nearby
+        outputs.</p>
+
+      <p>In p5.js, the <code>noise()</code> function accepts 1, 2, or 3 arguments:</p>
+
+      <pre><code>noise(x)          // 1D noise: a smooth random curve
+noise(x, y)       // 2D noise: a smooth random surface
+noise(x, y, z)    // 3D noise: a smooth random volume</code></pre>
+
+      <p>The function always returns a value in the range $[0, 1]$. The key property is <strong>spatial
+        coherence</strong>: if two input coordinates are close together, their noise values will be
+        similar. Formally, for small $\epsilon$:</p>
+
+      <p>$$|\text{noise}(x + \epsilon) - \text{noise}(x)| \propto \epsilon$$</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Coherent noise</strong> is a pseudorandom function where nearby inputs produce similar
+          outputs. The function is continuous and differentiable almost everywhere, producing smooth
+          variations rather than abrupt jumps.</p>
+      </div>
+
+      <h3>10.1.3 Noise Parameters</h3>
+
+      <p>Three key parameters control the character of Perlin noise:</p>
+
+      <p><strong>Frequency</strong> (or scale) determines how quickly the noise changes. Multiplying the
+        input coordinate by a frequency value $f$ stretches or compresses the noise pattern:</p>
+
+      <p>$$\text{value} = \text{noise}(x \cdot f)$$</p>
+
+      <p>High frequency ($f = 0.1$) produces rapid, fine-grained variation. Low frequency ($f = 0.005$)
+        produces slow, broad undulations.</p>
+
+      <p><strong>Amplitude</strong> determines the range of the output. Since <code>noise()</code> returns
+        values in $[0, 1]$, we multiply by an amplitude $A$ to scale the output:</p>
+
+      <p>$$\text{value} = A \cdot \text{noise}(x \cdot f)$$</p>
+
+      <p><strong>Octaves</strong> combine multiple layers of noise at different frequencies and amplitudes.
+        Each octave doubles the frequency and halves the amplitude. The sum produces a fractal-like texture
+        with both large-scale structure and fine detail:</p>
+
+      <p>$$\text{fbm}(x) = \sum_{i=0}^{n-1} \frac{1}{2^i} \cdot \text{noise}\!\left(x \cdot 2^i\right)$$</p>
+
+      <p>This technique is called <strong>fractal Brownian motion</strong> (fBm). In p5.js, the
+        <code>noiseDetail(octaves, falloff)</code> function controls how many octaves are summed and
+        how quickly the amplitude falls off between octaves.</p>
+
+      <pre><code>// Default: 4 octaves, 50% falloff per octave
+noiseDetail(4, 0.5);
+
+// More detail: 8 octaves, gentler falloff
+noiseDetail(8, 0.65);</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The <code>noiseSeed()</code> function sets the random seed for the noise generator, allowing
+          you to reproduce the exact same noise pattern across runs. This is invaluable for creating
+          reproducible generative art: <code>noiseSeed(42)</code> will always produce the same noise
+          landscape.</p>
+      </div>
+
+      <h3>10.1.4 3D Noise and the Time Dimension</h3>
+
+      <p>One of the most powerful applications of Perlin noise is using the <strong>third dimension as
+        time</strong>. When you call <code>noise(x, y, t)</code>, the first two parameters define a
+        spatial position and the third defines a temporal offset. As $t$ slowly increases, the entire
+        2D noise landscape smoothly morphs and evolves.</p>
+
+      <p>This technique is used everywhere in creative coding:</p>
+
+      <ul>
+        <li><strong>Animated terrain:</strong> <code>noise(x * 0.01, y * 0.01, frameCount * 0.005)</code>
+          creates a slowly shifting landscape</li>
+        <li><strong>Flowing textures:</strong> The noise surface warps smoothly over time, creating
+          the impression of liquid, clouds, or organic growth</li>
+        <li><strong>Evolving flow fields:</strong> The direction vectors at each point gradually shift,
+          causing particle paths to change direction</li>
+        <li><strong>Character animation:</strong> Apply noise to joint rotations for naturalistic
+          idle animations and subtle organic movement</li>
+      </ul>
+
+      <p>The key insight is that <code>noise(x, y, z)</code> defines a smooth 3D volume of values.
+        Taking a 2D slice of this volume at different z-values is equivalent to observing the same
+        spatial pattern at different moments in time. The smoothness of the noise function guarantees
+        that these temporal transitions are gentle and continuous.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Noise Scaling Rules</div>
+        <p>The relationship between noise scale and visual result can be summarized as follows. Let
+          $s$ be the noise scale factor:</p>
+        <ul>
+          <li>$s \ll 0.001$: Very slow, large-scale variation (entire canvas is nearly one value)</li>
+          <li>$s \approx 0.005$: Smooth, broad undulations ideal for flow fields</li>
+          <li>$s \approx 0.01$&ndash;$0.02$: Medium detail, good for terrain and textures</li>
+          <li>$s \approx 0.05$&ndash;$0.1$: Fine, rippled detail (starting to look noisy)</li>
+          <li>$s \gg 0.1$: Very rapid variation, approaching pure randomness visually</li>
+        </ul>
+      </div>
+
+      <h3>10.1.5 1D Perlin Noise Visualization</h3>
+
+      <p>The simplest way to understand Perlin noise is to visualize it as a 1D curve. We sample
+        <code>noise(x)</code> at each horizontal pixel and map the result to a vertical position.
+        Compare this to <code>random()</code> to see the difference:</p>
+
+      <!-- INTERACTIVE: Perlin noise 1D wave -->
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Perlin Noise 1D Wave</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  background(245);
+  noLoop();
+}
+
+function draw() {
+  background(245);
+
+  // Draw random() curve (red)
+  stroke(220, 60, 60);
+  strokeWeight(1.5);
+  noFill();
+  beginShape();
+  for (let x = 0; x < width; x++) {
+    let y = random(100, 300);
+    vertex(x, y);
+  }
+  endShape();
+
+  // Draw noise() curve (blue)
+  stroke(40, 80, 200);
+  strokeWeight(2.5);
+  beginShape();
+  let xoff = 0;
+  for (let x = 0; x < width; x++) {
+    let y = noise(xoff) * 200 + 100;
+    vertex(x, y);
+    xoff += 0.02;
+  }
+  endShape();
+
+  // Labels
+  noStroke();
+  fill(220, 60, 60);
+  textSize(14);
+  textAlign(LEFT);
+  text("random() - jagged", 10, 30);
+  fill(40, 80, 200);
+  text("noise() - smooth", 10, 50);
+
+  // Info
+  fill(100);
+  textSize(11);
+  text("Click to regenerate with new seed", 10, 385);
+}
+
+function mousePressed() {
+  noiseSeed(millis());
+  redraw();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>10.1.5 2D Perlin Noise</h3>
+
+      <p>When we extend noise to two dimensions, <code>noise(x, y)</code> produces a smooth surface &mdash;
+        often visualized as a grayscale heightmap or terrain. Each pixel's brightness corresponds to the
+        noise value at that coordinate:</p>
+
+      <!-- INTERACTIVE: 2D Perlin noise landscape -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>2D Perlin Noise Landscape</span>
+        </div>
+        <textarea class="cm-editor">let zOff = 0;
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+}
+
+function draw() {
+  loadPixels();
+  let xoff = 0;
+  let scale = 0.01;
+
+  for (let x = 0; x < width; x++) {
+    let yoff = 0;
+    for (let y = 0; y < height; y++) {
+      let val = noise(xoff, yoff, zOff);
+      let bright = val * 255;
+
+      // Color based on height
+      let r, g, b;
+      if (val < 0.35) {
+        // Deep water
+        r = 20; g = 50; b = 120 + bright * 0.3;
+      } else if (val < 0.45) {
+        // Shallow water
+        r = 40; g = 100; b = 180;
+      } else if (val < 0.55) {
+        // Sand/beach
+        r = 210; g = 190; b = 130;
+      } else if (val < 0.75) {
+        // Grass/forest
+        r = 30 + val * 60;
+        g = 100 + val * 80;
+        b = 30;
+      } else {
+        // Mountain/snow
+        r = 150 + val * 100;
+        g = 150 + val * 100;
+        b = 150 + val * 100;
+      }
+
+      let idx = (x + y * width) * 4;
+      pixels[idx] = r;
+      pixels[idx + 1] = g;
+      pixels[idx + 2] = b;
+      pixels[idx + 3] = 255;
+      yoff += scale;
+    }
+    xoff += scale;
+  }
+  updatePixels();
+
+  zOff += 0.005;
+
+  // Label
+  fill(255);
+  noStroke();
+  textSize(12);
+  textAlign(LEFT);
+  text("2D Perlin Noise Terrain (animating)", 10, 20);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>By slowly incrementing a third parameter <code>zOff</code> each frame, we animate the noise
+        landscape over time, creating the impression of a shifting, living terrain.</p>
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 1
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch10-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the key difference between <code>random()</code> and <code>noise()</code> in p5.js?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch10-q1" value="a"> <code>random()</code> is faster; <code>noise()</code> is slower but identical in output</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q1" value="b"> <code>noise()</code> only returns integers while <code>random()</code> returns floats</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q1" value="c" data-correct> <code>noise()</code> produces spatially coherent (smooth) values; <code>random()</code> produces uncorrelated values</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q1" value="d"> <code>random()</code> requires a seed; <code>noise()</code> does not</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The fundamental difference is <strong>coherence</strong>. <code>noise()</code> takes a coordinate
+            as input and returns values that change smoothly &mdash; nearby coordinates yield similar outputs.
+            <code>random()</code> has no such relationship between successive calls; each value is independent.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.2 — FLOW FIELDS
+           =============================================== -->
+      <h2 id="flow-fields">10.2 Flow Fields</h2>
+
+      <p>A <strong>flow field</strong> (also called a <em>vector field</em>) is a mathematical structure
+        that assigns a direction vector to every point in a region of space. You can think of it as an
+        invisible map of forces &mdash; at each location, the field tells a particle which way to move.
+        When many particles follow these directions simultaneously, the collective result reveals the
+        underlying structure of the field in stunningly organic patterns.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Vector field</strong> &mdash; A function $\mathbf{F}: \mathbb{R}^2 \to \mathbb{R}^2$
+          that assigns a 2D vector (direction and magnitude) to every point $(x, y)$ in the plane.
+          In physics, velocity fields, electric fields, and gravitational fields are all vector fields.
+          In generative art, we use them to guide the motion of particles.</p>
+      </div>
+
+      <h3>10.2.1 Creating Flow Fields from Noise</h3>
+
+      <p>The most common technique for creating aesthetically pleasing flow fields is to derive them from
+        Perlin noise. At each point $(x, y)$, we sample <code>noise(x, y)</code> and map the result to
+        an angle $\theta$:</p>
+
+      <p>$$\theta(x, y) = \text{noise}(x \cdot s, \; y \cdot s) \cdot 2\pi \cdot k$$</p>
+
+      <p>where $s$ is the noise scale (controls the "zoom level" of the field) and $k$ is a multiplier
+        that determines how many full rotations the angle can make across the noise range. Common values
+        are $k = 2$ or $k = 4$.</p>
+
+      <p>The angle $\theta$ is then converted to a unit vector:</p>
+
+      <p>$$\mathbf{v}(x, y) = \big(\cos\theta,\; \sin\theta\big)$$</p>
+
+      <p>Because Perlin noise is smooth, nearby points get similar angles, and the resulting field has
+        smooth, flowing streamlines rather than chaotic random directions.</p>
+
+      <h3>10.2.2 Visualizing the Field with Arrows</h3>
+
+      <p>Before adding particles, it is helpful to visualize the field itself using a grid of arrows.
+        Each arrow's direction represents the flow vector at that grid cell, and its length can represent
+        the magnitude:</p>
+
+      <pre><code>// Visualize a flow field as a grid of arrows
+let scale = 0.005;
+let cellSize = 20;
+
+for (let x = 0; x < width; x += cellSize) {
+  for (let y = 0; y < height; y += cellSize) {
+    let angle = noise(x * scale, y * scale) * TWO_PI * 2;
+    let cx = x + cellSize / 2;
+    let cy = y + cellSize / 2;
+    let len = cellSize * 0.4;
+
+    push();
+    translate(cx, cy);
+    rotate(angle);
+    stroke(80);
+    strokeWeight(1);
+    line(0, 0, len, 0);
+    // arrowhead
+    line(len, 0, len - 4, -3);
+    line(len, 0, len - 4, 3);
+    pop();
+  }
+}</code></pre>
+
+      <h3>10.2.3 Particles Following Flow Fields</h3>
+
+      <p>The real magic of flow fields emerges when we release particles into the field and let them
+        trace paths. Each particle stores its position, velocity, and previous position. On every frame:</p>
+
+      <ol>
+        <li>Look up the flow angle at the particle's current position</li>
+        <li>Convert the angle to a force vector</li>
+        <li>Add the force to the particle's acceleration</li>
+        <li>Update velocity (velocity += acceleration), limiting to a maximum speed</li>
+        <li>Update position (position += velocity)</li>
+        <li>Draw a line from the previous position to the current position</li>
+        <li>Reset acceleration to zero for the next frame</li>
+      </ol>
+
+      <p>The particle class encapsulates this logic:</p>
+
+      <pre><code>class Particle {
+  constructor() {
+    this.pos = createVector(random(width), random(height));
+    this.vel = createVector(0, 0);
+    this.acc = createVector(0, 0);
+    this.maxSpeed = 2;
+    this.prevPos = this.pos.copy();
+  }
+
+  follow(angle) {
+    let force = p5.Vector.fromAngle(angle);
+    force.setMag(0.5);
+    this.acc.add(force);
+  }
+
+  update() {
+    this.prevPos.set(this.pos);
+    this.vel.add(this.acc);
+    this.vel.limit(this.maxSpeed);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
+  }
+
+  edges() {
+    if (this.pos.x > width)  { this.pos.x = 0;     this.prevPos.set(this.pos); }
+    if (this.pos.x < 0)      { this.pos.x = width;  this.prevPos.set(this.pos); }
+    if (this.pos.y > height)  { this.pos.y = 0;      this.prevPos.set(this.pos); }
+    if (this.pos.y < 0)       { this.pos.y = height;  this.prevPos.set(this.pos); }
+  }
+
+  display() {
+    stroke(0, 5);
+    strokeWeight(1);
+    line(this.prevPos.x, this.prevPos.y,
+         this.pos.x, this.pos.y);
+  }
+}</code></pre>
+
+      <h3>10.2.4 Time-Varying Fields</h3>
+
+      <p>By adding a third dimension to the noise input &mdash; a slowly incrementing time offset &mdash;
+        the flow field evolves over time. The angle at each point gradually shifts, causing particle paths
+        to change direction and creating a sense of living, breathing motion:</p>
+
+      <p>$$\theta(x, y, t) = \text{noise}(x \cdot s,\; y \cdot s,\; t) \cdot 2\pi \cdot k$$</p>
+
+      <p>The time offset $t$ should increment very slowly (e.g., $0.001$ per frame) to maintain the
+        smooth character of the field. Faster increments create more turbulent, rapidly shifting patterns.</p>
+
+      <!-- INTERACTIVE: Flow field with particles -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Flow Field with Particles</span>
+        </div>
+        <textarea class="cm-editor">let particles = [];
+let noiseScale = 0.005;
+let zOff = 0;
+let NUM_PARTICLES = 800;
+
+function setup() {
+  createCanvas(400, 400);
+  background(255);
+  for (let i = 0; i < NUM_PARTICLES; i++) {
+    particles.push(new Particle());
+  }
+}
+
+function draw() {
+  // No background clear = trails build up
+  zOff += 0.002;
+
+  for (let p of particles) {
+    let angle = noise(
+      p.pos.x * noiseScale,
+      p.pos.y * noiseScale,
+      zOff
+    ) * TWO_PI * 4;
+
+    p.follow(angle);
+    p.update();
+    p.edges();
+    p.display();
+  }
+}
+
+class Particle {
+  constructor() {
+    this.pos = createVector(random(width), random(height));
+    this.vel = createVector(0, 0);
+    this.acc = createVector(0, 0);
+    this.maxSpeed = 2;
+    this.prevPos = this.pos.copy();
+  }
+
+  follow(angle) {
+    let force = p5.Vector.fromAngle(angle);
+    force.setMag(0.3);
+    this.acc.add(force);
+  }
+
+  update() {
+    this.prevPos.set(this.pos);
+    this.vel.add(this.acc);
+    this.vel.limit(this.maxSpeed);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
+  }
+
+  edges() {
+    if (this.pos.x > width)  { this.pos.x = 0; this.prevPos.set(this.pos); }
+    if (this.pos.x < 0)      { this.pos.x = width; this.prevPos.set(this.pos); }
+    if (this.pos.y > height)  { this.pos.y = 0; this.prevPos.set(this.pos); }
+    if (this.pos.y < 0)       { this.pos.y = height; this.prevPos.set(this.pos); }
+  }
+
+  display() {
+    stroke(30, 60, 120, 8);
+    strokeWeight(1);
+    line(this.prevPos.x, this.prevPos.y,
+         this.pos.x, this.pos.y);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Forgetting to reset the acceleration each frame (<code>this.acc.mult(0)</code>) causes forces
+          to accumulate indefinitely. The particles will accelerate without bound and fly off the canvas
+          in a single frame. Always zero out acceleration after updating velocity.</p>
+      </div>
+
+      <h3>10.2.5 Grid-Based vs. Continuous Flow Fields</h3>
+
+      <p>There are two approaches to implementing flow fields:</p>
+
+      <p><strong>Continuous (direct sampling):</strong> At each particle position, directly call
+        <code>noise(px * scale, py * scale, t)</code> to get the angle. This is conceptually simpler
+        and gives the most accurate result, but calls <code>noise()</code> once per particle per
+        frame, which can be expensive for very large particle counts.</p>
+
+      <p><strong>Grid-based (precomputed):</strong> Divide the canvas into a grid of cells. At the
+        start of each frame, compute and store the flow angle for each cell. Then each particle looks
+        up the angle for its current cell using integer division. This is more efficient because the
+        number of noise calls equals the number of grid cells (often a few thousand), regardless of
+        how many particles there are (which could be tens of thousands).</p>
+
+      <pre><code>// Grid-based approach
+let flowField = [];
+let cellSize = 10;
+let cols, rows;
+
+function setup() {
+  createCanvas(400, 400);
+  cols = ceil(width / cellSize);
+  rows = ceil(height / cellSize);
+}
+
+function updateField() {
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let angle = noise(i * 0.1, j * 0.1, zOff) * TWO_PI * 4;
+      flowField[i + j * cols] = angle;
+    }
+  }
+}
+
+// Particle lookup:
+function getFieldAngle(x, y) {
+  let col = constrain(floor(x / cellSize), 0, cols - 1);
+  let row = constrain(floor(y / cellSize), 0, rows - 1);
+  return flowField[col + row * cols];
+}</code></pre>
+
+      <h3>10.2.6 The GPGPU Approach</h3>
+
+      <p>For handling hundreds of thousands of particles, we can move computation to the GPU.
+        The <strong>GPGPU</strong> (General-Purpose GPU) technique uses image textures to store
+        particle data:</p>
+
+      <ul>
+        <li>Each pixel represents one particle</li>
+        <li>The R channel stores the x position (normalized to 0-255 or as a float)</li>
+        <li>The G channel stores the y position</li>
+        <li>The B channel stores the x velocity</li>
+        <li>The A channel stores the y velocity</li>
+      </ul>
+
+      <p>A fragment shader reads each pixel, computes the new position and velocity based on the
+        flow field, and writes the result to a second texture. Two textures alternate roles
+        (<strong>ping-pong buffers</strong>) because a shader cannot read and write the same texture
+        simultaneously. This approach can handle over 100,000 particles at 60fps because the GPU
+        processes all pixels in parallel.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Ping-pong buffers</strong> &mdash; A technique where two framebuffer textures
+          alternate roles as input (read) and output (write) on each frame. Frame 1: read from A,
+          write to B. Frame 2: read from B, write to A. This is necessary because GPUs cannot
+          simultaneously read from and write to the same texture.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.3 — FLOW FIELD ART
+           =============================================== -->
+      <h2 id="flow-field-art">10.3 Flow Field Art</h2>
+
+      <p>Flow fields are a cornerstone of generative art. Artists like <strong>Tyler Hobbs</strong>
+        (creator of <em>Fidenza</em>), <strong>Zach Lieberman</strong>, and <strong>Manolo Gamboa Naon</strong>
+        have built significant bodies of work around flow-field aesthetics. The technique's appeal lies in
+        its ability to produce images that feel simultaneously organic and precise &mdash; structured chaos
+        that echoes natural phenomena like wind patterns, ocean currents, and magnetic field lines.</p>
+
+      <h3>10.3.1 Color Mapping</h3>
+
+      <p>Instead of uniform color, map particle color to one or more properties:</p>
+
+      <ul>
+        <li><strong>Position-based:</strong> Use the particle's x or y coordinate to pick a color from a gradient</li>
+        <li><strong>Speed-based:</strong> Map velocity magnitude to a color range (slow = cool, fast = warm)</li>
+        <li><strong>Angle-based:</strong> Map the flow angle to hue using HSB color mode</li>
+        <li><strong>Age-based:</strong> Particles change color as they age, fading from bright to transparent</li>
+      </ul>
+
+      <h3>10.3.2 Curl Noise</h3>
+
+      <p><strong>Curl noise</strong> is a variant of noise-based flow that guarantees <em>divergence-free</em>
+        fields &mdash; meaning particles never converge to sinks or diverge from sources. The field has no
+        compression or expansion, just pure swirling flow. This produces particularly beautiful,
+        ribbon-like patterns.</p>
+
+      <p>The curl of a 2D scalar noise field $n(x, y)$ is computed using finite differences of the
+        partial derivatives:</p>
+
+      <p>$$\text{curl}_x = \frac{\partial n}{\partial y} \approx \frac{n(x, y+\epsilon) - n(x, y-\epsilon)}{2\epsilon}$$</p>
+      <p>$$\text{curl}_y = -\frac{\partial n}{\partial x} \approx -\frac{n(x+\epsilon, y) - n(x-\epsilon, y)}{2\epsilon}$$</p>
+
+      <pre><code>function curlNoise(x, y, eps) {
+  eps = eps || 0.001;
+  let dx = (noise(x + eps, y) - noise(x - eps, y)) / (2 * eps);
+  let dy = (noise(x, y + eps) - noise(x, y - eps)) / (2 * eps);
+  // Curl: rotate gradient 90 degrees
+  return createVector(dy, -dx);
+}</code></pre>
+
+      <h3>10.3.3 Turbulence and Layering</h3>
+
+      <p><strong>Turbulence</strong> is the sum of absolute values of multiple octaves of noise:</p>
+
+      <p>$$\text{turbulence}(x) = \sum_{i=0}^{n-1} \frac{1}{2^i} \left|\text{noise}\!\left(x \cdot 2^i\right) - 0.5\right|$$</p>
+
+      <p>Unlike smooth fBm noise, turbulence creates sharp creases and ridges, reminiscent of marble
+        veins or cloud edges. Use it to add visual tension and contrast to flow field art.</p>
+
+      <h3>10.3.4 Line Density and Composition</h3>
+
+      <p>The visual weight of a flow field image depends on several factors:</p>
+
+      <ul>
+        <li><strong>Number of particles:</strong> More particles create denser coverage</li>
+        <li><strong>Stroke weight:</strong> Thicker lines create bolder, more graphic results</li>
+        <li><strong>Stroke alpha:</strong> Low alpha values (5-15) create delicate, layered transparencies</li>
+        <li><strong>Lifetime:</strong> Limiting particle lifetime prevents over-saturation</li>
+        <li><strong>Seeding pattern:</strong> Instead of random positions, seed particles in grids, circles, or along curves</li>
+      </ul>
+
+      <!-- INTERACTIVE: Flow field art generator -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Flow Field Art Generator</span>
+        </div>
+        <textarea class="cm-editor">let particles = [];
+let zOff = 0;
+let palette;
+
+function setup() {
+  createCanvas(400, 400);
+  colorMode(HSB, 360, 100, 100, 100);
+  background(0, 0, 95);
+
+  // Warm color palette
+  palette = [
+    color(10, 80, 90),   // red-orange
+    color(30, 75, 95),   // orange
+    color(340, 70, 85),  // magenta
+    color(200, 60, 70),  // teal accent
+    color(50, 85, 95)    // gold
+  ];
+
+  for (let i = 0; i < 1200; i++) {
+    particles.push({
+      pos: createVector(random(width), random(height)),
+      vel: createVector(0, 0),
+      prevPos: createVector(0, 0),
+      col: random(palette),
+      life: 0,
+      maxLife: floor(random(80, 250))
+    });
+  }
+}
+
+function draw() {
+  zOff += 0.0015;
+  let noiseScale = 0.004;
+
+  for (let p of particles) {
+    p.prevPos.set(p.pos);
+    let angle = noise(p.pos.x * noiseScale,
+                      p.pos.y * noiseScale,
+                      zOff) * TWO_PI * 4;
+    let force = p5.Vector.fromAngle(angle);
+    force.mult(0.4);
+    p.vel.add(force);
+    p.vel.limit(2.5);
+    p.pos.add(p.vel);
+    p.vel.mult(0.98);
+
+    p.life++;
+    let alpha = map(p.life, 0, p.maxLife, 12, 2);
+
+    if (p.life < p.maxLife) {
+      let c = p.col;
+      stroke(hue(c), saturation(c), brightness(c), alpha);
+      strokeWeight(map(p.vel.mag(), 0, 2.5, 2, 0.5));
+      line(p.prevPos.x, p.prevPos.y, p.pos.x, p.pos.y);
+    }
+
+    // Respawn dead particles
+    if (p.life > p.maxLife ||
+        p.pos.x < 0 || p.pos.x > width ||
+        p.pos.y < 0 || p.pos.y > height) {
+      p.pos.set(random(width), random(height));
+      p.vel.set(0, 0);
+      p.prevPos.set(p.pos);
+      p.life = 0;
+      p.maxLife = floor(random(80, 250));
+      p.col = random(palette);
+    }
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 2
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch10-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does <strong>curl noise</strong> guarantee about a flow field?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch10-q2" value="a"> All particles move in straight lines</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q2" value="b" data-correct> The field is divergence-free (no sources or sinks)</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q2" value="c"> Particles always move faster than with regular noise</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q2" value="d"> The noise values are always between -1 and 1</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Curl noise computes the curl (rotational component) of a scalar noise field, which is
+            mathematically guaranteed to be divergence-free. This means particles will never converge
+            to a point (sink) or spread out from a point (source) &mdash; they only swirl and flow,
+            creating beautiful ribbon-like patterns.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.4 — 3D IN P5.JS
+           =============================================== -->
+      <h2 id="3d-p5js">10.4 3D in p5.js</h2>
+
+      <p>p5.js supports full 3D rendering through <strong>WebGL</strong>, the browser's GPU-accelerated
+        graphics API. Moving from 2D to 3D opens up an entirely new creative dimension &mdash; you can
+        create sculptural forms, architectural spaces, immersive environments, and physical simulations
+        that exist in volumetric space.</p>
+
+      <h3>10.4.1 Entering WEBGL Mode</h3>
+
+      <p>To enable 3D rendering, pass <code>WEBGL</code> as the third argument to <code>createCanvas()</code>:</p>
+
+      <pre><code>function setup() {
+  createCanvas(600, 600, WEBGL);
+}</code></pre>
+
+      <p>In WEBGL mode, the coordinate system changes significantly:</p>
+
+      <ul>
+        <li>The <strong>origin</strong> moves to the center of the canvas (not the top-left corner)</li>
+        <li>The <strong>x-axis</strong> points right (same as 2D)</li>
+        <li>The <strong>y-axis</strong> points down (same as 2D, but different from many 3D conventions)</li>
+        <li>The <strong>z-axis</strong> points toward the viewer</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>In WEBGL mode, 2D drawing functions like <code>rect()</code> and <code>ellipse()</code> still
+          work, but many students forget that the origin is now at the center. A shape drawn at
+          <code>(0, 0)</code> appears in the center, not the top-left corner. Use <code>translate()</code>
+          to position objects.</p>
+      </div>
+
+      <h3>10.4.2 Basic 3D Shapes</h3>
+
+      <p>p5.js provides several built-in 3D primitives:</p>
+
+      <table>
+        <thead>
+          <tr><th>Function</th><th>Description</th><th>Parameters</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>box(w, h, d)</code></td><td>Rectangular box</td><td>Width, height, depth</td></tr>
+          <tr><td><code>sphere(r, detX, detY)</code></td><td>Sphere</td><td>Radius, detail segments</td></tr>
+          <tr><td><code>cylinder(r, h, detX, detY)</code></td><td>Cylinder</td><td>Radius, height, details</td></tr>
+          <tr><td><code>cone(r, h, detX, detY)</code></td><td>Cone</td><td>Radius, height, details</td></tr>
+          <tr><td><code>torus(R, r, detX, detY)</code></td><td>Torus (donut)</td><td>Ring radius, tube radius</td></tr>
+          <tr><td><code>plane(w, h)</code></td><td>Flat plane</td><td>Width, height</td></tr>
+        </tbody>
+      </table>
+
+      <h3>10.4.3 Camera Control</h3>
+
+      <p>The <code>orbitControl()</code> function allows interactive camera manipulation with the mouse:</p>
+
+      <ul>
+        <li><strong>Left-drag:</strong> Rotate the view</li>
+        <li><strong>Right-drag:</strong> Pan the view</li>
+        <li><strong>Scroll:</strong> Zoom in/out</li>
+      </ul>
+
+      <p>For programmatic camera control, use the <code>camera()</code> function which takes nine
+        parameters specifying the eye position, center of focus, and up direction:</p>
+
+      <p>$$\text{camera}(\underbrace{x_e, y_e, z_e}_{\text{eye}},\;
+        \underbrace{x_c, y_c, z_c}_{\text{center}},\;
+        \underbrace{x_u, y_u, z_u}_{\text{up}})$$</p>
+
+      <h3>10.4.4 Lighting</h3>
+
+      <p>Lighting transforms flat-colored 3D shapes into objects with depth and form. Without lights,
+        3D objects appear as solid-color silhouettes with no shading. p5.js offers three types of light:</p>
+
+      <p><strong>Ambient light</strong> provides uniform illumination from all directions. It acts as a
+        baseline fill light that prevents surfaces facing away from direct lights from appearing
+        completely black:</p>
+
+      <pre><code>ambientLight(60, 60, 60); // soft gray fill</code></pre>
+
+      <p><strong>Directional light</strong> shines uniformly from a given direction, like sunlight.
+        All rays are parallel. It takes a color and a direction vector:</p>
+
+      <pre><code>directionalLight(255, 255, 255, -1, 1, -1); // white light from upper-left-front</code></pre>
+
+      <p><strong>Point light</strong> radiates from a specific position, like a light bulb. Intensity
+        falls off with distance:</p>
+
+      <pre><code>pointLight(255, 200, 150, 200, -200, 200); // warm light above and to the right</code></pre>
+
+      <h3>10.4.5 Materials</h3>
+
+      <p>Materials determine how surfaces interact with light:</p>
+
+      <ul>
+        <li><code>ambientMaterial(r, g, b)</code> &mdash; Only responds to ambient light</li>
+        <li><code>specularMaterial(r, g, b)</code> &mdash; Produces shiny highlights (combine with <code>shininess(n)</code>)</li>
+        <li><code>emissiveMaterial(r, g, b)</code> &mdash; Appears to glow regardless of lighting</li>
+        <li><code>normalMaterial()</code> &mdash; Colors based on surface normal direction (great for debugging)</li>
+      </ul>
+
+      <!-- INTERACTIVE: 3D shapes showcase -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>3D Shapes Showcase</span>
+        </div>
+        <textarea class="cm-editor">let angle = 0;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+}
+
+function draw() {
+  background(25);
+
+  // Lighting setup
+  ambientLight(40, 40, 50);
+  directionalLight(200, 200, 255, -1, 0.8, -0.5);
+  pointLight(255, 180, 100, 200, -150, 200);
+
+  orbitControl();
+  angle += 0.01;
+
+  // Box
+  push();
+  translate(-120, -80, 0);
+  rotateX(angle);
+  rotateY(angle * 0.7);
+  specularMaterial(200, 80, 80);
+  shininess(20);
+  box(60);
+  pop();
+
+  // Sphere
+  push();
+  translate(0, -80, 0);
+  rotateY(angle * 0.5);
+  specularMaterial(80, 200, 80);
+  shininess(50);
+  sphere(40, 24, 24);
+  pop();
+
+  // Torus
+  push();
+  translate(120, -80, 0);
+  rotateX(angle * 0.8);
+  rotateZ(angle * 0.3);
+  specularMaterial(80, 80, 220);
+  shininess(40);
+  torus(30, 12, 16, 8);
+  pop();
+
+  // Cylinder
+  push();
+  translate(-80, 80, 0);
+  rotateX(angle * 0.6);
+  specularMaterial(220, 180, 60);
+  shininess(30);
+  cylinder(25, 70, 16, 1);
+  pop();
+
+  // Cone
+  push();
+  translate(80, 80, 0);
+  rotateX(angle * 0.9);
+  specularMaterial(200, 60, 200);
+  shininess(35);
+  cone(35, 70, 16, 1);
+  pop();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>10.4.6 Custom Geometry</h3>
+
+      <p>For shapes beyond the built-in primitives, p5.js provides the <code>p5.Geometry</code> class.
+        You define a mesh by specifying <strong>vertices</strong> (points in 3D space) and
+        <strong>faces</strong> (triangles connecting three vertices by index). The
+        <code>computeNormals()</code> method automatically calculates surface normals for lighting.</p>
+
+      <p>A <strong>parametric surface</strong> is defined by a function $f(u, v) \to (x, y, z)$ that
+        maps two parameters to a 3D point. By evaluating this function over a grid and connecting
+        adjacent points into triangles, we create smooth curved surfaces:</p>
+
+      <p>$$\begin{aligned}
+        x &= r(u, v) \cdot \sin(v) \cdot \cos(u) \\
+        y &= r(u, v) \cdot \cos(v) \\
+        z &= r(u, v) \cdot \sin(v) \cdot \sin(u)
+      \end{aligned}$$</p>
+
+      <!-- INTERACTIVE: 3D with lighting and camera -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>3D Parametric Surface with Lighting</span>
+        </div>
+        <textarea class="cm-editor">let surface;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+
+  let detU = 40, detV = 30, R = 100;
+
+  surface = new p5.Geometry(1, 1, function() {
+    for (let i = 0; i <= detU; i++) {
+      let u = (i / detU) * TWO_PI;
+      for (let j = 0; j <= detV; j++) {
+        let v = (j / detV) * PI;
+        // Wavy sphere: radius varies with u and v
+        let r = R + sin(u * 5) * sin(v * 4) * 18;
+        this.vertices.push(new p5.Vector(
+          r * sin(v) * cos(u),
+          r * cos(v),
+          r * sin(v) * sin(u)
+        ));
+      }
+    }
+
+    // Connect vertices into triangles
+    for (let i = 0; i < detU; i++) {
+      for (let j = 0; j < detV; j++) {
+        let a = i * (detV + 1) + j;
+        let b = a + detV + 1;
+        this.faces.push([a, b, a + 1]);
+        this.faces.push([b, b + 1, a + 1]);
+      }
+    }
+
+    this.computeNormals();
+  });
+}
+
+function draw() {
+  background(15);
+
+  // Three-point lighting
+  ambientLight(30, 30, 40);
+  directionalLight(180, 180, 240, -1, 0.8, -0.5);
+  pointLight(255, 150, 80, 250, -200, 200);
+
+  orbitControl();
+
+  // Rotate slowly
+  rotateY(frameCount * 0.008);
+  rotateX(0.3);
+
+  specularMaterial(120, 180, 210);
+  shininess(40);
+  noStroke();
+  model(surface);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 3
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch10-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In p5.js WEBGL mode, where is the coordinate origin located?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch10-q3" value="a"> Top-left corner of the canvas</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q3" value="b" data-correct> Center of the canvas</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q3" value="c"> Bottom-left corner of the canvas</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q3" value="d"> It depends on the camera position</label></li>
+        </ul>
+        <div class="explanation">
+          <p>When you use <code>createCanvas(w, h, WEBGL)</code>, the coordinate origin moves to the
+            center of the canvas. The x-axis points right, y-axis points down, and z-axis points toward
+            the viewer. This is different from 2D mode where the origin is at the top-left corner.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.5 — COMPUTER VISION CONCEPTS
+           =============================================== -->
+      <h2 id="cv-concepts">10.5 Computer Vision Concepts</h2>
+
+      <p><strong>Computer vision</strong> (CV) is the field of computer science dedicated to enabling
+        machines to interpret and understand visual information from the world. In creative coding,
+        CV allows us to build interactive installations that respond to human presence, gesture,
+        movement, and expression &mdash; bridging the gap between the physical and digital worlds.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Computer vision</strong> &mdash; The interdisciplinary field that deals with how
+          computers can gain high-level understanding from digital images or videos. It encompasses
+          tasks like object detection, face recognition, motion tracking, scene reconstruction,
+          and image segmentation.</p>
+      </div>
+
+      <h3>10.5.1 Images as Data</h3>
+
+      <p>At the most fundamental level, a digital image is a 2D array of <strong>pixels</strong>. Each
+        pixel stores color information, typically as three or four channels:</p>
+
+      <ul>
+        <li><strong>RGB:</strong> Red, Green, Blue &mdash; each an integer from 0 to 255</li>
+        <li><strong>RGBA:</strong> Red, Green, Blue, Alpha (transparency)</li>
+      </ul>
+
+      <p>A 640&times;480 image contains $640 \times 480 = 307{,}200$ pixels, and with 4 channels per
+        pixel, the raw data is $307{,}200 \times 4 = 1{,}228{,}800$ values. In p5.js, this data
+        is stored in the <code>pixels[]</code> array as a flat, one-dimensional sequence:</p>
+
+      <p>$$\text{index} = (y \cdot \text{width} + x) \times 4$$</p>
+
+      <pre><code>// Access pixel at (x, y):
+let idx = (y * width + x) * 4;
+let r = pixels[idx + 0];   // Red
+let g = pixels[idx + 1];   // Green
+let b = pixels[idx + 2];   // Blue
+let a = pixels[idx + 3];   // Alpha</code></pre>
+
+      <h3>10.5.2 Brightness and Grayscale</h3>
+
+      <p>Many CV algorithms work with grayscale images, where each pixel has a single brightness value
+        instead of three color channels. There are several ways to compute brightness from RGB:</p>
+
+      <p><strong>Simple average:</strong></p>
+      <p>$$B = \frac{R + G + B}{3}$$</p>
+
+      <p><strong>Luminance (perceptual):</strong> Accounts for the fact that human eyes are most
+        sensitive to green, then red, then blue:</p>
+      <p>$$B = 0.299R + 0.587G + 0.114B$$</p>
+
+      <p>The perceptual formula (used in NTSC television standards) produces grayscale images
+        that match how humans perceive brightness much better than the simple average.</p>
+
+      <h3>10.5.3 Thresholding</h3>
+
+      <p><strong>Thresholding</strong> converts a grayscale image into a binary (black-and-white)
+        image. Every pixel above a threshold value $T$ becomes white; every pixel below becomes black:</p>
+
+      <p>$$\text{output}(x, y) = \begin{cases} 255 & \text{if } B(x, y) > T \\ 0 & \text{otherwise} \end{cases}$$</p>
+
+      <p>This simple operation is the basis for many higher-level CV tasks: isolating objects from
+        backgrounds, detecting motion, and segmenting regions of interest.</p>
+
+      <h3>10.5.4 Edge Detection</h3>
+
+      <p>Edges in an image correspond to rapid changes in brightness. The <strong>Sobel operator</strong>
+        is a classical edge detection technique that computes the gradient of brightness at each pixel
+        using two 3&times;3 convolution kernels:</p>
+
+      <p>$$G_x = \begin{bmatrix} -1 & 0 & +1 \\ -2 & 0 & +2 \\ -1 & 0 & +1 \end{bmatrix} \quad
+         G_y = \begin{bmatrix} -1 & -2 & -1 \\ 0 & 0 & 0 \\ +1 & +2 & +1 \end{bmatrix}$$</p>
+
+      <p>The gradient magnitude gives the edge strength:</p>
+
+      <p>$$G = \sqrt{G_x^2 + G_y^2}$$</p>
+
+      <p>Pixels with high gradient magnitude are edges; pixels with low values are smooth regions.</p>
+
+      <h3>10.5.5 Convolution: The Core Operation</h3>
+
+      <p>Many image processing operations &mdash; blurring, sharpening, edge detection &mdash; are
+        implemented as <strong>convolution</strong> with a small matrix called a <strong>kernel</strong>.
+        Convolution slides the kernel across every pixel, multiplying each kernel value by the
+        corresponding neighboring pixel value, and summing the results.</p>
+
+      <p>For a 3&times;3 kernel $K$ applied to a grayscale image $I$ at position $(x, y)$:</p>
+
+      <p>$$\text{output}(x, y) = \sum_{i=-1}^{1} \sum_{j=-1}^{1} K(i, j) \cdot I(x+i, y+j)$$</p>
+
+      <p>Different kernels produce different effects:</p>
+
+      <p><strong>Gaussian blur (3&times;3 approximation):</strong></p>
+      <p>$$K_{\text{blur}} = \frac{1}{16}\begin{bmatrix} 1 & 2 & 1 \\ 2 & 4 & 2 \\ 1 & 2 & 1 \end{bmatrix}$$</p>
+
+      <p><strong>Sharpen:</strong></p>
+      <p>$$K_{\text{sharp}} = \begin{bmatrix} 0 & -1 & 0 \\ -1 & 5 & -1 \\ 0 & -1 & 0 \end{bmatrix}$$</p>
+
+      <p><strong>Emboss:</strong></p>
+      <p>$$K_{\text{emboss}} = \begin{bmatrix} -2 & -1 & 0 \\ -1 & 1 & 1 \\ 0 & 1 & 2 \end{bmatrix}$$</p>
+
+      <p>The Sobel kernels from Section 10.5.4 are simply convolution kernels designed to approximate
+        the horizontal and vertical derivatives of the image brightness.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Convolution is one of the most important operations in all of image processing and computer
+          vision. The same mathematical operation underlies classical image filters <em>and</em> modern
+          convolutional neural networks (CNNs). In a CNN, the kernel values are <em>learned</em> from
+          training data rather than hand-designed, but the computation is identical.</p>
+      </div>
+
+      <h3>10.5.6 Feature Detection Concepts</h3>
+
+      <p>Beyond edges, computer vision systems detect higher-level <strong>features</strong> &mdash;
+        distinctive patterns that can be reliably identified across different images, viewpoints,
+        and lighting conditions.</p>
+
+      <p><strong>Corners</strong> are points where edges meet at an angle. The <em>Harris corner
+        detector</em> finds pixels where the gradient changes significantly in multiple directions.
+        Corners are more distinctive than edges because they constrain position in two dimensions
+        rather than one.</p>
+
+      <p><strong>Blobs</strong> are regions of relatively uniform intensity surrounded by areas of
+        different intensity. The <em>Laplacian of Gaussian</em> (LoG) detector finds blobs by
+        convolving the image with a combination of Gaussian blur and the Laplacian operator.</p>
+
+      <p><strong>Keypoint descriptors</strong> like SIFT (Scale-Invariant Feature Transform) and ORB
+        characterize the image patch around each detected feature. These descriptors enable matching
+        features across images &mdash; the basis for panorama stitching, object recognition, and
+        augmented reality tracking.</p>
+
+      <h3>10.5.7 Color Spaces for CV</h3>
+
+      <p>RGB is not always the best color space for computer vision tasks. Other color spaces separate
+        brightness from color, making them more robust to lighting changes:</p>
+
+      <ul>
+        <li><strong>HSB/HSV:</strong> Hue, Saturation, Brightness. Isolating a color range is easy:
+          just filter by hue. Useful for tracking colored objects.</li>
+        <li><strong>YCbCr:</strong> Separates luminance (Y) from chrominance (Cb, Cr). Used in video
+          compression and skin-tone detection.</li>
+        <li><strong>Lab (CIELAB):</strong> Perceptually uniform. Euclidean distance in Lab space
+          correlates with perceived color difference.</li>
+      </ul>
+
+      <!-- INTERACTIVE: Webcam threshold/edge detection -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Webcam Threshold &amp; Edge Detection</span>
+        </div>
+        <textarea class="cm-editor">// NOTE: This sketch requires webcam access.
+// If no webcam is available, it generates a
+// test pattern for demonstration.
+
+let mode = 0; // 0=original, 1=threshold, 2=edges
+let img;
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+  // Create a test image (works without webcam)
+  img = createImage(400, 400);
+  generateTestImage();
+}
+
+function generateTestImage() {
+  img.loadPixels();
+  for (let x = 0; x < 400; x++) {
+    for (let y = 0; y < 400; y++) {
+      let idx = (y * 400 + x) * 4;
+      // Gradient + circles pattern
+      let cx = 200, cy = 200;
+      let d = dist(x, y, cx, cy);
+      let r = sin(x * 0.05) * 127 + 128;
+      let g = cos(y * 0.05) * 127 + 128;
+      let b = sin(d * 0.03) * 127 + 128;
+      img.pixels[idx] = r;
+      img.pixels[idx+1] = g;
+      img.pixels[idx+2] = b;
+      img.pixels[idx+3] = 255;
+    }
+  }
+  img.updatePixels();
+}
+
+function draw() {
+  image(img, 0, 0);
+  loadPixels();
+
+  if (mode === 1) {
+    // Threshold
+    let thresh = map(mouseX, 0, width, 0, 255);
+    for (let i = 0; i < pixels.length; i += 4) {
+      let b = 0.299*pixels[i] + 0.587*pixels[i+1]
+              + 0.114*pixels[i+2];
+      let v = b > thresh ? 255 : 0;
+      pixels[i] = v;
+      pixels[i+1] = v;
+      pixels[i+2] = v;
+    }
+  } else if (mode === 2) {
+    // Sobel edge detection
+    let src = pixels.slice(); // copy
+    let w = width;
+    for (let x = 1; x < width-1; x++) {
+      for (let y = 1; y < height-1; y++) {
+        let idx = (y*w+x)*4;
+        // Get brightness of 3x3 neighborhood
+        let tl = bright(src,(x-1),(y-1),w);
+        let tc = bright(src,(x),(y-1),w);
+        let tr = bright(src,(x+1),(y-1),w);
+        let ml = bright(src,(x-1),(y),w);
+        let mr = bright(src,(x+1),(y),w);
+        let bl = bright(src,(x-1),(y+1),w);
+        let bc = bright(src,(x),(y+1),w);
+        let br = bright(src,(x+1),(y+1),w);
+
+        let gx = -tl + tr - 2*ml + 2*mr - bl + br;
+        let gy = -tl - 2*tc - tr + bl + 2*bc + br;
+        let g = min(sqrt(gx*gx + gy*gy), 255);
+
+        pixels[idx] = g;
+        pixels[idx+1] = g;
+        pixels[idx+2] = g;
+      }
+    }
+  }
+
+  updatePixels();
+
+  // UI
+  fill(0, 180);
+  noStroke();
+  rect(0, 0, width, 30);
+  fill(255);
+  textSize(13);
+  textAlign(LEFT, CENTER);
+  let labels = ["Original","Threshold (move mouse)","Edge Detection"];
+  text("Mode: " + labels[mode] + "  |  Press 1/2/3", 10, 15);
+}
+
+function bright(px, x, y, w) {
+  let i = (y * w + x) * 4;
+  return 0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2];
+}
+
+function keyPressed() {
+  if (key === '1') mode = 0;
+  if (key === '2') mode = 1;
+  if (key === '3') mode = 2;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.6 — ML5.JS
+           =============================================== -->
+      <h2 id="ml5js">10.6 ml5.js: Machine Learning for Creative Coding</h2>
+
+      <p><strong>ml5.js</strong> is an open-source JavaScript library that provides friendly access to
+        machine learning models directly in the browser. Built on top of Google's TensorFlow.js, it
+        abstracts away the complexity of neural networks and model loading, offering simple,
+        p5.js-compatible APIs for tasks like pose detection, hand tracking, image classification,
+        and more.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>ml5.js uses <strong>pre-trained models</strong> &mdash; neural networks that have already been
+          trained on large datasets by researchers. You do not need to train anything yourself. The models
+          download automatically when you first use them, and inference (prediction) runs entirely in
+          the browser using your GPU via WebGL. No server or cloud API is needed.</p>
+      </div>
+
+      <h3>10.6.1 What ml5.js Offers</h3>
+
+      <p>Key models available in ml5.js (version 1.x):</p>
+
+      <table>
+        <thead>
+          <tr><th>Model</th><th>What It Does</th><th>Keypoints</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>ml5.handPose()</code></td><td>Detects hands and finger positions</td><td>21 per hand</td></tr>
+          <tr><td><code>ml5.faceMesh()</code></td><td>Detects facial landmarks</td><td>468 per face</td></tr>
+          <tr><td><code>ml5.bodyPose()</code></td><td>Detects body skeleton</td><td>17 per body</td></tr>
+          <tr><td><code>ml5.imageClassifier()</code></td><td>Classifies what is in an image</td><td>Labels + confidence</td></tr>
+          <tr><td><code>ml5.objectDetector()</code></td><td>Locates and labels objects with bounding boxes</td><td>Boxes + labels</td></tr>
+        </tbody>
+      </table>
+
+      <h3>10.6.2 Setup Pattern</h3>
+
+      <p>All ml5.js detection models follow a consistent three-step pattern:</p>
+
+      <ol>
+        <li><strong>Load the model</strong> in <code>preload()</code> so it is ready before <code>setup()</code></li>
+        <li><strong>Start continuous detection</strong> in <code>setup()</code> with <code>detectStart(video, callback)</code></li>
+        <li><strong>Use the results</strong> in <code>draw()</code> to drive your visuals</li>
+      </ol>
+
+      <pre><code>// Include ml5.js in your HTML:
+// &lt;script src="https://unpkg.com/ml5@1/dist/ml5.min.js"&gt;&lt;/script&gt;
+
+let video, detector, results = [];
+
+function preload() {
+  detector = ml5.handPose();  // or faceMesh(), bodyPose()
+}
+
+function setup() {
+  createCanvas(640, 480);
+  video = createCapture(VIDEO);
+  video.size(640, 480);
+  video.hide();
+  detector.detectStart(video, gotResults);
+}
+
+function gotResults(newResults) {
+  results = newResults;
+}
+
+function draw() {
+  image(video, 0, 0);
+  // Use results to draw overlays...
+}</code></pre>
+
+      <h3>10.6.3 Hand Pose: 21 Keypoints Per Hand</h3>
+
+      <p>The <code>handPose</code> model detects 21 keypoints on each visible hand, providing
+        remarkably detailed finger tracking:</p>
+
+      <pre><code>// Hand keypoint layout:
+// 0:  wrist
+// 1:  thumb_cmc         (base of thumb)
+// 2:  thumb_mcp         (thumb knuckle)
+// 3:  thumb_ip          (thumb middle joint)
+// 4:  thumb_tip
+// 5:  index_finger_mcp  (index knuckle)
+// 6:  index_finger_pip  (index middle)
+// 7:  index_finger_dip  (index upper)
+// 8:  index_finger_tip
+// 9:  middle_finger_mcp
+// 10: middle_finger_pip
+// 11: middle_finger_dip
+// 12: middle_finger_tip
+// 13: ring_finger_mcp
+// 14: ring_finger_pip
+// 15: ring_finger_dip
+// 16: ring_finger_tip
+// 17: pinky_mcp
+// 18: pinky_pip
+// 19: pinky_dip
+// 20: pinky_tip</code></pre>
+
+      <p>With these keypoints, you can detect a wide range of hand gestures programmatically:</p>
+
+      <ul>
+        <li><strong>Pinch gesture:</strong> Measure the distance between thumb tip (4) and index tip (8).
+          When the distance falls below a threshold, a pinch is detected.</li>
+        <li><strong>Open/closed hand:</strong> Compare fingertip distances from the wrist. Open hand has
+          large distances; closed fist has small distances.</li>
+        <li><strong>Pointing direction:</strong> The vector from index MCP (5) to index tip (8) gives
+          the pointing direction.</li>
+        <li><strong>Number of raised fingers:</strong> For each finger, compare the tip y-coordinate
+          to the PIP joint y-coordinate. If the tip is higher (smaller y), the finger is raised.</li>
+      </ul>
+
+      <pre><code>// Pinch detection example
+function detectPinch(hand) {
+  let thumbTip = hand.keypoints[4];
+  let indexTip = hand.keypoints[8];
+  let d = dist(thumbTip.x, thumbTip.y,
+               indexTip.x, indexTip.y);
+  return d < 30; // threshold in pixels
+}</code></pre>
+
+      <h3>10.6.4 Face Mesh: 468 Landmarks</h3>
+
+      <p>The <code>faceMesh</code> model tracks 468 points on each detected face, providing an
+        extraordinarily detailed mesh that covers every contour of the face: jawline, eyebrows,
+        nose bridge, lip outline, eye shape, and forehead. This enables:</p>
+
+      <ul>
+        <li><strong>Expression detection:</strong> Measure mouth openness (distance between upper
+          and lower lip landmarks) or eye openness</li>
+        <li><strong>Face filters:</strong> Overlay graphics precisely aligned to facial features
+          (AR filters like those in Instagram or Snapchat)</li>
+        <li><strong>Head pose estimation:</strong> The 3D positions of facial landmarks can be used
+          to estimate the rotation and tilt of the head</li>
+        <li><strong>Lip reading / mouth shape:</strong> Track the specific contour of the lips for
+          visual speech processing or art that responds to vocalization</li>
+      </ul>
+
+      <h3>10.6.5 Image Classification</h3>
+
+      <p>The <code>imageClassifier</code> model identifies what is in an image. Using the pre-trained
+        MobileNet model, it can recognize over 1,000 object categories:</p>
+
+      <pre><code>let classifier;
+
+function preload() {
+  classifier = ml5.imageClassifier('MobileNet');
+}
+
+// Classify a single image or video frame:
+classifier.classify(video, (results) => {
+  console.log(results[0].label);       // e.g., "coffee mug"
+  console.log(results[0].confidence);  // e.g., 0.92
+});</code></pre>
+
+      <h3>10.6.4 Object Detection</h3>
+
+      <p>Unlike classification (which says <em>what</em> is in the image), object detection says
+        <em>where</em> objects are by providing bounding boxes with labels:</p>
+
+      <pre><code>let detector;
+
+function preload() {
+  detector = ml5.objectDetector('CocoSsd');
+}
+
+// In the callback:
+for (let obj of detections) {
+  stroke(0, 255, 0);
+  noFill();
+  rect(obj.x, obj.y, obj.width, obj.height);
+  fill(0, 255, 0);
+  text(obj.label + " " + nf(obj.confidence, 0, 2), obj.x, obj.y - 5);
+}</code></pre>
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 4
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch10-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does <code>ml5.bodyPose()</code> return for each detected person?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch10-q4" value="a"> A bounding box around the person</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q4" value="b"> A classification label like "human"</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q4" value="c" data-correct> An array of 17 skeletal keypoints (joints) with x, y coordinates and confidence</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q4" value="d"> A silhouette mask image</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>ml5.bodyPose()</code> uses the MoveNet model to detect 17 skeletal keypoints including
+            nose, eyes, ears, shoulders, elbows, wrists, hips, knees, and ankles. Each keypoint has
+            <code>x</code>, <code>y</code> coordinates and a <code>confidence</code> score (0-1)
+            indicating detection reliability.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.7 — POSE DETECTION
+           =============================================== -->
+      <h2 id="pose-detection">10.7 Pose Detection and Body Tracking</h2>
+
+      <p>Pose detection is one of the most exciting applications of machine learning in creative coding.
+        It allows your sketches to "see" and respond to human bodies in real time, creating interactive
+        experiences that feel like magic.</p>
+
+      <h3>10.7.1 Body Pose Keypoints</h3>
+
+      <p>The <code>bodyPose</code> model detects 17 keypoints on the human body:</p>
+
+      <pre><code>// Keypoint indices (MoveNet model):
+// 0: nose          5: left_shoulder   10: right_wrist
+// 1: left_eye      6: right_shoulder  11: left_hip
+// 2: right_eye     7: left_elbow      12: right_hip
+// 3: left_ear      8: right_elbow     13: left_knee
+// 4: right_ear     9: left_wrist      14: right_knee
+//                                     15: left_ankle
+//                                     16: right_ankle</code></pre>
+
+      <h3>10.7.2 Drawing the Skeleton</h3>
+
+      <p>The skeleton is drawn by connecting related keypoints with lines. ml5.js provides
+        a <code>getSkeleton()</code> method that returns connection pairs, but you can also
+        define your own connections for artistic purposes:</p>
+
+      <pre><code>// Standard skeleton connections
+const CONNECTIONS = [
+  [5, 7], [7, 9],     // left arm
+  [6, 8], [8, 10],    // right arm
+  [5, 6],             // shoulders
+  [5, 11], [6, 12],   // torso
+  [11, 12],           // hips
+  [11, 13], [13, 15], // left leg
+  [12, 14], [14, 16]  // right leg
+];
+
+function drawSkeleton(pose) {
+  for (let [a, b] of CONNECTIONS) {
+    let kpA = pose.keypoints[a];
+    let kpB = pose.keypoints[b];
+    if (kpA.confidence > 0.3 && kpB.confidence > 0.3) {
+      stroke(255, 100, 150);
+      strokeWeight(3);
+      line(kpA.x, kpA.y, kpB.x, kpB.y);
+    }
+  }
+}</code></pre>
+
+      <h3>10.7.3 Mapping Pose to Visuals</h3>
+
+      <p>The tracking data becomes a creative tool when you map it to visual parameters:</p>
+
+      <ul>
+        <li><strong>Fingertip positions</strong> drive particle emitters or drawing tools</li>
+        <li><strong>Arm angles</strong> (computed from elbow-shoulder-wrist vectors) rotate patterns</li>
+        <li><strong>Hand distance</strong> between hands controls scale or audio effects</li>
+        <li><strong>Walking speed</strong> (hip displacement over time) controls animation pace</li>
+        <li><strong>Head tilt</strong> (nose-to-ear angle) shifts color palettes</li>
+      </ul>
+
+      <p>Computing the angle between two body parts uses basic trigonometry:</p>
+
+      <p>$$\theta = \text{atan2}(y_2 - y_1,\; x_2 - x_1)$$</p>
+
+      <!-- INTERACTIVE: Skeleton/pose visualization -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Skeleton / Pose Visualization (Simulated)</span>
+        </div>
+        <textarea class="cm-editor">// Simulated pose detection without webcam
+// In a real scenario, you would use ml5.bodyPose()
+
+let joints = {};
+let t = 0;
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(20);
+  t += 0.02;
+
+  // Simulate body keypoints with sine waves
+  let cx = 200, cy = 200;
+  let wave = sin(t) * 20;
+
+  joints = {
+    nose:     {x: cx, y: cy - 80 + wave * 0.3},
+    lShldr:   {x: cx - 45, y: cy - 40},
+    rShldr:   {x: cx + 45, y: cy - 40},
+    lElbow:   {x: cx - 70, y: cy + sin(t*1.5)*30},
+    rElbow:   {x: cx + 70, y: cy + cos(t*1.3)*30},
+    lWrist:   {x: cx - 85 + sin(t*2)*20, y: cy + 40 + cos(t*2)*25},
+    rWrist:   {x: cx + 85 + cos(t*1.8)*20, y: cy + 40 + sin(t*1.7)*25},
+    lHip:     {x: cx - 25, y: cy + 40},
+    rHip:     {x: cx + 25, y: cy + 40},
+    lKnee:    {x: cx - 30, y: cy + 100 + sin(t)*10},
+    rKnee:    {x: cx + 30, y: cy + 100 + cos(t)*10},
+    lAnkle:   {x: cx - 35, y: cy + 155},
+    rAnkle:   {x: cx + 35, y: cy + 155}
+  };
+
+  // Draw skeleton connections
+  let connections = [
+    ['lShldr','rShldr'],
+    ['lShldr','lElbow'],['lElbow','lWrist'],
+    ['rShldr','rElbow'],['rElbow','rWrist'],
+    ['lShldr','lHip'],['rShldr','rHip'],
+    ['lHip','rHip'],
+    ['lHip','lKnee'],['lKnee','lAnkle'],
+    ['rHip','rKnee'],['rKnee','rAnkle']
+  ];
+
+  // Decorative aura
+  for (let key in joints) {
+    let j = joints[key];
+    noStroke();
+    fill(100, 200, 255, 15);
+    for (let r = 40; r > 0; r -= 8) {
+      ellipse(j.x, j.y, r + sin(t + r)*5);
+    }
+  }
+
+  // Draw bones
+  stroke(100, 200, 255);
+  strokeWeight(3);
+  for (let [a, b] of connections) {
+    line(joints[a].x, joints[a].y,
+         joints[b].x, joints[b].y);
+  }
+
+  // Draw joints
+  for (let key in joints) {
+    let j = joints[key];
+    noStroke();
+    fill(255, 100, 150);
+    ellipse(j.x, j.y, 12);
+    fill(255);
+    ellipse(j.x, j.y, 5);
+  }
+
+  // Head
+  noFill();
+  stroke(100, 200, 255);
+  strokeWeight(2);
+  ellipse(joints.nose.x, joints.nose.y - 15, 45, 50);
+
+  // Particles from wrists
+  for (let i = 0; i < 3; i++) {
+    let px = joints.lWrist.x + random(-15, 15);
+    let py = joints.lWrist.y + random(-15, 15);
+    fill(255, 200, 100, 120);
+    noStroke();
+    ellipse(px, py, random(2, 6));
+
+    px = joints.rWrist.x + random(-15, 15);
+    py = joints.rWrist.y + random(-15, 15);
+    fill(100, 255, 200, 120);
+    ellipse(px, py, random(2, 6));
+  }
+
+  // Arm angle display
+  let armAngle = atan2(
+    joints.lWrist.y - joints.lShldr.y,
+    joints.lWrist.x - joints.lShldr.x
+  );
+  fill(255);
+  noStroke();
+  textSize(12);
+  textAlign(LEFT);
+  text("Left arm angle: " + nf(degrees(armAngle),0,1)
+       + "deg", 10, 25);
+  text("Simulated pose data", 10, 385);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.8 — VISUAL EFFECTS WITH CV
+           =============================================== -->
+      <h2 id="visual-effects-cv">10.8 Visual Effects with Computer Vision</h2>
+
+      <p>Computer vision is not just about detecting bodies and faces &mdash; it is also a powerful
+        foundation for creating <em>visual effects</em> that respond to the camera feed in real time.
+        These techniques form the backbone of interactive installations, performance art, and
+        augmented reality experiences.</p>
+
+      <h3>10.8.1 Motion Detection</h3>
+
+      <p>The simplest CV technique is <strong>frame differencing</strong>: comparing the current video
+        frame to the previous frame to detect motion. Pixels that have changed significantly are areas
+        where movement occurred.</p>
+
+      <pre><code>let prevFrame;
+
+function draw() {
+  loadPixels();
+  if (prevFrame) {
+    for (let i = 0; i < pixels.length; i += 4) {
+      let diff = abs(pixels[i] - prevFrame[i])
+               + abs(pixels[i+1] - prevFrame[i+1])
+               + abs(pixels[i+2] - prevFrame[i+2]);
+      let motion = diff > 30 ? 255 : 0; // threshold
+      pixels[i] = motion;
+      pixels[i+1] = motion;
+      pixels[i+2] = motion;
+    }
+  }
+  prevFrame = pixels.slice(); // save a copy
+  updatePixels();
+}</code></pre>
+
+      <h3>10.8.2 Optical Flow</h3>
+
+      <p><strong>Optical flow</strong> estimates the direction and speed of motion at each pixel between
+        consecutive frames. While a full implementation (like Lucas-Kanade or Farneback) is computationally
+        expensive, a simplified version can be created by computing the gradient of brightness differences:</p>
+
+      <p>$$\frac{\partial I}{\partial t} + \nabla I \cdot \mathbf{v} = 0$$</p>
+
+      <p>where $I$ is the image brightness, $\nabla I$ is the spatial gradient, and $\mathbf{v}$ is the
+        velocity vector we want to estimate. This is the <strong>brightness constancy equation</strong>
+        that all optical flow methods attempt to solve.</p>
+
+      <h3>10.8.3 Simplified Optical Flow Grid</h3>
+
+      <p>A practical approximation for creative coding divides the frame into a grid of cells.
+        For each cell, we compute the average brightness of the current frame and the previous
+        frame. The difference gives us a rough measure of motion intensity and direction in that
+        region:</p>
+
+      <pre><code>let cols = 20, rows = 15;
+let prevBright = [];
+
+function computeFlowGrid() {
+  let cellW = width / cols;
+  let cellH = height / rows;
+
+  loadPixels();
+  let currBright = [];
+
+  for (let cx = 0; cx < cols; cx++) {
+    for (let cy = 0; cy < rows; cy++) {
+      let sum = 0, count = 0;
+      let x0 = floor(cx * cellW);
+      let y0 = floor(cy * cellH);
+      for (let dx = 0; dx < cellW; dx += 2) {
+        for (let dy = 0; dy < cellH; dy += 2) {
+          let i = ((y0+dy)*width + (x0+dx))*4;
+          sum += pixels[i];
+          count++;
+        }
+      }
+      currBright[cy * cols + cx] = sum / count;
+    }
+  }
+
+  // Draw motion vectors
+  for (let cx = 0; cx < cols; cx++) {
+    for (let cy = 0; cy < rows; cy++) {
+      let idx = cy * cols + cx;
+      if (prevBright[idx] !== undefined) {
+        let diff = currBright[idx] - prevBright[idx];
+        let mag = abs(diff);
+        // Use diff sign and magnitude for visualization
+        stroke(255, 0, 0);
+        strokeWeight(map(mag, 0, 50, 0.5, 4));
+        let px = cx * cellW + cellW/2;
+        let py = cy * cellH + cellH/2;
+        point(px, py);
+      }
+    }
+  }
+  prevBright = currBright;
+}</code></pre>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The concept of optical flow was formalized by psychologist James J. Gibson in 1950 to describe
+          how the pattern of apparent motion of objects and surfaces in a visual scene relates to the
+          observer's own movement. The first computational methods were developed by Horn and Schunck
+          (1981) and Lucas and Kanade (1981), and these algorithms remain foundational in computer
+          vision today.</p>
+      </div>
+
+      <h3>10.8.4 Background Subtraction</h3>
+
+      <p>To isolate moving subjects from a static background, capture a reference background image
+        (with no one in the scene) and subtract it from each new frame. Pixels with large differences
+        are foreground (the person); pixels with small differences are background:</p>
+
+      <pre><code>let bgImage;
+let captured = false;
+
+function keyPressed() {
+  if (key === 'c') {
+    bgImage = get(); // capture background
+    captured = true;
+  }
+}
+
+// In draw():
+if (captured) {
+  bgImage.loadPixels();
+  loadPixels();
+  for (let i = 0; i < pixels.length; i += 4) {
+    let diff = abs(pixels[i] - bgImage.pixels[i])
+             + abs(pixels[i+1] - bgImage.pixels[i+1])
+             + abs(pixels[i+2] - bgImage.pixels[i+2]);
+    if (diff < 80) {
+      pixels[i+3] = 0; // make background transparent
+    }
+  }
+  updatePixels();
+}</code></pre>
+
+      <h3>10.8.4 Interactive Installations</h3>
+
+      <p>These techniques combine into powerful interactive experiences:</p>
+
+      <ul>
+        <li><strong>Shadow play:</strong> Use background subtraction to create a silhouette, then fill
+          it with procedural textures, particle effects, or video</li>
+        <li><strong>Motion trails:</strong> Apply frame differencing to detect movement areas, then
+          emit particles or draw trails only where motion occurs</li>
+        <li><strong>Mirror effects:</strong> Reflect the video feed with artistic transformations
+          (pixelation, color shifting, time delay between strips)</li>
+        <li><strong>Body instruments:</strong> Combine pose detection with audio synthesis so that
+          body position controls musical parameters</li>
+      </ul>
+
+      <h3>10.8.5 Camera Shake and Blend Modes</h3>
+
+      <p>Two additional visual effects enhance CV-driven installations:</p>
+
+      <p><strong>Camera shake</strong> offsets the entire coordinate system by random amounts, creating
+        an impact or tremor effect:</p>
+
+      <pre><code>let shakeAmount = 0;
+
+function draw() {
+  translate(random(-shakeAmount, shakeAmount),
+            random(-shakeAmount, shakeAmount));
+  shakeAmount *= 0.95; // decay
+  // ... draw scene ...
+}
+
+// Trigger on event:
+shakeAmount = 15;</code></pre>
+
+      <p><strong>Blend modes</strong> control how drawn pixels combine with existing pixels:</p>
+
+      <ul>
+        <li><code>ADD</code> &mdash; Colors brighten at overlaps (simulates light mixing)</li>
+        <li><code>MULTIPLY</code> &mdash; Colors darken at overlaps (simulates ink)</li>
+        <li><code>SCREEN</code> &mdash; Inverse of multiply (colors brighten)</li>
+        <li><code>DIFFERENCE</code> &mdash; Absolute difference between colors (psychedelic inversions)</li>
+      </ul>
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 5
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch10-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is <strong>frame differencing</strong> used for in computer vision?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch10-q5" value="a"> Improving image resolution by combining multiple frames</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q5" value="b" data-correct> Detecting motion by comparing the current frame to the previous frame</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q5" value="c"> Reducing file size by storing only changed pixels</label></li>
+          <li class="option"><label><input type="radio" name="ch10-q5" value="d"> Applying blur filters to smooth out video noise</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Frame differencing compares each pixel in the current video frame with the corresponding pixel
+            in the previous frame. Pixels with large differences indicate areas where movement has occurred.
+            This simple technique is the foundation of motion detection in interactive installations.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 10.9 — SUMMARY
+           =============================================== -->
+      <h2 id="summary">10.9 Summary</h2>
+
+      <p>This chapter covered a broad range of techniques that connect mathematical foundations to
+        interactive, visually rich creative coding:</p>
+
+      <ul>
+        <li><strong>Perlin noise</strong> provides spatially coherent randomness, controlled by
+          frequency, amplitude, and octaves. It is the foundation for natural-looking procedural
+          textures and motion.</li>
+        <li><strong>Flow fields</strong> are vector fields (typically derived from noise) that guide
+          particle motion along smooth, organic paths. Curl noise ensures divergence-free flow for
+          ribbon-like aesthetics.</li>
+        <li><strong>3D rendering</strong> in p5.js uses WEBGL mode with built-in primitives (box,
+          sphere, torus, etc.), three types of lighting (ambient, directional, point), and materials
+          (ambient, specular, emissive). Custom geometry is built with <code>p5.Geometry</code>.</li>
+        <li><strong>Computer vision</strong> treats images as 2D arrays of pixel data. Core techniques
+          include thresholding, edge detection (Sobel operator), frame differencing, and background
+          subtraction.</li>
+        <li><strong>ml5.js</strong> provides pre-trained machine learning models for hand tracking
+          (21 keypoints), face mesh (468 landmarks), body pose (17 skeleton joints), image
+          classification, and object detection &mdash; all running in the browser.</li>
+        <li><strong>Visual effects</strong> like camera shake, blend modes (ADD, MULTIPLY, SCREEN),
+          and audio-reactive mapping complete the creative toolkit.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The common thread connecting these topics is the transformation of <em>data into visual form</em>.
+          Noise becomes flowing particles. Pixel arrays become edge maps. Neural network outputs become
+          skeleton puppets. The creative coder's role is to design the mapping between invisible data
+          and visible art.</p>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Term</th><th>Definition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Perlin noise</strong></td><td>A smooth, coherent pseudorandom function invented by Ken Perlin in 1983</td></tr>
+          <tr><td><strong>Fractal Brownian motion</strong></td><td>Sum of multiple octaves of noise at increasing frequency and decreasing amplitude</td></tr>
+          <tr><td><strong>Flow field</strong></td><td>A vector field assigning a direction to each point in space</td></tr>
+          <tr><td><strong>Curl noise</strong></td><td>A divergence-free flow derived from the curl of a scalar noise field</td></tr>
+          <tr><td><strong>WEBGL</strong></td><td>Browser API for GPU-accelerated 3D rendering</td></tr>
+          <tr><td><strong>Vertex / Face / Normal</strong></td><td>The building blocks of 3D meshes: points, triangles, and perpendicular vectors for lighting</td></tr>
+          <tr><td><strong>Parametric surface</strong></td><td>A 3D surface defined by $f(u,v) \to (x,y,z)$</td></tr>
+          <tr><td><strong>Sobel operator</strong></td><td>A pair of 3x3 convolution kernels for edge detection</td></tr>
+          <tr><td><strong>Frame differencing</strong></td><td>Comparing consecutive video frames to detect motion</td></tr>
+          <tr><td><strong>ml5.js</strong></td><td>Beginner-friendly ML library for the browser, built on TensorFlow.js</td></tr>
+          <tr><td><strong>Keypoint</strong></td><td>A tracked landmark point on a hand, face, or body</td></tr>
+          <tr><td><strong>Optical flow</strong></td><td>Estimation of per-pixel velocity between consecutive video frames</td></tr>
+          <tr><td><strong>Blend mode</strong></td><td>Rule for combining new pixel colors with existing ones (ADD, MULTIPLY, SCREEN, etc.)</td></tr>
+        </tbody>
+      </table>
+
+
+      <!-- ===============================================
+           SECTION 10.10 — REFERENCES
+           =============================================== -->
+      <h2 id="references">10.10 References</h2>
+
+      <ul>
+        <li>Perlin, K. (1985). "An Image Synthesizer." <em>ACM SIGGRAPH Computer Graphics</em>, 19(3), 287-296.</li>
+        <li>Perlin, K. (2002). "Improving Noise." <em>ACM Transactions on Graphics (SIGGRAPH 2002)</em>, 21(3), 681-682.</li>
+        <li>Shiffman, D. <em>The Nature of Code</em>, Chapter 6: Autonomous Agents (Flow Fields). <a href="https://natureofcode.com" target="_blank">natureofcode.com</a></li>
+        <li>Hobbs, T. "Flow Fields." <a href="https://tylerxhobbs.com/essays/2020/flow-fields" target="_blank">tylerxhobbs.com</a></li>
+        <li>ml5.js Documentation. <a href="https://ml5js.org" target="_blank">ml5js.org</a></li>
+        <li>p5.js WebGL Reference. <a href="https://p5js.org/reference/" target="_blank">p5js.org/reference</a></li>
+        <li>Bridson, R. et al. (2007). "Curl-Noise for Procedural Fluid Flow." <em>ACM Transactions on Graphics</em>, 26(3).</li>
+        <li>Sobel, I. and Feldman, G. (1968). "A 3x3 Isotropic Gradient Operator for Image Processing." Stanford AI Project.</li>
+        <li>Horn, B.K.P. and Schunck, B.G. (1981). "Determining Optical Flow." <em>Artificial Intelligence</em>, 17(1-3), 185-203.</li>
+        <li>TensorFlow.js Documentation. <a href="https://www.tensorflow.org/js" target="_blank">tensorflow.org/js</a></li>
+      </ul>
+
+
+      <!-- ===============================================
+           CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <!-- Challenge 1 -->
+      <div class="code-challenge" data-id="ch10-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>noise1D</code> that takes three parameters: <code>x</code> (position), <code>frequency</code> (noise scale), and <code>amplitude</code> (output scale). It should return the Perlin noise value at <code>x * frequency</code> multiplied by <code>amplitude</code>. Use the built-in <code>noise()</code> function.</p>
+        <textarea class="cm-editor">function noise1D(x, frequency, amplitude) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "noise1D(0, 1, 1)", "expected": "noise(0) * 1", "check": "approx"},
+          {"call": "noise1D(5, 0.1, 100)", "expected": "noise(0.5) * 100", "check": "approx"},
+          {"call": "noise1D(10, 0.01, 50)", "expected": "noise(0.1) * 50", "check": "approx"},
+          {"call": "noise1D(0, 1, 0)", "expected": 0}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2 -->
+      <div class="code-challenge" data-id="ch10-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>flowFieldAngle</code> that takes three parameters: <code>x</code> (grid column), <code>y</code> (grid row), and <code>time</code> (animation offset). It should return the flow angle in radians at that position using 3D Perlin noise. Use a noise scale of <code>0.005</code> and multiply the noise result by <code>TWO_PI * 4</code> to get the angle. Hint: use <code>noise(x * scale, y * scale, time)</code>.</p>
+        <textarea class="cm-editor">function flowFieldAngle(x, y, time) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "typeof flowFieldAngle(0, 0, 0)", "expected": "number"},
+          {"call": "flowFieldAngle(0, 0, 0) >= 0", "expected": true},
+          {"call": "flowFieldAngle(0, 0, 0) <= TWO_PI * 4", "expected": true},
+          {"call": "flowFieldAngle(100, 100, 0) !== flowFieldAngle(0, 0, 0)", "expected": true}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3 -->
+      <div class="code-challenge" data-id="ch10-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>brightnessFromRGB</code> that takes three parameters <code>r</code>, <code>g</code>, <code>b</code> (each 0-255) and returns the <strong>perceived brightness</strong> using the NTSC luminance formula: $B = 0.299R + 0.587G + 0.114B$. Return the result rounded to the nearest integer.</p>
+        <textarea class="cm-editor">function brightnessFromRGB(r, g, b) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "brightnessFromRGB(255, 255, 255)", "expected": 255},
+          {"call": "brightnessFromRGB(0, 0, 0)", "expected": 0},
+          {"call": "brightnessFromRGB(255, 0, 0)", "expected": 76},
+          {"call": "brightnessFromRGB(0, 255, 0)", "expected": 150},
+          {"call": "brightnessFromRGB(0, 0, 255)", "expected": 29},
+          {"call": "brightnessFromRGB(128, 128, 128)", "expected": 128}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===============================================
+           EXERCISES
+           =============================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <!-- Exercise 1: Flow field generative art piece -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 10.1 &mdash; Flow Field Generative Art Piece</div>
+        <p class="prompt">Create a generative art piece using a flow field. Your piece should include:
+          (1) at least 500 particles following a noise-based flow field,
+          (2) a color palette of your choosing (use HSB mode),
+          (3) particles that change color based on their speed or position,
+          (4) trails that build up over time (do not clear the background each frame).
+          Experiment with noise scale, particle count, and alpha values to create something visually compelling.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  colorMode(HSB, 360, 100, 100, 100);
+  background(0, 0, 95);
+  // Your code here: initialize particles
+}
+
+function draw() {
+  // Your code here: flow field + particle updates
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let particles = [];
+let zOff = 0;
+
+function setup() {
+  createCanvas(400, 400);
+  colorMode(HSB, 360, 100, 100, 100);
+  background(220, 10, 95);
+  for (let i = 0; i < 600; i++) {
+    particles.push({
+      x: random(width),
+      y: random(height),
+      px: 0, py: 0,
+      vx: 0, vy: 0,
+      hue: random(180, 280)
+    });
+  }
+}
+
+function draw() {
+  zOff += 0.002;
+  let scale = 0.004;
+
+  for (let p of particles) {
+    p.px = p.x;
+    p.py = p.y;
+
+    let angle = noise(p.x * scale, p.y * scale, zOff) * TWO_PI * 4;
+    p.vx += cos(angle) * 0.3;
+    p.vy += sin(angle) * 0.3;
+    p.vx *= 0.96;
+    p.vy *= 0.96;
+
+    let speed = sqrt(p.vx * p.vx + p.vy * p.vy);
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // Color based on speed
+    let h = p.hue + speed * 20;
+    stroke(h % 360, 70, 85, 8);
+    strokeWeight(map(speed, 0, 3, 2, 0.5));
+    line(p.px, p.py, p.x, p.y);
+
+    // Wrap edges
+    if (p.x < 0) { p.x = width; p.px = p.x; }
+    if (p.x > width) { p.x = 0; p.px = p.x; }
+    if (p.y < 0) { p.y = height; p.py = p.y; }
+    if (p.y > height) { p.y = 0; p.py = p.y; }
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: 3D spinning geometric sculpture -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 10.2 &mdash; 3D Spinning Geometric Sculpture</div>
+        <p class="prompt">Create a 3D sculpture using p5.js WEBGL mode. Arrange at least 5 different 3D
+          shapes (box, sphere, torus, cone, cylinder) in an interesting composition. Apply different materials
+          and colors to each shape. Add <code>orbitControl()</code> for interactive viewing. The sculpture
+          should slowly rotate and use at least two types of lighting.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400, WEBGL);
+}
+
+function draw() {
+  background(15);
+  // Your code here: lights, shapes, rotation
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(400, 400, WEBGL);
+}
+
+function draw() {
+  background(15);
+  orbitControl();
+
+  // Lighting
+  ambientLight(40, 40, 50);
+  directionalLight(200, 180, 255, -1, 0.5, -0.8);
+  pointLight(255, 120, 80, 200, -200, 150);
+
+  let t = frameCount * 0.01;
+
+  // Central sphere
+  push();
+  rotateY(t);
+  specularMaterial(220, 200, 60);
+  shininess(60);
+  sphere(35, 24, 24);
+  pop();
+
+  // Orbiting boxes
+  for (let i = 0; i < 4; i++) {
+    push();
+    let a = t * 1.5 + i * HALF_PI;
+    translate(cos(a) * 90, sin(a * 0.7) * 30, sin(a) * 90);
+    rotateX(t * 2 + i);
+    rotateZ(t + i);
+    specularMaterial(
+      100 + i * 40, 80, 200 - i * 30);
+    shininess(30);
+    box(25);
+    pop();
+  }
+
+  // Top torus
+  push();
+  translate(0, -80, 0);
+  rotateX(HALF_PI);
+  rotateZ(t * 0.5);
+  specularMaterial(80, 220, 180);
+  shininess(50);
+  torus(50, 12, 20, 10);
+  pop();
+
+  // Bottom cone
+  push();
+  translate(0, 80, 0);
+  rotateX(PI);
+  rotateY(t);
+  specularMaterial(220, 80, 80);
+  shininess(25);
+  cone(40, 60, 16, 1);
+  pop();
+
+  // Side cylinders
+  push();
+  translate(-100, 0, 0);
+  rotateZ(HALF_PI);
+  rotateX(t);
+  specularMaterial(100, 180, 220);
+  shininess(35);
+  cylinder(12, 80, 12, 1);
+  pop();
+
+  push();
+  translate(100, 0, 0);
+  rotateZ(HALF_PI);
+  rotateX(-t);
+  specularMaterial(180, 100, 220);
+  shininess(35);
+  cylinder(12, 80, 12, 1);
+  pop();
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3: Interactive webcam mirror effect -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 10.3 &mdash; Interactive Webcam Mirror Effect</div>
+        <p class="prompt">Create an interactive mirror effect using pixel manipulation. Since webcam access
+          may not be available, use a generated test image (or webcam if you have one). Implement at least
+          two of the following effects, toggled by keyboard: (1) pixelation (averaging blocks of pixels),
+          (2) color inversion, (3) posterization (reducing color levels), (4) horizontal mirror,
+          (5) wave distortion. Display the current mode name on screen.</p>
+        <textarea class="cm-editor">let img;
+let mode = 0;
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+  // Create test image
+  img = createImage(400, 400);
+  generateTestImage();
+}
+
+function generateTestImage() {
+  // Your code here: create a colorful test pattern
+}
+
+function draw() {
+  image(img, 0, 0);
+  // Your code here: apply effects based on mode
+}
+
+function keyPressed() {
+  // Your code here: cycle through modes
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let img;
+let mode = 0;
+let modeNames = [
+  "Original", "Pixelated", "Inverted",
+  "Posterized", "Wave Distortion"
+];
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+  img = createImage(400, 400);
+  generateTestImage();
+}
+
+function generateTestImage() {
+  img.loadPixels();
+  for (let x = 0; x < 400; x++) {
+    for (let y = 0; y < 400; y++) {
+      let i = (y * 400 + x) * 4;
+      let d = dist(x, y, 200, 200);
+      img.pixels[i]   = (sin(x*0.04)*127+128);
+      img.pixels[i+1] = (cos(y*0.04)*127+128);
+      img.pixels[i+2] = (sin(d*0.02)*127+128);
+      img.pixels[i+3] = 255;
+    }
+  }
+  img.updatePixels();
+}
+
+function draw() {
+  image(img, 0, 0);
+  loadPixels();
+
+  if (mode === 1) {
+    // Pixelation
+    let s = 10;
+    for (let bx = 0; bx < width; bx += s) {
+      for (let by = 0; by < height; by += s) {
+        let ci = (by * width + bx) * 4;
+        let r = pixels[ci], g = pixels[ci+1],
+            b = pixels[ci+2];
+        for (let dx = 0; dx < s; dx++) {
+          for (let dy = 0; dy < s; dy++) {
+            let ni = ((by+dy)*width+(bx+dx))*4;
+            pixels[ni]=r; pixels[ni+1]=g;
+            pixels[ni+2]=b;
+          }
+        }
+      }
+    }
+  } else if (mode === 2) {
+    // Inversion
+    for (let i = 0; i < pixels.length; i += 4) {
+      pixels[i]   = 255 - pixels[i];
+      pixels[i+1] = 255 - pixels[i+1];
+      pixels[i+2] = 255 - pixels[i+2];
+    }
+  } else if (mode === 3) {
+    // Posterize (4 levels)
+    let levels = 4;
+    let step = 255 / levels;
+    for (let i = 0; i < pixels.length; i += 4) {
+      pixels[i]   = floor(pixels[i]/step)*step;
+      pixels[i+1] = floor(pixels[i+1]/step)*step;
+      pixels[i+2] = floor(pixels[i+2]/step)*step;
+    }
+  } else if (mode === 4) {
+    // Wave distortion
+    let src = pixels.slice();
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        let ox = floor(sin(y*0.05+frameCount*0.05)*10);
+        let oy = floor(cos(x*0.05+frameCount*0.05)*10);
+        let sx = constrain(x+ox, 0, width-1);
+        let sy = constrain(y+oy, 0, height-1);
+        let di = (y*width+x)*4;
+        let si = (sy*width+sx)*4;
+        pixels[di]=src[si];
+        pixels[di+1]=src[si+1];
+        pixels[di+2]=src[si+2];
+      }
+    }
+  }
+
+  updatePixels();
+
+  fill(0, 180);
+  noStroke();
+  rect(0, 0, width, 28);
+  fill(255);
+  textSize(13);
+  textAlign(LEFT, CENTER);
+  text("Mode: " + modeNames[mode]
+       + "  |  Press 1-5", 10, 14);
+}
+
+function keyPressed() {
+  if (key >= '1' && key <= '5')
+    mode = int(key) - 1;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER END QUIZ
+           =============================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 10 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of flow fields, 3D rendering, and computer vision concepts.</p>
+
+        <!-- Final Q1 -->
+        <div class="quiz" data-id="ch10-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">Which formula correctly computes <strong>fractal Brownian motion</strong> (fBm) from Perlin noise?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch10-fq1" value="a"> $\text{fbm}(x) = \text{noise}(x) \times n$</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq1" value="b" data-correct> $\text{fbm}(x) = \sum_{i=0}^{n-1} \frac{1}{2^i} \cdot \text{noise}(x \cdot 2^i)$</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq1" value="c"> $\text{fbm}(x) = \text{noise}(x) + \text{noise}(x^2)$</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq1" value="d"> $\text{fbm}(x) = |\text{noise}(x)| \cdot 2^n$</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Fractal Brownian motion sums multiple octaves of noise, where each successive octave doubles
+              the frequency (multiplies input by $2^i$) and halves the amplitude (multiplies output by
+              $\frac{1}{2^i}$). This layering creates a fractal-like texture with both broad structure
+              and fine detail.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q2 -->
+        <div class="quiz" data-id="ch10-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">In a flow field, what happens if you forget to reset a particle's acceleration to zero each frame?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch10-fq2" value="a"> The particles move in straight lines</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq2" value="b"> The particles stop moving</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq2" value="c" data-correct> Forces accumulate without bound and particles fly off the canvas immediately</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq2" value="d"> The noise pattern inverts</label></li>
+          </ul>
+          <div class="explanation">
+            <p>If acceleration is not reset (<code>this.acc.mult(0)</code>) after being added to velocity,
+              the force from every previous frame keeps adding up. After just a few frames, the accumulated
+              acceleration produces enormous velocities and the particles shoot off-screen instantly.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q3 -->
+        <div class="quiz" data-id="ch10-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">Which type of lighting in p5.js WEBGL mode shines uniformly from a <em>direction</em> (like sunlight), with all rays parallel?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch10-fq3" value="a"> <code>ambientLight()</code></label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq3" value="b" data-correct> <code>directionalLight()</code></label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq3" value="c"> <code>pointLight()</code></label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq3" value="d"> <code>specularMaterial()</code></label></li>
+          </ul>
+          <div class="explanation">
+            <p><code>directionalLight()</code> simulates a distant light source like the sun, where all
+              light rays are parallel and come from a specific direction. <code>ambientLight()</code>
+              provides uniform illumination from all directions. <code>pointLight()</code> radiates from
+              a position. <code>specularMaterial()</code> is a material property, not a light source.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q4 -->
+        <div class="quiz" data-id="ch10-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">The NTSC luminance formula for perceived brightness is $B = 0.299R + 0.587G + 0.114B$. Why does the green channel have the highest coefficient?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch10-fq4" value="a"> Green LEDs are brighter than red or blue LEDs</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq4" value="b"> It is an arbitrary choice for backward compatibility</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq4" value="c" data-correct> Human eyes are most sensitive to green light, so it contributes most to perceived brightness</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq4" value="d"> Green has the shortest wavelength in the visible spectrum</label></li>
+          </ul>
+          <div class="explanation">
+            <p>The human retina contains three types of cone cells. The cones sensitive to green wavelengths
+              are the most numerous, and the eye's peak luminous efficiency is in the green region of the
+              spectrum (~555nm). This means green light contributes more to our perception of overall
+              brightness than red or blue, which is reflected in the higher coefficient.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q5 -->
+        <div class="quiz" data-id="ch10-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">What technique compares the current video frame to the previous frame to detect areas of movement?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch10-fq5" value="a"> Edge detection</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq5" value="b"> Background subtraction</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq5" value="c" data-correct> Frame differencing</label></li>
+            <li class="option"><label><input type="radio" name="ch10-fq5" value="d"> Thresholding</label></li>
+          </ul>
+          <div class="explanation">
+            <p><strong>Frame differencing</strong> compares each pixel in the current frame with the same
+              pixel in the previous frame. Large differences indicate motion. <strong>Background subtraction</strong>
+              compares to a stored reference image (not the previous frame). <strong>Edge detection</strong>
+              finds spatial gradients within a single frame. <strong>Thresholding</strong> converts
+              grayscale to binary.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch09/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 9: Physics, ODEs &amp; Forces</span>
+        </a>
+        <a href="../ch11/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 11: Project Workflow &amp; Code Review</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

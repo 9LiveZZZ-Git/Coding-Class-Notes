@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 7: Reaction-Diffusion &amp; Pattern Formation &mdash; Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch07">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 7: Reaction-Diffusion &amp; Pattern Formation</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar: progress + theme toggle -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 7: Reaction-Diffusion &amp; Pattern Formation</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; How nature creates patterns through chemistry and mathematics</p>
+
+      <!-- ===============================================================
+           7.1 INTRODUCTION
+           =============================================================== -->
+      <h2 id="introduction">7.1 Introduction</h2>
+
+      <p>In the previous chapter we explored two powerful techniques for generating complexity from simplicity: GLSL patterns built from mathematical functions and cellular automata governed by discrete rules. Conway&rsquo;s Game of Life showed us how a handful of birth-and-death rules can produce gliders, oscillators, and even Turing-complete computation. Now we take the next step &mdash; from <em>discrete</em> cell states to <em>continuous</em> chemical concentrations, from binary alive-or-dead to smoothly varying fields of interacting substances.</p>
+
+      <p>This chapter is about <strong>reaction-diffusion systems</strong>: mathematical models of chemicals that react with each other and spread through space. These systems were first proposed by Alan Turing in 1952 to explain one of biology&rsquo;s deepest mysteries &mdash; how a uniform ball of cells becomes a patterned organism. The spots on a leopard, the stripes on a zebrafish, the ridges on your fingertips, the branching of coral &mdash; all of these may arise from the same fundamental mechanism: two chemicals that diffuse at different rates and react with each other.</p>
+
+      <p>We will focus on the <strong>Gray-Scott model</strong>, a specific reaction-diffusion system that is simple enough to implement in a few dozen lines of code yet rich enough to produce dozens of distinct pattern types depending on just two parameters. You will implement it first on the CPU in p5.js, then on the GPU in GLSL, seeing how the same mathematical equations can run orders of magnitude faster when expressed as fragment shaders.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>From Discrete to Continuous</strong> &mdash; Cellular automata use discrete states (0 or 1, alive or dead). Reaction-diffusion systems use continuous concentrations (any value between 0.0 and 1.0). Both produce complex patterns from simple local rules, but the continuous nature of reaction-diffusion yields smoother, more organic-looking results &mdash; the kind of patterns we see in biological organisms.</p>
+      </div>
+
+      <p>Along the way, we will learn about the <strong>Laplacian operator</strong> &mdash; a mathematical tool that measures how different a point is from its neighbors &mdash; which is the engine that drives all diffusion processes. The Laplacian appears not only in reaction-diffusion but also in image processing (edge detection, sharpening), fluid simulation, and heat flow. It is one of the most widely useful tools in computational art and science.</p>
+
+      <p>By the end of this chapter you will be able to:</p>
+      <ul>
+        <li>Explain how reaction-diffusion creates patterns through activator-inhibitor dynamics</li>
+        <li>Compute the discrete Laplacian using both the 5-point and 3&times;3 weighted stencils</li>
+        <li>Implement the Gray-Scott model from scratch in p5.js with double buffering</li>
+        <li>Map feed and kill parameters to distinct pattern types (spots, stripes, mazes, coral)</li>
+        <li>Port the simulation to GLSL using ping-pong framebuffers</li>
+        <li>Connect reaction-diffusion to video feedback and other pattern-forming systems</li>
+      </ul>
+
+      <!-- ===============================================================
+           7.2 PATTERN FORMATION IN NATURE
+           =============================================================== -->
+      <h2 id="pattern-formation">7.2 Pattern Formation in Nature</h2>
+
+      <p>One of the most striking features of the natural world is its patterns. Zebras have stripes. Leopards have spots. Sunflowers arrange their seeds in spirals. Your fingers have ridges. Shells have whorls. These patterns are not painted on by an external hand &mdash; they <em>emerge from within</em> the developing organism, through chemical and physical processes acting locally.</p>
+
+      <p>This raises a profound question: <strong>how do simple, local interactions produce complex, global patterns?</strong> A single cell in a developing zebra embryo does not &ldquo;know&rdquo; whether it is supposed to be part of a stripe or a gap. It only knows about its immediate chemical environment. Yet somehow, the collective behavior of billions of such cells produces a coherent pattern of alternating stripes that wraps around the animal&rsquo;s entire body.</p>
+
+      <p>The answer lies in a principle called <strong>self-organization</strong>: patterns that arise spontaneously from the interactions of individual components, without any central plan or blueprint. Self-organization is everywhere in nature:</p>
+
+      <ul>
+        <li><strong>Zebra and tiger stripes:</strong> Alternating bands of pigmented and unpigmented skin, created by interacting morphogens during embryonic development</li>
+        <li><strong>Leopard and cheetah spots:</strong> Isolated patches of pigment surrounded by lighter areas, formed by the same fundamental mechanism as stripes but with different parameter values</li>
+        <li><strong>Coral branching:</strong> Fractal-like growth patterns that emerge from the interaction of calcium deposition and nutrient diffusion</li>
+        <li><strong>Fingerprint ridges:</strong> Concentric patterns unique to each individual, formed during fetal development by mechanical buckling and chemical signaling</li>
+        <li><strong>Shell patterns:</strong> The pigment bands on seashells form as the shell grows at its opening edge, leaving a frozen record of a one-dimensional pattern-forming process operating over time</li>
+        <li><strong>Sand dunes and ripples:</strong> Wind and sand interact to create regular wave-like patterns without any organizing force</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The scientific study of biological pattern formation has a rich history. In 1917, D&rsquo;Arcy Wentworth Thompson published <em>On Growth and Form</em>, arguing that many biological shapes could be explained by physical and mathematical principles rather than natural selection alone. In 1952, Alan Turing proposed the first chemical mechanism for pattern formation. In the decades since, scientists including James Murray, Hans Meinhardt, and Alfred Gierer have expanded and refined these ideas, and modern imaging techniques have confirmed that Turing-type mechanisms operate in real biological systems &mdash; from the stripe patterns of zebrafish to the spacing of hair follicles in mice.</p>
+      </div>
+
+      <p>What makes these patterns relevant to artists and creative coders is the <strong>generative principle</strong> they embody: you do not need to design a pattern by hand. You set up the right conditions &mdash; the right chemicals, the right diffusion rates, the right reactions &mdash; and the pattern designs itself. This is the same philosophy that drives generative art: create a system with interesting dynamics and let it produce forms that surprise you.</p>
+
+      <!-- ===============================================================
+           7.3 ALAN TURING AND MORPHOGENESIS
+           =============================================================== -->
+      <h2 id="turing-morphogenesis">7.3 Alan Turing and Morphogenesis</h2>
+
+      <p>In 1952, Alan Turing &mdash; already famous for his work on computation, the Enigma code, and the foundations of artificial intelligence &mdash; published a paper titled <em>&ldquo;The Chemical Basis of Morphogenesis&rdquo;</em> in the Philosophical Transactions of the Royal Society. It was his only published work in biology, and it would become one of the most influential papers in mathematical biology.</p>
+
+      <p>Turing&rsquo;s question was deceptively simple: <strong>how does a spherically symmetric embryo &mdash; a ball of identical cells &mdash; develop into an organism with spatial structure?</strong> A fertilized egg has no stripes, no spots, no left or right. Yet within days or weeks, distinct regions form: a head, a tail, pigmented patches, repeated segments. Where does the spatial information come from?</p>
+
+      <p>Turing&rsquo;s answer was radical. He proposed that spatial patterns could arise spontaneously from the interaction and diffusion of chemicals, which he called <strong>morphogens</strong> (from the Greek <em>morphe</em> meaning &ldquo;form&rdquo; and <em>genesis</em> meaning &ldquo;creation&rdquo;). His model requires just two ingredients:</p>
+
+      <ul>
+        <li><strong>An activator:</strong> A chemical that promotes its own production. Where the activator is concentrated, it stimulates the creation of more activator &mdash; a positive feedback loop.</li>
+        <li><strong>An inhibitor:</strong> A chemical that suppresses the activator. Where the inhibitor is concentrated, it shuts down activator production &mdash; a negative feedback loop.</li>
+      </ul>
+
+      <p>The critical requirement is that the <strong>inhibitor must diffuse faster than the activator</strong>. This creates a system of <em>local activation</em> and <em>long-range inhibition</em>: the activator builds up in a small area (because it promotes itself), but the inhibitor quickly spreads outward and prevents the activator from taking over everywhere. The result is a stable spatial pattern &mdash; peaks of activator concentration separated by zones where the inhibitor dominates.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Local Activation, Long-Range Inhibition</strong> &mdash; This is the fundamental mechanism behind Turing patterns. The activator creates &ldquo;hotspots&rdquo; of high concentration, but the faster-diffusing inhibitor prevents these hotspots from merging into a uniform field. The competition between local amplification and long-range suppression creates a characteristic wavelength &mdash; a natural spacing between pattern features (spots, stripes) that depends on the ratio of diffusion rates and reaction strengths.</p>
+      </div>
+
+      <p>Depending on the specific parameters &mdash; how fast each chemical diffuses, how strongly they react, how quickly they are supplied and removed &mdash; the system can produce:</p>
+
+      <ul>
+        <li><strong>Spots:</strong> Isolated peaks of activator, evenly spaced (like a leopard&rsquo;s rosettes)</li>
+        <li><strong>Stripes:</strong> Elongated ridges of activator (like a zebra&rsquo;s markings)</li>
+        <li><strong>Labyrinths:</strong> Winding, maze-like channels</li>
+        <li><strong>Spirals:</strong> Rotating waves of chemical concentration</li>
+        <li><strong>Waves:</strong> Traveling fronts of activation</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Turing&rsquo;s morphogenesis paper was published just two years before his tragic death in 1954. The paper was largely ignored by biologists for decades &mdash; it was too mathematical for most biologists and too biological for most mathematicians. It was not until the 1970s and 1980s that researchers like Alfred Gierer, Hans Meinhardt, and James Murray revived and extended Turing&rsquo;s ideas. In 2012, researchers at King&rsquo;s College London confirmed experimentally that Turing-type mechanisms control the regular spacing of ridges in the mouse palate, providing direct biological evidence for the theory 60 years after its publication.</p>
+      </div>
+
+      <p>For artists and creative coders, the significance of Turing&rsquo;s insight is this: <strong>complex, organic-looking patterns can emerge from extremely simple chemical rules.</strong> You do not need to hand-draw a leopard&rsquo;s spots or a coral&rsquo;s branches. You set up two interacting chemicals with different diffusion rates and let the mathematics generate the pattern. The beauty is emergent.</p>
+
+      <!-- ===============================================================
+           7.4 MATHEMATICS OF DIFFUSION
+           =============================================================== -->
+      <h2 id="mathematics-of-diffusion">7.4 Mathematics of Diffusion</h2>
+
+      <p>Before we can build a reaction-diffusion system, we need to understand diffusion on its own. Diffusion is the process by which a substance spreads from regions of high concentration to regions of low concentration. Drop a bead of food coloring into a glass of still water and watch what happens: the color slowly spreads outward, moving from the dense center into the clear water around it. No one is pushing the dye molecules &mdash; they move randomly, and random motion naturally carries them from crowded regions to empty ones.</p>
+
+      <p>Mathematically, diffusion at any point depends on how that point&rsquo;s concentration compares to its surroundings. If a point has a <em>higher</em> concentration than its neighbors, substance flows outward and the concentration decreases. If it has a <em>lower</em> concentration than its neighbors, substance flows inward and the concentration increases. If it matches its neighbors, nothing changes &mdash; the system is in local equilibrium.</p>
+
+      <h3>7.4.1 The Laplacian Operator</h3>
+
+      <p>The mathematical tool that measures &ldquo;how different a point is from its neighbors&rdquo; is called the <strong>Laplacian</strong>, often written with the symbol $\nabla^2$ (read &ldquo;nabla squared&rdquo; or &ldquo;del squared&rdquo;). For our purposes, you do not need to know calculus. You only need to understand one sentence:</p>
+
+      <p><strong>The Laplacian at a point equals the difference between the average of its neighbors and the value at that point.</strong></p>
+
+      <p>Or equivalently, and more usefully for computation:</p>
+
+      <p>$$\nabla^2 f(x, y) \;\approx\; \text{(weighted sum of neighbor values)} \;-\; \text{(center value)}$$</p>
+
+      <p>The Laplacian has three possible signs, and each tells you something important:</p>
+
+      <ul>
+        <li><strong>Laplacian &gt; 0:</strong> The center is <em>lower</em> than the average of its neighbors. The point is in a &ldquo;valley.&rdquo; Diffusion will <em>increase</em> the value here.</li>
+        <li><strong>Laplacian &lt; 0:</strong> The center is <em>higher</em> than the average of its neighbors. The point is on a &ldquo;peak.&rdquo; Diffusion will <em>decrease</em> the value here.</li>
+        <li><strong>Laplacian = 0:</strong> The center equals the neighbor average. No net diffusion &mdash; local equilibrium.</li>
+      </ul>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Laplacian ($\nabla^2$)</strong> &mdash; A mathematical operator that measures how much a value at a point differs from the average of its surrounding values. In the continuous case, it is the sum of all second partial derivatives: $\nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2}$. In the discrete case (on a pixel grid), it is computed using a <strong>stencil</strong> &mdash; a pattern of weights applied to a cell and its neighbors. The Laplacian drives diffusion: substance flows from high concentration to low concentration at a rate proportional to the Laplacian.</p>
+      </div>
+
+      <h3>7.4.2 A One-Dimensional Example</h3>
+
+      <p>To build intuition, consider a row of numbers representing heights along a hill:</p>
+
+      <pre><code>Position:   1    2    3    4    5    6    7
+Height:     0    2    5    9    5    2    0</code></pre>
+
+      <p>The discrete Laplacian in one dimension at position $i$ is:</p>
+
+      <p>$$\nabla^2 f(i) = f(i-1) + f(i+1) - 2 \cdot f(i)$$</p>
+
+      <p>At position 4 (height = 9), the Laplacian is $5 + 5 - 2 \times 9 = 10 - 18 = -8$. This is strongly negative because position 4 is a <em>peak</em> &mdash; much higher than its neighbors. Diffusion would pull this value down, smoothing the hill.</p>
+
+      <p>At position 2 (height = 2), the Laplacian is $0 + 5 - 2 \times 2 = 5 - 4 = 1$. This is positive because position 2 is in a <em>slope</em> &mdash; lower than the average of its neighbors. Diffusion would push this value up slightly.</p>
+
+      <h3>7.4.3 The Diffusion Equation</h3>
+
+      <p>With the Laplacian in hand, the diffusion equation becomes elegantly simple:</p>
+
+      <p>$$f_{\text{next}} = f_{\text{current}} + D \cdot \nabla^2 f \cdot \Delta t$$</p>
+
+      <p>Where:</p>
+      <ul>
+        <li>$D$ is the <strong>diffusion coefficient</strong> &mdash; how fast the substance spreads (a larger $D$ means faster diffusion)</li>
+        <li>$\nabla^2 f$ is the Laplacian of the concentration field</li>
+        <li>$\Delta t$ is the <strong>time step</strong> (usually 1.0 in simple simulations)</li>
+      </ul>
+
+      <p>This equation says: at each time step, every point adjusts its value toward the average of its neighbors, at a rate proportional to $D$. Over many steps, any initial distribution of concentration will gradually smooth out and become uniform &mdash; just like food coloring dispersing in water.</p>
+
+      <!-- ===============================================================
+           7.5 THE DISCRETE LAPLACIAN
+           =============================================================== -->
+      <h2 id="discrete-laplacian">7.5 The Discrete Laplacian</h2>
+
+      <p>On a computer, we work with <em>discrete</em> grids of pixels rather than continuous mathematical functions. To compute the Laplacian on a grid, we use a <strong>stencil</strong> &mdash; a pattern of weights that we apply to a cell and its neighbors. There are two common stencils for the 2D Laplacian, and understanding both is essential for implementing reaction-diffusion.</p>
+
+      <h3>7.5.1 The 5-Point Stencil</h3>
+
+      <p>The simplest approximation of the 2D Laplacian uses the four <em>cardinal</em> neighbors (up, down, left, right) plus the center cell:</p>
+
+      <pre><code>     0    1    0
+     1   -4    1
+     0    1    0</code></pre>
+
+      <p>To compute the Laplacian at a cell, you sum the four cardinal neighbors (each multiplied by 1) and subtract 4 times the center value. In code:</p>
+
+      <pre><code>function laplacian5(grid, x, y) {
+  let up    = grid[x][(y - 1 + rows) % rows];
+  let down  = grid[x][(y + 1) % rows];
+  let left  = grid[(x - 1 + cols) % cols][y];
+  let right = grid[(x + 1) % cols][y];
+  let center = grid[x][y];
+
+  return up + down + left + right - 4.0 * center;
+}</code></pre>
+
+      <p>Notice the modular arithmetic (<code>% rows</code>, <code>% cols</code>) &mdash; this implements <strong>toroidal wrapping</strong>, so the grid wraps around at its edges like a doughnut. A cell at the right edge treats the leftmost column as its right neighbor, and vice versa. This avoids the need for special boundary conditions.</p>
+
+      <p><strong>Why -4?</strong> Because we have 4 neighbors, and we want to measure the difference between the center and the average of those 4 neighbors. Mathematically: $(\text{sum of neighbors}) - 4 \times \text{center} = 4 \times (\text{average of neighbors} - \text{center})$. If the center equals the average, the result is zero.</p>
+
+      <h3>7.5.2 The 3&times;3 Weighted Stencil</h3>
+
+      <p>The 5-point stencil has a subtle directional bias: diffusion spreads slightly faster along the horizontal and vertical axes than along the diagonals. The <strong>3&times;3 weighted stencil</strong> fixes this by including all eight neighbors with carefully chosen weights:</p>
+
+      <pre><code>     0.05   0.2   0.05
+     0.2   -1.0   0.2
+     0.05   0.2   0.05</code></pre>
+
+      <p>Direct (cardinal) neighbors get a weight of <strong>0.2</strong>. Diagonal neighbors get a weight of <strong>0.05</strong>. The center gets a weight of <strong>-1.0</strong>. Crucially, all the weights sum to zero: $4 \times 0.05 + 4 \times 0.2 + (-1.0) = 0.2 + 0.8 - 1.0 = 0.0$. This zero-sum property is a <em>requirement</em> for any valid Laplacian stencil &mdash; it ensures that a uniform field (where every cell has the same value) produces a Laplacian of zero everywhere.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Isotropic</strong> &mdash; Having the same properties in all directions. The 3&times;3 weighted stencil is more isotropic than the 5-point stencil because it treats diagonal directions more equally with the cardinal directions. In reaction-diffusion simulations, using the isotropic stencil produces rounder spots and smoother curves, while the 5-point stencil can produce slightly square-looking artifacts.</p>
+      </div>
+
+      <p>The diagonal neighbors are farther away (at a distance of $\sqrt{2} \approx 1.414$ rather than 1), so they receive less weight. The specific ratio of 0.2 to 0.05 (4:1) is chosen to maximize isotropy &mdash; to make diffusion spread as evenly as possible in all directions.</p>
+
+      <h3>7.5.3 JavaScript Implementation</h3>
+
+      <p>Here is the 3&times;3 Laplacian function that we will use throughout this chapter. Study it carefully &mdash; every reaction-diffusion simulation depends on this function:</p>
+
+      <pre><code>function laplacian(grid, x, y) {
+  // 3x3 weighted Laplacian stencil
+  let sum = 0;
+  sum += grid[(x-1+cols)%cols][(y-1+rows)%rows] * 0.05;  // top-left
+  sum += grid[x][(y-1+rows)%rows] * 0.2;                  // top
+  sum += grid[(x+1)%cols][(y-1+rows)%rows] * 0.05;        // top-right
+  sum += grid[(x-1+cols)%cols][y] * 0.2;                   // left
+  sum += grid[x][y] * (-1.0);                              // center
+  sum += grid[(x+1)%cols][y] * 0.2;                        // right
+  sum += grid[(x-1+cols)%cols][(y+1)%rows] * 0.05;         // bottom-left
+  sum += grid[x][(y+1)%rows] * 0.2;                        // bottom
+  sum += grid[(x+1)%cols][(y+1)%rows] * 0.05;              // bottom-right
+  return sum;
+}</code></pre>
+
+      <h3>7.5.4 GLSL Implementation</h3>
+
+      <p>In a fragment shader, the Laplacian is computed by sampling neighboring pixels from a texture. The <code>pixel</code> vector holds the size of one texel (one pixel in texture coordinate space):</p>
+
+      <pre><code>vec2 laplacian(sampler2D tex, vec2 uv, vec2 pixel) {
+  // 5-point stencil (for simplicity in GLSL)
+  vec2 center = texture2D(tex, uv).rg;
+  vec2 up     = texture2D(tex, uv + vec2(0.0,  pixel.y)).rg;
+  vec2 down   = texture2D(tex, uv + vec2(0.0, -pixel.y)).rg;
+  vec2 left   = texture2D(tex, uv + vec2(-pixel.x, 0.0)).rg;
+  vec2 right  = texture2D(tex, uv + vec2( pixel.x, 0.0)).rg;
+
+  return up + down + left + right - 4.0 * center;
+}</code></pre>
+
+      <p>Notice that we sample the <code>.rg</code> channels (red and green), which will store our two chemical concentrations A and B. The Laplacian is computed independently for each channel.</p>
+
+      <h3>7.5.5 Visualizing Diffusion</h3>
+
+      <p>Let us see diffusion in action. The following sketch starts with a bright spot in the center and applies the diffusion equation each frame. Watch how the spot gradually spreads and fades &mdash; this is pure diffusion with no reaction:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Pure Diffusion &mdash; Bright Spot Spreading</span>
+        </div>
+        <textarea class="cm-editor">let grid, nextGrid;
+let cols = 200, rows = 200;
+let cellSize = 2;
+let D = 0.2; // diffusion coefficient
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+
+  // Initialize grid to 0 everywhere
+  grid = make2D(cols, rows, 0.0);
+  nextGrid = make2D(cols, rows, 0.0);
+
+  // Seed a bright spot in the center
+  let cx = floor(cols / 2);
+  let cy = floor(rows / 2);
+  for (let dx = -8; dx <= 8; dx++) {
+    for (let dy = -8; dy <= 8; dy++) {
+      if (dx * dx + dy * dy < 64) {
+        grid[(cx + dx + cols) % cols][(cy + dy + rows) % rows] = 1.0;
+      }
+    }
+  }
+}
+
+function draw() {
+  // Diffusion step
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let lap = laplacian(grid, x, y);
+      nextGrid[x][y] = grid[x][y] + D * lap;
+      nextGrid[x][y] = constrain(nextGrid[x][y], 0, 1);
+    }
+  }
+  // Swap
+  let temp = grid;
+  grid = nextGrid;
+  nextGrid = temp;
+
+  // Render
+  loadPixels();
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let val = floor(grid[x][y] * 255);
+      for (let px = 0; px < cellSize; px++) {
+        for (let py = 0; py < cellSize; py++) {
+          let idx = ((y * cellSize + py) * width + x * cellSize + px) * 4;
+          pixels[idx] = val;
+          pixels[idx + 1] = val;
+          pixels[idx + 2] = val;
+          pixels[idx + 3] = 255;
+        }
+      }
+    }
+  }
+  updatePixels();
+}
+
+function laplacian(g, x, y) {
+  return g[(x-1+cols)%cols][(y-1+rows)%rows] * 0.05
+       + g[x][(y-1+rows)%rows] * 0.2
+       + g[(x+1)%cols][(y-1+rows)%rows] * 0.05
+       + g[(x-1+cols)%cols][y] * 0.2
+       + g[x][y] * (-1.0)
+       + g[(x+1)%cols][y] * 0.2
+       + g[(x-1+cols)%cols][(y+1)%rows] * 0.05
+       + g[x][(y+1)%rows] * 0.2
+       + g[(x+1)%cols][(y+1)%rows] * 0.05;
+}
+
+function make2D(w, h, val) {
+  let a = new Array(w);
+  for (let i = 0; i < w; i++) a[i] = new Array(h).fill(val);
+  return a;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Run the sketch above and observe: the bright spot gets dimmer and wider each frame as the concentration &ldquo;leaks&rdquo; into surrounding cells. This is diffusion in its purest form. If you let it run long enough, the entire grid will approach a uniform gray &mdash; total equilibrium.</p>
+
+      <div class="quiz" data-id="ch07-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">If a cell has a Laplacian value of 0, what does that tell you about the cell&rsquo;s concentration relative to its neighbors?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch07-q1" value="a"> The cell&rsquo;s concentration is zero</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q1" value="b"> The cell&rsquo;s concentration is at its maximum</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q1" value="c" data-correct> The cell&rsquo;s concentration equals the weighted average of its neighbors</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q1" value="d"> The cell is on the edge of the grid</label></li>
+        </ul>
+        <div class="explanation">
+          <p>A Laplacian of zero means the cell&rsquo;s value is exactly equal to the weighted average of its neighbors. There is no concentration gradient at that point, so no net diffusion occurs. This does <em>not</em> mean the concentration is zero &mdash; a uniform field of any value (0.3, 0.7, 1.0) would have a Laplacian of zero everywhere.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           7.6 THE GRAY-SCOTT MODEL
+           =============================================================== -->
+      <h2 id="gray-scott-model">7.6 The Gray-Scott Model</h2>
+
+      <p>Now we are ready to combine diffusion with chemical reactions. The <strong>Gray-Scott model</strong> (named after Peter Gray and Stephen Scott, who studied it in the 1980s) describes two chemicals, <strong>A</strong> and <strong>B</strong>, that diffuse through space and react with each other. It is one of the simplest reaction-diffusion systems that exhibits the full range of Turing patterns, and it has become the standard &ldquo;hello world&rdquo; of reaction-diffusion programming.</p>
+
+      <h3>7.6.1 The Two Chemicals</h3>
+
+      <p>Think of chemical A as the &ldquo;background&rdquo; substance. It starts everywhere at high concentration (close to 1.0). Chemical B is the &ldquo;pattern&rdquo; substance &mdash; it starts concentrated in a small seed region and tries to spread. When A and B meet, they react: A is consumed and converted into more B. This is an <strong>autocatalytic</strong> reaction &mdash; B helps produce more B, creating positive feedback.</p>
+
+      <p>The system also has two &ldquo;housekeeping&rdquo; processes:</p>
+      <ul>
+        <li><strong>Feed:</strong> Chemical A is continuously replenished from an external reservoir. Think of it as fresh A being pumped into the system at a constant rate.</li>
+        <li><strong>Kill:</strong> Chemical B is continuously removed from the system. Think of it as B slowly evaporating or being washed away.</li>
+      </ul>
+
+      <h3>7.6.2 The Equations</h3>
+
+      <p>The Gray-Scott equations describe how each chemical changes at each time step:</p>
+
+      <p>$$A_{\text{next}} = A + \bigl(D_A \cdot \nabla^2 A \;-\; A \cdot B^2 \;+\; f \cdot (1 - A)\bigr) \cdot \Delta t$$</p>
+
+      <p>$$B_{\text{next}} = B + \bigl(D_B \cdot \nabla^2 B \;+\; A \cdot B^2 \;-\; (k + f) \cdot B\bigr) \cdot \Delta t$$</p>
+
+      <p>Let us break down each term carefully. For chemical A:</p>
+
+      <ul>
+        <li><strong>$D_A \cdot \nabla^2 A$</strong> &mdash; <em>Diffusion.</em> A spreads from high concentration to low concentration. The Laplacian $\nabla^2 A$ measures how different each cell&rsquo;s A concentration is from its neighbors, and $D_A$ controls the speed of spreading.</li>
+        <li><strong>$-A \cdot B^2$</strong> &mdash; <em>Reaction (consumption).</em> When A and B meet, A is consumed. The rate is proportional to $A \times B^2$ &mdash; this is a &ldquo;two molecules of B react with one molecule of A&rdquo; rate law. This term is negative because A is being used up.</li>
+        <li><strong>$f \cdot (1 - A)$</strong> &mdash; <em>Feed.</em> A is replenished toward a concentration of 1.0. The further A is below 1.0, the faster it is replenished. The parameter $f$ (feed rate) controls how aggressively A is restocked.</li>
+      </ul>
+
+      <p>For chemical B:</p>
+
+      <ul>
+        <li><strong>$D_B \cdot \nabla^2 B$</strong> &mdash; <em>Diffusion.</em> B also spreads, but typically at <em>half</em> the rate of A (since $D_B &lt; D_A$). This difference in diffusion rates is essential for pattern formation.</li>
+        <li><strong>$+A \cdot B^2$</strong> &mdash; <em>Reaction (production).</em> The same reaction that consumes A produces B. This is the positive feedback loop &mdash; B catalyzes its own production.</li>
+        <li><strong>$-(k + f) \cdot B$</strong> &mdash; <em>Kill and dilution.</em> B is removed from the system at a combined rate of $(k + f)$. The parameter $k$ (kill rate) controls how fast B decays, and the feed process also dilutes B.</li>
+      </ul>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; The Gray-Scott Balance</div>
+        <p>The patterns arise from a three-way tension: <strong>Reaction</strong> produces B and consumes A (positive feedback). <strong>Kill</strong> removes B (negative feedback). <strong>Feed</strong> restocks A. <strong>Diffusion</strong> spreads both chemicals, but A spreads faster than B. When these forces are balanced in just the right way, neither chemical can dominate entirely &mdash; instead, they settle into a dynamic spatial pattern.</p>
+      </div>
+
+      <h3>7.6.3 The Key Parameters</h3>
+
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Symbol</th><th>Typical Range</th><th>What It Controls</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Diffusion rate of A</td><td>$D_A$</td><td>1.0</td><td>How fast A spreads (usually fixed)</td></tr>
+          <tr><td>Diffusion rate of B</td><td>$D_B$</td><td>0.5</td><td>How fast B spreads (usually fixed, must be less than $D_A$)</td></tr>
+          <tr><td>Feed rate</td><td>$f$</td><td>0.01 &ndash; 0.08</td><td>How fast A is replenished from the reservoir</td></tr>
+          <tr><td>Kill rate</td><td>$k$</td><td>0.04 &ndash; 0.07</td><td>How fast B decays and is removed</td></tr>
+        </tbody>
+      </table>
+
+      <p>The diffusion rates $D_A$ and $D_B$ are usually fixed at 1.0 and 0.5 respectively. The magic lies in the <strong>feed</strong> and <strong>kill</strong> parameters: by adjusting just these two numbers, you can produce an astonishing variety of pattern types. Small changes in $f$ and $k$ can take you from spots to stripes to mazes to chaos.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The ratio $D_A / D_B$ must be greater than 1</strong> for Turing patterns to form. In the standard Gray-Scott model, $D_A = 1.0$ and $D_B = 0.5$, giving a ratio of 2. This means A diffuses twice as fast as B. The activator (B) stays concentrated locally while the inhibitor mechanism (A being consumed, then replenished from the reservoir) operates over a longer range. If both chemicals diffused at the same rate, no stable patterns would form.</p>
+      </div>
+
+      <div class="quiz" data-id="ch07-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In the Gray-Scott equation for chemical A, what does the term $f \cdot (1 - A)$ represent?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch07-q2" value="a"> The chemical reaction between A and B</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q2" value="b"> The diffusion of A through space</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q2" value="c" data-correct> The replenishment of A toward concentration 1.0 from an external source</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q2" value="d"> The removal of A from the system</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The term $f \cdot (1 - A)$ is the <strong>feed</strong> term. It pushes A&rsquo;s concentration back toward 1.0 at a rate controlled by $f$. When $A$ is close to 1.0, $(1 - A)$ is small and the feed is weak. When $A$ is much less than 1.0 (because it has been consumed by the reaction), $(1 - A)$ is large and the feed is strong, replenishing A aggressively.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           7.7 PATTERN TYPES BY PARAMETER REGION
+           =============================================================== -->
+      <h2 id="pattern-types">7.7 Pattern Types by Parameter Region</h2>
+
+      <p>One of the most remarkable features of the Gray-Scott model is the diversity of patterns it produces. By varying only the feed rate $f$ and kill rate $k$, you can navigate a rich &ldquo;parameter landscape&rdquo; where each region corresponds to a different pattern type. This was first mapped systematically by John Pearson in his 1993 paper <em>&ldquo;Complex Patterns in a Simple System,&rdquo;</em> published in <em>Science</em>.</p>
+
+      <table>
+        <thead>
+          <tr><th>Feed ($f$)</th><th>Kill ($k$)</th><th>Pattern Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>0.010</td><td>0.045</td><td>Slowly dividing spots</td><td>Spots appear and slowly replicate by splitting</td></tr>
+          <tr><td>0.022</td><td>0.051</td><td>Worms and stripes</td><td>Elongated wormy structures and parallel stripes</td></tr>
+          <tr><td>0.030</td><td>0.057</td><td>Labyrinthine mazes</td><td>Winding, maze-like channels that fill the space</td></tr>
+          <tr><td>0.040</td><td>0.060</td><td>Holes in solid field</td><td>B dominates with isolated holes of A</td></tr>
+          <tr><td>0.055</td><td>0.062</td><td>Mitosis (splitting)</td><td>Spots that repeatedly divide like cells</td></tr>
+          <tr><td>0.025</td><td>0.060</td><td>Soliton spots</td><td>Stable, isolated spots that do not divide</td></tr>
+          <tr><td>0.039</td><td>0.058</td><td>Crawling worms</td><td>Worm-like structures that slowly move</td></tr>
+          <tr><td>0.026</td><td>0.052</td><td>Coral branching</td><td>Branching, tree-like growth patterns</td></tr>
+        </tbody>
+      </table>
+
+      <p>These pattern types are not arbitrary categories &mdash; they correspond to qualitatively different <strong>dynamical regimes</strong> of the system. In some regimes, B can sustain itself and grow; in others, B slowly dies out. The boundaries between regimes are where the most interesting dynamics occur: spots splitting, merging, and reorganizing.</p>
+
+      <p>The interactive sketch below lets you explore the parameter space. Try clicking the &ldquo;Presets&rdquo; to jump between pattern types, or drag the sliders to explore on your own:</p>
+
+      <div class="code-runner" data-height="500">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Gray-Scott Parameter Explorer</span>
+        </div>
+        <textarea class="cm-editor">let gridA, gridB, nextA, nextB;
+let cols = 150, rows = 150;
+let cellSize = 2;
+let dA = 1.0, dB = 0.5;
+let feed = 0.055, kill = 0.062;
+
+function setup() {
+  createCanvas(300, 360);
+  pixelDensity(1);
+  initGrids();
+}
+
+function initGrids() {
+  gridA = make2D(cols, rows, 1.0);
+  gridB = make2D(cols, rows, 0.0);
+  nextA = make2D(cols, rows, 0.0);
+  nextB = make2D(cols, rows, 0.0);
+  // Seed B in center
+  let cx = floor(cols / 2), cy = floor(rows / 2);
+  for (let dx = -8; dx < 8; dx++)
+    for (let dy = -8; dy < 8; dy++)
+      if (dx*dx + dy*dy < 64)
+        gridB[(cx+dx+cols)%cols][(cy+dy+rows)%rows] = 1.0;
+}
+
+function draw() {
+  background(30);
+  // 8 simulation steps per frame
+  for (let s = 0; s < 8; s++) {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        let a = gridA[x][y], b = gridB[x][y];
+        let lapA = lap(gridA, x, y);
+        let lapB = lap(gridB, x, y);
+        let abb = a * b * b;
+        nextA[x][y] = constrain(a + dA*lapA - abb + feed*(1-a), 0, 1);
+        nextB[x][y] = constrain(b + dB*lapB + abb - (kill+feed)*b, 0, 1);
+      }
+    }
+    [gridA, nextA] = [nextA, gridA];
+    [gridB, nextB] = [nextB, gridB];
+  }
+  // Render simulation
+  loadPixels();
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let val = floor(constrain((gridA[x][y] - gridB[x][y]) * 255, 0, 255));
+      for (let px = 0; px < cellSize; px++) {
+        for (let py = 0; py < cellSize; py++) {
+          let idx = ((y*cellSize+py)*width + x*cellSize+px) * 4;
+          pixels[idx]=val; pixels[idx+1]=val; pixels[idx+2]=val; pixels[idx+3]=255;
+        }
+      }
+    }
+  }
+  updatePixels();
+
+  // UI text
+  fill(255); noStroke(); textSize(12); textFont('monospace');
+  text('feed=' + nf(feed,1,3) + '  kill=' + nf(kill,1,3), 10, rows*cellSize + 18);
+  text('Press 1-6 for presets | Click canvas to seed B', 10, rows*cellSize + 36);
+  text('Frame: ' + frameCount, 10, rows*cellSize + 52);
+}
+
+function keyPressed() {
+  let presets = [
+    [0.055, 0.062], // 1: mitosis
+    [0.022, 0.051], // 2: worms
+    [0.030, 0.057], // 3: mazes
+    [0.010, 0.045], // 4: dividing spots
+    [0.025, 0.060], // 5: solitons
+    [0.039, 0.058], // 6: crawling worms
+  ];
+  let idx = int(key) - 1;
+  if (idx >= 0 && idx < presets.length) {
+    feed = presets[idx][0];
+    kill = presets[idx][1];
+    initGrids();
+  }
+}
+
+function mouseDragged() {
+  let mx = floor(mouseX / cellSize);
+  let my = floor(mouseY / cellSize);
+  if (mx >= 0 && mx < cols && my >= 0 && my < rows) {
+    for (let dx = -3; dx <= 3; dx++)
+      for (let dy = -3; dy <= 3; dy++)
+        if (dx*dx+dy*dy < 9)
+          gridB[(mx+dx+cols)%cols][(my+dy+rows)%rows] = 1.0;
+  }
+}
+
+function lap(g, x, y) {
+  return g[(x-1+cols)%cols][(y-1+rows)%rows]*0.05
+       + g[x][(y-1+rows)%rows]*0.2
+       + g[(x+1)%cols][(y-1+rows)%rows]*0.05
+       + g[(x-1+cols)%cols][y]*0.2
+       + g[x][y]*(-1.0)
+       + g[(x+1)%cols][y]*0.2
+       + g[(x-1+cols)%cols][(y+1)%rows]*0.05
+       + g[x][(y+1)%rows]*0.2
+       + g[(x+1)%cols][(y+1)%rows]*0.05;
+}
+
+function make2D(w, h, val) {
+  let a = new Array(w);
+  for (let i = 0; i < w; i++) a[i] = new Array(h).fill(val);
+  return a;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Try pressing the number keys 1 through 6 to load different parameter presets. Watch how the same equations produce completely different patterns depending on the feed and kill rates. You can also drag the mouse on the canvas to inject more B chemical and see how the system responds.</p>
+
+      <!-- ===============================================================
+           7.8 CPU IMPLEMENTATION IN P5.JS
+           =============================================================== -->
+      <h2 id="cpu-implementation">7.8 CPU Implementation in p5.js</h2>
+
+      <p>Now let us build a complete Gray-Scott reaction-diffusion system from scratch. We will go through each component step by step, then put it all together into a running sketch.</p>
+
+      <h3>7.8.1 The make2D Helper</h3>
+
+      <p>We need a way to create 2D arrays filled with an initial value. JavaScript does not have built-in 2D arrays, so we build them from nested arrays:</p>
+
+      <pre><code>function make2D(w, h, initialValue) {
+  let arr = new Array(w);
+  for (let i = 0; i < w; i++) {
+    arr[i] = new Array(h).fill(initialValue);
+  }
+  return arr;
+}</code></pre>
+
+      <p>This creates a 2D array of dimensions $w \times h$ where every cell contains <code>initialValue</code>. We will call <code>make2D(cols, rows, 1.0)</code> for the A grid (starting full) and <code>make2D(cols, rows, 0.0)</code> for the B grid (starting empty).</p>
+
+      <h3>7.8.2 Double Buffering</h3>
+
+      <p>Just like in Conway&rsquo;s Game of Life (Chapter 6), we need <strong>double buffering</strong> &mdash; two copies of each grid. We read from the &ldquo;current&rdquo; grids and write to the &ldquo;next&rdquo; grids, then swap them at the end of each step. This ensures that every cell reads the same consistent snapshot of the current state.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>If you update cells <em>in place</em> (without double buffering), cells computed later in the loop will read values that have already been modified by earlier cells in the same step. This creates <strong>directional artifacts</strong> &mdash; the simulation will look different depending on whether you loop left-to-right or right-to-left. Always use double buffering for simultaneous-update simulations.</p>
+      </div>
+
+      <p>The swap is extremely efficient &mdash; we swap the <em>references</em>, not the data:</p>
+
+      <pre><code>// After computing nextA and nextB for all cells:
+[gridA, nextA] = [nextA, gridA];
+[gridB, nextB] = [nextB, gridB];</code></pre>
+
+      <p>This JavaScript destructuring swap is equivalent to swapping pointers &mdash; no data is copied.</p>
+
+      <h3>7.8.3 The Simulation Loop</h3>
+
+      <p>Each frame, we run multiple simulation steps (typically 8&ndash;10) before rendering. This makes the simulation evolve faster without increasing the rendering cost &mdash; you only draw to the canvas once per frame:</p>
+
+      <pre><code>function draw() {
+  // Run several simulation steps per frame
+  for (let step = 0; step < 10; step++) {
+    simulate();
+  }
+
+  // Render once per frame
+  renderGrid();
+}</code></pre>
+
+      <h3>7.8.4 Rendering</h3>
+
+      <p>For display, we map the chemical concentrations to grayscale pixel values. A common approach is to use $(A - B)$ &mdash; areas where A dominates appear bright, and areas where B dominates appear dark:</p>
+
+      <pre><code>let val = floor(constrain((gridA[x][y] - gridB[x][y]) * 255, 0, 255));</code></pre>
+
+      <p>We write directly to the <code>pixels[]</code> array for performance, since calling <code>set()</code> for each pixel is much slower.</p>
+
+      <h3>7.8.5 Mouse Interaction</h3>
+
+      <p>Dragging the mouse injects more B chemical into the grid, letting you &ldquo;paint&rdquo; with the pattern substance and see how it interacts with the existing pattern:</p>
+
+      <pre><code>function mouseDragged() {
+  let mx = floor(mouseX / cellSize);
+  let my = floor(mouseY / cellSize);
+  let r = 5;
+  for (let dx = -r; dx <= r; dx++) {
+    for (let dy = -r; dy <= r; dy++) {
+      if (dx * dx + dy * dy < r * r) {
+        let x = (mx + dx + cols) % cols;
+        let y = (my + dy + rows) % rows;
+        gridB[x][y] = 1.0;
+      }
+    }
+  }
+}</code></pre>
+
+      <h3>7.8.6 Complete Implementation</h3>
+
+      <p>Here is the full Gray-Scott reaction-diffusion system. Run it, then try dragging your mouse across the canvas to inject B chemical. Experiment with the feed and kill parameters in the code:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Complete Gray-Scott Reaction-Diffusion</span>
+        </div>
+        <textarea class="cm-editor">let gridA, gridB, nextA, nextB;
+let cols, rows;
+let cellSize = 2;
+
+// Gray-Scott parameters - try changing these!
+let dA = 1.0;
+let dB = 0.5;
+let feed = 0.055;  // try: 0.022, 0.030, 0.055
+let kill = 0.062;  // try: 0.051, 0.057, 0.062
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+  cols = floor(width / cellSize);
+  rows = floor(height / cellSize);
+
+  // Initialize: A=1 everywhere, B=0 everywhere
+  gridA = make2D(cols, rows, 1.0);
+  gridB = make2D(cols, rows, 0.0);
+  nextA = make2D(cols, rows, 0.0);
+  nextB = make2D(cols, rows, 0.0);
+
+  // Seed B in a circle at the center
+  let cx = floor(cols / 2);
+  let cy = floor(rows / 2);
+  for (let dx = -10; dx < 10; dx++) {
+    for (let dy = -10; dy < 10; dy++) {
+      if (dx * dx + dy * dy < 100) {
+        gridB[(cx + dx + cols) % cols][(cy + dy + rows) % rows] = 1.0;
+      }
+    }
+  }
+}
+
+function draw() {
+  // Run 10 simulation steps per frame
+  for (let s = 0; s < 10; s++) {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        let a = gridA[x][y];
+        let b = gridB[x][y];
+        let lapA = laplacian(gridA, x, y);
+        let lapB = laplacian(gridB, x, y);
+        let abb = a * b * b;
+
+        nextA[x][y] = constrain(
+          a + dA * lapA - abb + feed * (1 - a), 0, 1
+        );
+        nextB[x][y] = constrain(
+          b + dB * lapB + abb - (kill + feed) * b, 0, 1
+        );
+      }
+    }
+    // Swap buffers
+    [gridA, nextA] = [nextA, gridA];
+    [gridB, nextB] = [nextB, gridB];
+  }
+
+  // Render
+  loadPixels();
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let val = floor(constrain((gridA[x][y] - gridB[x][y]) * 255, 0, 255));
+      for (let px = 0; px < cellSize; px++) {
+        for (let py = 0; py < cellSize; py++) {
+          let idx = ((y * cellSize + py) * width + x * cellSize + px) * 4;
+          pixels[idx] = val;
+          pixels[idx + 1] = val;
+          pixels[idx + 2] = val;
+          pixels[idx + 3] = 255;
+        }
+      }
+    }
+  }
+  updatePixels();
+}
+
+function laplacian(grid, x, y) {
+  return grid[(x-1+cols)%cols][(y-1+rows)%rows] * 0.05
+       + grid[x][(y-1+rows)%rows] * 0.2
+       + grid[(x+1)%cols][(y-1+rows)%rows] * 0.05
+       + grid[(x-1+cols)%cols][y] * 0.2
+       + grid[x][y] * (-1.0)
+       + grid[(x+1)%cols][y] * 0.2
+       + grid[(x-1+cols)%cols][(y+1)%rows] * 0.05
+       + grid[x][(y+1)%rows] * 0.2
+       + grid[(x+1)%cols][(y+1)%rows] * 0.05;
+}
+
+function make2D(w, h, val) {
+  let a = new Array(w);
+  for (let i = 0; i < w; i++) a[i] = new Array(h).fill(val);
+  return a;
+}
+
+// Drag mouse to add B chemical
+function mouseDragged() {
+  let mx = floor(mouseX / cellSize);
+  let my = floor(mouseY / cellSize);
+  for (let dx = -5; dx <= 5; dx++) {
+    for (let dy = -5; dy <= 5; dy++) {
+      if (dx * dx + dy * dy < 25) {
+        gridB[(mx + dx + cols) % cols][(my + dy + rows) % rows] = 1.0;
+      }
+    }
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>This implementation uses a 200&times;200 grid with <code>cellSize = 2</code>, giving a 400&times;400 pixel canvas. The simulation runs 10 steps per frame for faster evolution. Try modifying the <code>feed</code> and <code>kill</code> values to see different patterns. Some suggestions:</p>
+
+      <ul>
+        <li><code>feed = 0.022, kill = 0.051</code> &mdash; Worms and stripes</li>
+        <li><code>feed = 0.030, kill = 0.057</code> &mdash; Labyrinthine mazes</li>
+        <li><code>feed = 0.010, kill = 0.045</code> &mdash; Slowly dividing spots</li>
+        <li><code>feed = 0.039, kill = 0.058</code> &mdash; Crawling worms</li>
+      </ul>
+
+      <div class="quiz" data-id="ch07-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Why does the Gray-Scott implementation use <em>double buffering</em> (separate &ldquo;current&rdquo; and &ldquo;next&rdquo; arrays)?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch07-q3" value="a"> To use less memory</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q3" value="b"> To make the simulation run faster</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q3" value="c" data-correct> To ensure every cell reads the same consistent snapshot of the current state</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q3" value="d"> To allow the simulation to run in reverse</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Double buffering ensures that all cells in a given step read from the same &ldquo;snapshot&rdquo; of the current state. Without it, cells computed later in the loop would see partially-updated values from the same step, creating directional artifacts. The swap at the end of each step is just a pointer swap &mdash; no data is copied &mdash; so it does not save or cost any memory.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           7.9 GLSL IMPLEMENTATION
+           =============================================================== -->
+      <h2 id="glsl-implementation">7.9 GLSL Implementation</h2>
+
+      <p>The CPU implementation above works, but it is slow. A 200&times;200 grid with 10 steps per frame requires $200 \times 200 \times 10 = 400{,}000$ Laplacian computations per frame, and each Laplacian reads 9 grid cells. On a single CPU core, this quickly becomes a bottleneck at higher resolutions.</p>
+
+      <p>The GPU changes everything. A fragment shader runs the <em>same code</em> on every pixel simultaneously, using thousands of shader cores. A reaction-diffusion simulation that struggles at 200&times;200 on the CPU can run at 1024&times;1024 at 60fps on the GPU. The key insight is that the Gray-Scott equations are <strong>embarrassingly parallel</strong> &mdash; each cell&rsquo;s next state depends only on its own state and the states of its immediate neighbors, all of which can be read from a texture.</p>
+
+      <h3>7.9.1 The Ping-Pong Technique</h3>
+
+      <p>On the GPU, double buffering is called <strong>ping-pong framebuffers</strong>. We create two framebuffer objects (FBOs) &mdash; textures that can be both read from and written to. Each frame:</p>
+
+      <ol>
+        <li>Read the current state from FBO-A</li>
+        <li>Run the reaction-diffusion shader, writing the next state to FBO-B</li>
+        <li>Swap: FBO-B becomes the &ldquo;current&rdquo; state, FBO-A becomes the &ldquo;next&rdquo; buffer</li>
+        <li>Display the current state on screen</li>
+      </ol>
+
+      <p>This is exactly the same principle as our CPU double buffering, but operating on entire textures rather than individual array elements.</p>
+
+      <h3>7.9.2 Storing Chemicals in Texture Channels</h3>
+
+      <p>A texture pixel (texel) has four channels: red (R), green (G), blue (B), and alpha (A). We can store our two chemical concentrations in two of these channels:</p>
+
+      <ul>
+        <li><strong>Red channel (.r):</strong> Concentration of chemical A</li>
+        <li><strong>Green channel (.g):</strong> Concentration of chemical B</li>
+      </ul>
+
+      <p>This lets us store both chemicals in a single texture and compute both Laplacians with a single set of texture lookups, since <code>texture2D(tex, uv).rg</code> returns both values at once.</p>
+
+      <h3>7.9.3 The Fragment Shader</h3>
+
+      <p>Here is the Gray-Scott reaction-diffusion shader. It reads the current state from a texture, computes the Laplacian, applies the Gray-Scott equations, and outputs the new state:</p>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Gray-Scott Reaction-Diffusion Shader</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+
+// Simulate Gray-Scott visually using just coordinates
+// (A real implementation would use ping-pong FBOs)
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec2 p = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
+
+  // Create organic-looking pattern using noise-like math
+  float t = u_time * 0.3;
+
+  // Multiple layered sine waves create reaction-diffusion-like look
+  float pattern = 0.0;
+  vec2 q = p * 8.0;
+  pattern += sin(q.x + sin(q.y + t) * 2.0) * 0.5;
+  pattern += sin(q.y * 1.3 + sin(q.x * 0.7 + t * 0.7) * 2.5) * 0.4;
+  pattern += sin(length(q + vec2(sin(t*0.5), cos(t*0.3))) * 3.0) * 0.3;
+
+  // Add smaller detail layer
+  vec2 q2 = p * 20.0;
+  pattern += sin(q2.x + sin(q2.y * 1.1 + t * 0.5) * 1.5) * 0.15;
+  pattern += sin(q2.y + sin(q2.x * 0.9 - t * 0.3) * 1.5) * 0.15;
+
+  // Mouse interaction: create a distortion near mouse
+  vec2 m = u_mouse / u_resolution - 0.5;
+  m.x *= u_resolution.x / u_resolution.y;
+  float md = length(p - m);
+  pattern += smoothstep(0.15, 0.0, md) * sin(md * 40.0 - t * 5.0) * 0.5;
+
+  // Threshold to create sharp pattern boundaries
+  float v = smoothstep(-0.1, 0.1, pattern);
+
+  // Color: dark spots on light background (like Gray-Scott)
+  vec3 col = mix(vec3(0.05, 0.05, 0.12), vec3(0.95, 0.9, 0.85), v);
+
+  // Add subtle color variation in the dark regions
+  col = mix(col, vec3(0.1, 0.2, 0.4), (1.0 - v) * 0.3);
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p>The shader above uses layered sine waves to <em>approximate</em> the visual appearance of reaction-diffusion patterns. A true GPU reaction-diffusion implementation requires ping-pong framebuffers, which is more complex to set up but follows the same mathematical principles as the CPU version. The key difference is that the entire grid is updated in one draw call rather than cell-by-cell.</p>
+
+      <h3>7.9.4 CPU vs. GPU: A Comparison</h3>
+
+      <table>
+        <thead>
+          <tr><th>Aspect</th><th>CPU (p5.js)</th><th>GPU (GLSL)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Data storage</td><td>JavaScript 2D arrays</td><td>Texture (RGBA channels)</td></tr>
+          <tr><td>Double buffering</td><td>Array swap</td><td>Ping-pong FBOs</td></tr>
+          <tr><td>Laplacian</td><td>Array indexing with modulo</td><td>Texture sampling with offset</td></tr>
+          <tr><td>Update loop</td><td>Nested <code>for</code> loops (sequential)</td><td>Fragment shader (all pixels in parallel)</td></tr>
+          <tr><td>Typical resolution</td><td>100&ndash;300 pixels</td><td>512&ndash;2048 pixels</td></tr>
+          <tr><td>Performance</td><td>~5&ndash;15 fps at 200&times;200</td><td>60 fps at 1024&times;1024</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The Same Math, Different Hardware.</strong> The Gray-Scott equations are identical whether you implement them on the CPU or GPU. The Laplacian is computed the same way (weighted sum of neighbors minus center). The reaction terms are the same. The only difference is <em>how</em> the computation is organized: sequentially in nested loops (CPU) versus in parallel across all pixels (GPU). This is a powerful general principle &mdash; understanding the mathematics lets you move fluidly between platforms.</p>
+      </div>
+
+      <h3>7.9.5 GLSL Laplacian for Reaction-Diffusion</h3>
+
+      <p>In a true ping-pong implementation, the Laplacian shader function would look like this. It reads from the state texture and returns the Laplacian of both chemicals simultaneously:</p>
+
+      <pre><code>// GLSL: 5-point Laplacian for two chemicals stored in .rg
+vec2 laplacian(sampler2D state, vec2 uv, vec2 px) {
+  vec2 center = texture2D(state, uv).rg;
+  vec2 up     = texture2D(state, uv + vec2(0.0,  px.y)).rg;
+  vec2 down   = texture2D(state, uv + vec2(0.0, -px.y)).rg;
+  vec2 left   = texture2D(state, uv + vec2(-px.x, 0.0)).rg;
+  vec2 right  = texture2D(state, uv + vec2( px.x, 0.0)).rg;
+  return up + down + left + right - 4.0 * center;
+}</code></pre>
+
+      <p>And the main function would apply the Gray-Scott equations:</p>
+
+      <pre><code>void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec2 px = 1.0 / u_resolution;
+
+  vec2 ab = texture2D(u_state, uv).rg;
+  float a = ab.r;
+  float b = ab.g;
+
+  vec2 lap = laplacian(u_state, uv, px);
+  float abb = a * b * b;
+
+  float nextA = a + dA * lap.r - abb + feed * (1.0 - a);
+  float nextB = b + dB * lap.g + abb - (kill + feed) * b;
+
+  gl_FragColor = vec4(clamp(nextA, 0.0, 1.0), clamp(nextB, 0.0, 1.0), 0.0, 1.0);
+}</code></pre>
+
+      <div class="quiz" data-id="ch07-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In the GLSL implementation of Gray-Scott, why are the two chemical concentrations stored in the red and green channels of a texture?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch07-q4" value="a"> Because red represents activators and green represents inhibitors by convention</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q4" value="b" data-correct> Because a single texture lookup returns all four channels at once, so storing both chemicals in one texture is efficient</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q4" value="c"> Because the GPU can only process textures, not individual numbers</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q4" value="d"> Because the chemicals must be displayed as red and green colors</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Storing both chemicals in the same texture (A in the red channel, B in the green channel) means we only need <em>one</em> texture lookup to read both values at any point. Since texture lookups are the main bottleneck in shader programs, minimizing them is important for performance. The choice of red and green is arbitrary &mdash; we could use any two channels.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           7.10 VIDEO FEEDBACK AS RD ANALOG
+           =============================================================== -->
+      <h2 id="video-feedback">7.10 Video Feedback as a Reaction-Diffusion Analog</h2>
+
+      <p>In Chapter 6, you may have encountered video feedback &mdash; the technique of pointing a camera at the monitor displaying its own output, or the digital equivalent: reading a framebuffer, transforming it, and writing the result back. It turns out that video feedback and reaction-diffusion produce strikingly similar visual results, despite having completely different mechanisms.</p>
+
+      <p>In digital video feedback, a shader reads the previous frame, applies a scale-rotate transformation, optionally attenuates the brightness, and writes the result back. The key operation is a <strong>combined scale and rotation</strong> using a 2&times;2 matrix:</p>
+
+      <pre><code>vec2 scaleRotate(vec2 p, float scale, float angle) {
+  float c = cos(angle) * scale;
+  float s = sin(angle) * scale;
+  return mat2(c, s, -s, c) * p;
+}</code></pre>
+
+      <p>When you apply this to a framebuffer in a feedback loop, you get spiraling, self-similar patterns that bear a remarkable resemblance to Turing patterns. This is not a coincidence &mdash; both systems share the same underlying principle:</p>
+
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Reaction-Diffusion</th><th>Video Feedback</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Amplification</td><td>Autocatalytic reaction ($A \cdot B^2$)</td><td>Pixel brightness persists across frames</td></tr>
+          <tr><td>Inhibition</td><td>Kill term removes B</td><td>Fade/attenuation reduces brightness</td></tr>
+          <tr><td>Spatial spread</td><td>Laplacian diffusion</td><td>Scale transformation (zoom)</td></tr>
+          <tr><td>Pattern type</td><td>Determined by feed/kill</td><td>Determined by scale/rotation/fade</td></tr>
+          <tr><td>Rotation</td><td>Not present (isotropic)</td><td>Creates characteristic spirals</td></tr>
+        </tbody>
+      </table>
+
+      <p>Both systems exhibit <strong>local activation with spatial spreading</strong> &mdash; a mechanism that amplifies existing features while spreading them across space. In reaction-diffusion, this is driven by the autocatalytic reaction and the Laplacian. In video feedback, it is driven by pixel persistence and the zoom transform. The visual similarity arises because this shared mechanism naturally produces spotty, stripy, and spiral patterns regardless of the specific implementation.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Important Distinction</div>
+        <p>Video feedback is an <em>analogy</em> for reaction-diffusion, not an implementation of it. The two systems produce similar-looking patterns for deep mathematical reasons (both involve local amplification and spatial spreading), but they are not the same dynamical system. Video feedback includes rotation, which reaction-diffusion typically does not. Reaction-diffusion has specific chemical kinetics (the $A \cdot B^2$ term) that video feedback lacks. Understanding both systems gives you a richer palette of pattern-generation tools.</p>
+      </div>
+
+      <p>Here is a simple video feedback shader that creates organic, Turing-like patterns through frame-to-frame persistence and transformation:</p>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Video Feedback &mdash; Organic Patterns</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+
+// Simulated video feedback effect
+vec2 scaleRotate(vec2 p, float s, float a) {
+  float c = cos(a) * s;
+  float sn = sin(a) * s;
+  return mat2(c, sn, -sn, c) * p;
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec2 p = uv - 0.5;
+  p.x *= u_resolution.x / u_resolution.y;
+
+  float t = u_time;
+
+  // Scale-rotate creates feedback spiral effect
+  float scale = 0.98 + 0.02 * sin(t * 0.3);
+  float angle = 0.02 * sin(t * 0.2);
+  vec2 tp = scaleRotate(p, 1.0 / scale, -angle);
+
+  // Layer multiple frequency patterns
+  float pattern = 0.0;
+  for (float i = 1.0; i < 5.0; i += 1.0) {
+    vec2 q = tp * (3.0 + i * 2.0);
+    pattern += sin(q.x + sin(q.y + t * 0.3 * i) * 2.0) / i;
+    pattern += sin(q.y * 1.2 + cos(q.x * 0.8 - t * 0.2 * i) * 1.8) / i;
+  }
+
+  // Spiral distortion
+  float r = length(p);
+  float a = atan(p.y, p.x);
+  pattern += sin(a * 5.0 + r * 10.0 - t * 2.0) * 0.3 * exp(-r * 2.0);
+
+  // Threshold and color
+  float v = smoothstep(-0.3, 0.3, pattern);
+
+  vec3 col1 = vec3(0.05, 0.08, 0.15);
+  vec3 col2 = vec3(0.9, 0.85, 0.7);
+  vec3 col3 = vec3(0.3, 0.5, 0.8);
+
+  vec3 col = mix(col1, col2, v);
+  col = mix(col, col3, (1.0 - v) * 0.4 * (0.5 + 0.5 * sin(t * 0.5)));
+
+  // Vignette
+  col *= 1.0 - 0.4 * r * r;
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <!-- ===============================================================
+           7.11 THE LAPLACIAN AS A UNIVERSAL TOOL
+           =============================================================== -->
+      <h2 id="laplacian-universal">7.11 The Laplacian as a Universal Tool</h2>
+
+      <p>Before moving on, let us step back and appreciate just how widely the Laplacian operator is used in creative computing and beyond. Every time we compute the Laplacian, we are asking the same fundamental question: <strong>&ldquo;How different is this point from its neighbors?&rdquo;</strong> This simple question turns out to be relevant in a surprising number of contexts.</p>
+
+      <h3>7.11.1 Edge Detection</h3>
+
+      <p>In image processing, an <strong>edge</strong> is a place where pixel values change abruptly &mdash; a bright region next to a dark region. At an edge, the Laplacian has large absolute values because the center pixel differs significantly from some of its neighbors. Applying the Laplacian to an image highlights edges and suppresses smooth regions. This is the basis of the <strong>Laplacian edge detector</strong>.</p>
+
+      <pre><code>// Apply Laplacian to an image for edge detection
+for (let x = 1; x < img.width - 1; x++) {
+  for (let y = 1; y < img.height - 1; y++) {
+    let lap = getPixel(x-1, y) + getPixel(x+1, y)
+            + getPixel(x, y-1) + getPixel(x, y+1)
+            - 4 * getPixel(x, y);
+    setOutputPixel(x, y, abs(lap));
+  }
+}</code></pre>
+
+      <h3>7.11.2 Image Sharpening</h3>
+
+      <p>The &ldquo;unsharp mask&rdquo; sharpening technique works by <em>subtracting</em> the Laplacian from the original image. Since the Laplacian is positive in valleys (low points) and negative at peaks (high points), subtracting it <em>amplifies</em> differences &mdash; peaks get higher and valleys get lower, making edges more pronounced:</p>
+
+      <p>$$\text{sharpened} = \text{original} - \alpha \cdot \nabla^2 (\text{original})$$</p>
+
+      <p>The parameter $\alpha$ controls the strength of sharpening. Too much sharpening creates halos around edges &mdash; a telltale sign of over-processing.</p>
+
+      <h3>7.11.3 Image Smoothing (Blurring)</h3>
+
+      <p>Running diffusion (adding the Laplacian repeatedly) on an image <em>blurs</em> it. Each iteration smooths out local variations, and after many iterations the image converges to a uniform gray. This is equivalent to Gaussian blur and is the basis of many denoising algorithms.</p>
+
+      <h3>7.11.4 Heat Flow</h3>
+
+      <p>The diffusion equation $\frac{\partial T}{\partial t} = \alpha \nabla^2 T$ describes how heat spreads through a material. Hot spots cool down (negative Laplacian), cold spots warm up (positive Laplacian), and eventually the temperature equalizes. You can simulate heat flow on a grid using exactly the same Laplacian code we wrote for reaction-diffusion.</p>
+
+      <h3>7.11.5 Fluid Simulation</h3>
+
+      <p>In computational fluid dynamics, the Laplacian appears in the <strong>viscosity term</strong> of the Navier-Stokes equations and in the <strong>pressure Poisson equation</strong>. Viscosity is literally the diffusion of velocity &mdash; fast-moving fluid slows down its slower neighbors, just as high-concentration regions share their substance with low-concentration neighbors.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>The Laplacian is a &ldquo;difference from local average&rdquo; detector.</strong> Whether you are simulating chemicals, detecting edges, blurring images, modeling heat, or computing fluid dynamics, the Laplacian answers the same question: how much does this point deviate from its surroundings? This universality makes it one of the most important operators in all of applied mathematics and computational art.</p>
+      </div>
+
+      <!-- ===============================================================
+           7.12 BEYOND GRAY-SCOTT
+           =============================================================== -->
+      <h2 id="beyond-gray-scott">7.12 Beyond Gray-Scott</h2>
+
+      <p>The Gray-Scott model is just one member of a large family of pattern-forming systems. Once you understand the basic principles &mdash; diffusion, reaction, local activation, long-range inhibition &mdash; you can explore many other systems that produce equally fascinating patterns.</p>
+
+      <h3>7.12.1 Diffusion-Limited Aggregation (DLA)</h3>
+
+      <p>In DLA, particles undergo random walks and stick to a growing cluster when they touch it. The result is branching, tree-like structures that resemble lightning, river deltas, and the growth of bacterial colonies. DLA is not technically a reaction-diffusion system, but it shares the principle of diffusion-driven pattern formation.</p>
+
+      <h3>7.12.2 SmoothLife</h3>
+
+      <p>SmoothLife is a continuous generalization of Conway&rsquo;s Game of Life, created by Stephan Rafler in 2011. Instead of discrete cells with integer states, SmoothLife uses continuous values on a continuous domain. It uses an annular (ring-shaped) kernel for neighbor counting and smooth transition functions instead of hard thresholds. The result is a system that produces smooth, organic-looking &ldquo;creatures&rdquo; that glide, pulse, and interact in ways that look strikingly biological.</p>
+
+      <h3>7.12.3 Multi-Species Reaction-Diffusion</h3>
+
+      <p>The Gray-Scott model uses two chemicals. What happens with three, four, or more? Multi-species reaction-diffusion systems can produce patterns that no two-species system can, including traveling spots, rotating spirals, and complex oscillating textures. The mathematical analysis becomes much harder, but the implementation is straightforward &mdash; just add more equations and more texture channels.</p>
+
+      <h3>7.12.4 Belousov-Zhabotinsky (BZ) Reaction</h3>
+
+      <p>The BZ reaction is a real-world chemical oscillator that produces beautiful spiral wave patterns in a petri dish. It was one of the first demonstrations that chemical systems can spontaneously organize into spatial patterns. BZ-type models produce rotating spiral waves rather than the static spots and stripes of Gray-Scott, and they have inspired countless generative art pieces.</p>
+
+      <h3>7.12.5 Resources for Further Exploration</h3>
+
+      <ul>
+        <li><strong>Karl Sims&rsquo; Tutorial:</strong> <a href="http://karlsims.com/rd.html" target="_blank">karlsims.com/rd.html</a> &mdash; An excellent visual introduction to reaction-diffusion</li>
+        <li><strong>Robert Munafo&rsquo;s Gray-Scott Explorer:</strong> An interactive parameter-space map showing all pattern types</li>
+        <li><strong>Coding Train (Daniel Shiffman):</strong> <a href="https://www.youtube.com/watch?v=BV9ny785UNc" target="_blank">YouTube tutorial on Gray-Scott in Processing</a></li>
+        <li><strong>Turing&rsquo;s Original Paper (1952):</strong> <em>&ldquo;The Chemical Basis of Morphogenesis,&rdquo;</em> Philosophical Transactions of the Royal Society B, 237(641), 37&ndash;72</li>
+        <li><strong>Pearson (1993):</strong> <em>&ldquo;Complex Patterns in a Simple System,&rdquo;</em> Science, 261(5118), 189&ndash;192 &mdash; the paper that mapped the Gray-Scott parameter space</li>
+      </ul>
+
+      <div class="quiz" data-id="ch07-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the fundamental principle shared by reaction-diffusion and video feedback that causes both to produce similar-looking patterns?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch07-q5" value="a"> Both use the exact same mathematical equations</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q5" value="b"> Both require a GPU to run</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q5" value="c" data-correct> Both involve local amplification combined with spatial spreading</label></li>
+          <li class="option"><label><input type="radio" name="ch07-q5" value="d"> Both were discovered by Alan Turing</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Both reaction-diffusion and video feedback produce patterns through the combination of <strong>local amplification</strong> (positive feedback that reinforces existing features) and <strong>spatial spreading</strong> (diffusion or zoom that extends features across space). This shared mechanism &mdash; sometimes called &ldquo;local activation and long-range inhibition&rdquo; &mdash; naturally produces spots, stripes, and spirals regardless of the specific implementation details.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           CHAPTER QUIZ
+           =============================================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 7 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of reaction-diffusion, the Laplacian, and pattern formation.</p>
+
+        <div class="quiz" data-id="ch07-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">In Turing&rsquo;s model of morphogenesis, what must be true about the two morphogens for patterns to form?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch07-fq1" value="a"> They must diffuse at the same rate</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq1" value="b"> The activator must diffuse faster than the inhibitor</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq1" value="c" data-correct> The inhibitor must diffuse faster than the activator</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq1" value="d"> Neither chemical should diffuse at all</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Turing&rsquo;s key insight was that the <strong>inhibitor must diffuse faster</strong> than the activator. This creates &ldquo;local activation and long-range inhibition&rdquo; &mdash; the activator builds up locally (because it is slow to spread) while the inhibitor spreads quickly and prevents the activator from taking over everywhere. In the Gray-Scott model, this corresponds to $D_A > D_B$, where the &ldquo;activator-like&rdquo; chemical B diffuses slower than A.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch07-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">What does the 3&times;3 weighted Laplacian stencil give the diagonal neighbors a weight of 0.05 (rather than 0.2 like the cardinal neighbors)?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch07-fq2" value="a"> To make the computation faster</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq2" value="b" data-correct> Because diagonal neighbors are farther away ($\sqrt{2}$ instead of 1), so they should contribute less</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq2" value="c"> Because diagonal neighbors are not important for diffusion</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq2" value="d"> To prevent the stencil weights from summing to more than 1</label></li>
+          </ul>
+          <div class="explanation">
+            <p>The diagonal neighbors are at a distance of $\sqrt{2} \approx 1.414$ from the center, compared to a distance of 1 for the cardinal neighbors. Because they are farther away, they represent a less accurate estimate of the local derivative and receive a smaller weight. The specific ratio of 0.2 to 0.05 (4:1) is chosen to maximize <strong>isotropy</strong> &mdash; making diffusion spread as evenly as possible in all directions. The total weights must also sum to zero for a valid Laplacian stencil: $4 \times 0.05 + 4 \times 0.2 - 1.0 = 0$.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch07-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">In the Gray-Scott model, what happens to the system if the kill rate $k$ is set too high?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch07-fq3" value="a" data-correct> Chemical B dies out everywhere and no pattern forms &mdash; the system returns to a uniform state of A = 1, B = 0</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq3" value="b"> Chemical B takes over everywhere, producing a uniform dark field</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq3" value="c"> The patterns become more complex and detailed</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq3" value="d"> The simulation becomes unstable and crashes</label></li>
+          </ul>
+          <div class="explanation">
+            <p>If the kill rate is too high, B is removed from the system faster than the reaction can produce it. The $-(k+f) \cdot B$ term overwhelms the $+A \cdot B^2$ production term, and B&rsquo;s concentration decays to zero everywhere. Without B, the feed term pushes A back to 1.0. The result is a featureless uniform state &mdash; the &ldquo;trivial&rdquo; steady state of the system. Patterns require the kill rate to be in a specific range where B can sustain itself but cannot dominate completely.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch07-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">What is the purpose of &ldquo;ping-pong framebuffers&rdquo; in the GLSL implementation of reaction-diffusion?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch07-fq4" value="a"> To display the simulation in stereo 3D</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq4" value="b"> To apply different shaders to different parts of the screen</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq4" value="c" data-correct> To implement double buffering on the GPU &mdash; reading from one texture while writing to another, then swapping</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq4" value="d"> To blend two different reaction-diffusion simulations together</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Ping-pong framebuffers are the GPU equivalent of double buffering. You cannot read from and write to the same texture simultaneously (this would produce undefined results). Instead, you read the current state from one FBO and write the next state to another FBO, then swap their roles for the next frame. This is identical in principle to the CPU technique of using <code>gridA</code>/<code>nextA</code> arrays and swapping them after each step.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch07-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">Which of the following is <strong>NOT</strong> an application of the Laplacian operator?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch07-fq5" value="a"> Edge detection in images</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq5" value="b"> Driving diffusion in reaction-diffusion systems</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq5" value="c"> Simulating heat flow through a material</label></li>
+            <li class="option"><label><input type="radio" name="ch07-fq5" value="d" data-correct> Rotating coordinates in a 2D plane</label></li>
+          </ul>
+          <div class="explanation">
+            <p>The Laplacian measures how different a point is from its neighbors, making it useful for diffusion, edge detection, heat flow, blurring, and fluid simulation. However, <strong>rotation</strong> is performed by a rotation matrix (using sine and cosine), not by the Laplacian. The rotation matrix is a separate mathematical tool that preserves distances while changing angles &mdash; it has nothing to do with measuring local differences.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+      <!-- ===============================================================
+           CODE CHALLENGES
+           =============================================================== -->
+      <h2 id="code-challenges">7.13 Code Challenges</h2>
+
+      <div class="code-challenge" data-id="ch07-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1: Compute the Laplacian</div>
+        <p class="prompt">Write a function called <code>laplacian5</code> that computes the 5-point Laplacian of a value in a 1D array. Given an array <code>arr</code> and an index <code>i</code>, return <code>arr[i-1] + arr[i+1] - 2 * arr[i]</code>. Assume the array is large enough that <code>i-1</code> and <code>i+1</code> are valid indices.</p>
+        <textarea class="cm-editor">function laplacian5(arr, i) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "laplacian5([0, 2, 5, 9, 5, 2, 0], 3)", "expected": -8},
+          {"call": "laplacian5([0, 2, 5, 9, 5, 2, 0], 1)", "expected": 1},
+          {"call": "laplacian5([5, 5, 5, 5, 5], 2)", "expected": 0},
+          {"call": "laplacian5([0, 0, 10, 0, 0], 2)", "expected": -20}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch07-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2: Diffusion Step</div>
+        <p class="prompt">Write a function called <code>diffuseStep</code> that takes a 1D array <code>arr</code> and a diffusion rate <code>D</code>, and returns a <strong>new array</strong> where each interior element has been updated by one step of diffusion: <code>newArr[i] = arr[i] + D * (arr[i-1] + arr[i+1] - 2 * arr[i])</code>. The first and last elements should remain unchanged (boundary condition).</p>
+        <textarea class="cm-editor">function diffuseStep(arr, D) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "diffuseStep([0, 0, 10, 0, 0], 0.5)", "expected": [0, 5, 0, 5, 0]},
+          {"call": "diffuseStep([0, 0, 10, 0, 0], 0.25)", "expected": [0, 2.5, 5, 2.5, 0]},
+          {"call": "diffuseStep([5, 5, 5, 5, 5], 0.5)", "expected": [5, 5, 5, 5, 5]},
+          {"call": "diffuseStep([0, 10, 0], 0.5)", "expected": [0, 0, 0]}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch07-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3: Stencil Weights Validation</div>
+        <p class="prompt">Write a function called <code>isValidLaplacian</code> that takes a 3&times;3 array (array of 3 arrays, each of length 3) representing a stencil and returns <code>true</code> if the weights sum to zero (within a tolerance of 0.001), and <code>false</code> otherwise. This validates whether a stencil is a valid Laplacian approximation.</p>
+        <textarea class="cm-editor">function isValidLaplacian(stencil) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "isValidLaplacian([[0.05,0.2,0.05],[0.2,-1.0,0.2],[0.05,0.2,0.05]])", "expected": true},
+          {"call": "isValidLaplacian([[0,1,0],[1,-4,1],[0,1,0]])", "expected": true},
+          {"call": "isValidLaplacian([[1,1,1],[1,-8,1],[1,1,1]])", "expected": true},
+          {"call": "isValidLaplacian([[0.1,0.2,0.1],[0.2,-1.0,0.2],[0.1,0.2,0.1]])", "expected": false}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch07-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge 4: Gray-Scott Reaction Term</div>
+        <p class="prompt">Write a function called <code>grayScottStep</code> that takes current concentrations <code>a</code> and <code>b</code>, Laplacian values <code>lapA</code> and <code>lapB</code>, and parameters <code>dA</code>, <code>dB</code>, <code>feed</code>, <code>kill</code>. Return an array <code>[nextA, nextB]</code> computed from the Gray-Scott equations (with $\Delta t = 1$). Clamp both values to the range $[0, 1]$.</p>
+        <textarea class="cm-editor">function grayScottStep(a, b, lapA, lapB, dA, dB, feed, kill) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "grayScottStep(1.0, 0.0, 0.0, 0.0, 1.0, 0.5, 0.055, 0.062)", "expected": [1.0, 0.0]},
+          {"call": "grayScottStep(0.5, 0.5, 0.0, 0.0, 1.0, 0.5, 0.0, 0.0)", "expected": [0.375, 0.625]},
+          {"call": "grayScottStep(0.0, 0.0, 0.0, 0.0, 1.0, 0.5, 0.055, 0.062)", "expected": [0.055, 0.0]},
+          {"call": "grayScottStep(1.0, 1.0, 0.0, 0.0, 1.0, 0.5, 0.055, 0.062)", "expected": [0.055, 0.883]}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- ===============================================================
+           EXERCISES
+           =============================================================== -->
+      <h2 id="exercises">7.14 Exercises</h2>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 7.1 &mdash; Parameter Exploration</div>
+        <p class="prompt">Using the Gray-Scott implementation from Section 7.8, systematically explore the feed/kill parameter space. Create a sketch that cycles through at least 6 different parameter combinations (from the table in Section 7.7) and displays the pattern type as text. Seed B in a different location for each preset to see how the initial conditions interact with the parameters.</p>
+        <textarea class="cm-editor">let gridA, gridB, nextA, nextB;
+let cols, rows, cellSize = 2;
+let dA = 1.0, dB = 0.5;
+let feed = 0.055, kill = 0.062;
+let presetIndex = 0;
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+  cols = floor(width / cellSize);
+  rows = floor(height / cellSize);
+  resetSim();
+}
+
+function resetSim() {
+  // Your code here: initialize grids and seed B
+}
+
+function draw() {
+  // Your code here: simulate and render
+}
+
+function keyPressed() {
+  // Your code: press space to cycle presets
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let gridA, gridB, nextA, nextB;
+let cols, rows, cellSize = 2;
+let dA = 1.0, dB = 0.5;
+let feed, kill;
+let presetIndex = 0;
+
+let presets = [
+  { f: 0.055, k: 0.062, name: "Mitosis" },
+  { f: 0.022, k: 0.051, name: "Worms/Stripes" },
+  { f: 0.030, k: 0.057, name: "Labyrinths" },
+  { f: 0.010, k: 0.045, name: "Dividing Spots" },
+  { f: 0.025, k: 0.060, name: "Solitons" },
+  { f: 0.039, k: 0.058, name: "Crawling Worms" },
+];
+
+function setup() {
+  createCanvas(400, 420);
+  pixelDensity(1);
+  cols = floor(400 / cellSize);
+  rows = floor(400 / cellSize);
+  resetSim();
+}
+
+function resetSim() {
+  feed = presets[presetIndex].f;
+  kill = presets[presetIndex].k;
+  gridA = make2D(cols, rows, 1.0);
+  gridB = make2D(cols, rows, 0.0);
+  nextA = make2D(cols, rows, 0.0);
+  nextB = make2D(cols, rows, 0.0);
+
+  // Seed B in a random location
+  let cx = floor(random(30, cols - 30));
+  let cy = floor(random(30, rows - 30));
+  for (let dx = -10; dx < 10; dx++)
+    for (let dy = -10; dy < 10; dy++)
+      if (dx*dx + dy*dy < 100)
+        gridB[(cx+dx+cols)%cols][(cy+dy+rows)%rows] = 1.0;
+}
+
+function draw() {
+  for (let s = 0; s < 10; s++) {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        let a = gridA[x][y], b = gridB[x][y];
+        let lA = lap(gridA, x, y);
+        let lB = lap(gridB, x, y);
+        let abb = a * b * b;
+        nextA[x][y] = constrain(a + dA*lA - abb + feed*(1-a), 0, 1);
+        nextB[x][y] = constrain(b + dB*lB + abb - (kill+feed)*b, 0, 1);
+      }
+    }
+    [gridA, nextA] = [nextA, gridA];
+    [gridB, nextB] = [nextB, gridB];
+  }
+
+  loadPixels();
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let val = floor(constrain((gridA[x][y]-gridB[x][y])*255, 0, 255));
+      for (let px = 0; px < cellSize; px++)
+        for (let py = 0; py < cellSize; py++) {
+          let idx = ((y*cellSize+py)*width + x*cellSize+px)*4;
+          pixels[idx]=val; pixels[idx+1]=val;
+          pixels[idx+2]=val; pixels[idx+3]=255;
+        }
+    }
+  }
+  updatePixels();
+
+  // Display info
+  fill(0); noStroke();
+  rect(0, 400, 400, 20);
+  fill(255); textSize(12); textFont('monospace');
+  let p = presets[presetIndex];
+  text(p.name + " | f=" + nf(p.f,1,3) + " k=" + nf(p.k,1,3)
+       + " | Press SPACE for next", 10, 414);
+}
+
+function keyPressed() {
+  if (key === ' ') {
+    presetIndex = (presetIndex + 1) % presets.length;
+    resetSim();
+  }
+}
+
+function lap(g, x, y) {
+  return g[(x-1+cols)%cols][(y-1+rows)%rows]*0.05
+       + g[x][(y-1+rows)%rows]*0.2
+       + g[(x+1)%cols][(y-1+rows)%rows]*0.05
+       + g[(x-1+cols)%cols][y]*0.2 + g[x][y]*(-1.0)
+       + g[(x+1)%cols][y]*0.2
+       + g[(x-1+cols)%cols][(y+1)%rows]*0.05
+       + g[x][(y+1)%rows]*0.2
+       + g[(x+1)%cols][(y+1)%rows]*0.05;
+}
+
+function make2D(w, h, val) {
+  let a = new Array(w);
+  for (let i = 0; i < w; i++) a[i] = new Array(h).fill(val);
+  return a;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 7.2 &mdash; Colored Reaction-Diffusion</div>
+        <p class="prompt">Modify the rendering code of the Gray-Scott implementation to display the patterns in color instead of grayscale. Map chemical B&rsquo;s concentration to a color ramp (for example, low B = dark blue, medium B = teal, high B = bright yellow). Use the <code>lerpColor()</code> function or manual RGB interpolation.</p>
+        <textarea class="cm-editor">// Modify the rendering section of the Gray-Scott sketch.
+// Replace the grayscale rendering with a color mapping.
+// Hint: Use the value of gridB[x][y] to pick a color.
+
+function setup() {
+  createCanvas(400, 400);
+  // ... your setup code
+}
+
+function draw() {
+  // ... simulation code ...
+
+  // Color rendering:
+  // Your code here
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let gridA, gridB, nextA, nextB;
+let cols, rows, cellSize = 2;
+let dA = 1.0, dB = 0.5;
+let feed = 0.030, kill = 0.057;
+
+function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+  cols = floor(width / cellSize);
+  rows = floor(height / cellSize);
+  gridA = make2D(cols, rows, 1.0);
+  gridB = make2D(cols, rows, 0.0);
+  nextA = make2D(cols, rows, 0.0);
+  nextB = make2D(cols, rows, 0.0);
+  let cx = floor(cols/2), cy = floor(rows/2);
+  for (let dx = -10; dx < 10; dx++)
+    for (let dy = -10; dy < 10; dy++)
+      if (dx*dx+dy*dy < 100)
+        gridB[(cx+dx+cols)%cols][(cy+dy+rows)%rows] = 1.0;
+}
+
+function draw() {
+  for (let s = 0; s < 10; s++) {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        let a = gridA[x][y], b = gridB[x][y];
+        let lA = lap(gridA,x,y), lB = lap(gridB,x,y);
+        let abb = a*b*b;
+        nextA[x][y] = constrain(a + dA*lA - abb + feed*(1-a), 0, 1);
+        nextB[x][y] = constrain(b + dB*lB + abb - (kill+feed)*b, 0, 1);
+      }
+    }
+    [gridA, nextA] = [nextA, gridA];
+    [gridB, nextB] = [nextB, gridB];
+  }
+
+  loadPixels();
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let b = gridB[x][y];
+      // Color ramp: dark blue -> teal -> yellow
+      let r, g, bl;
+      if (b < 0.5) {
+        let t = b * 2.0;
+        r = floor(lerp(10, 0, t));
+        g = floor(lerp(20, 180, t));
+        bl = floor(lerp(80, 180, t));
+      } else {
+        let t = (b - 0.5) * 2.0;
+        r = floor(lerp(0, 255, t));
+        g = floor(lerp(180, 230, t));
+        bl = floor(lerp(180, 50, t));
+      }
+      for (let px = 0; px < cellSize; px++)
+        for (let py = 0; py < cellSize; py++) {
+          let idx = ((y*cellSize+py)*width + x*cellSize+px)*4;
+          pixels[idx]=r; pixels[idx+1]=g;
+          pixels[idx+2]=bl; pixels[idx+3]=255;
+        }
+    }
+  }
+  updatePixels();
+}
+
+function mouseDragged() {
+  let mx = floor(mouseX/cellSize), my = floor(mouseY/cellSize);
+  for (let dx=-5; dx<=5; dx++)
+    for (let dy=-5; dy<=5; dy++)
+      if (dx*dx+dy*dy<25)
+        gridB[(mx+dx+cols)%cols][(my+dy+rows)%rows]=1.0;
+}
+
+function lap(g,x,y) {
+  return g[(x-1+cols)%cols][(y-1+rows)%rows]*0.05
+       + g[x][(y-1+rows)%rows]*0.2
+       + g[(x+1)%cols][(y-1+rows)%rows]*0.05
+       + g[(x-1+cols)%cols][y]*0.2 + g[x][y]*(-1.0)
+       + g[(x+1)%cols][y]*0.2
+       + g[(x-1+cols)%cols][(y+1)%rows]*0.05
+       + g[x][(y+1)%rows]*0.2
+       + g[(x+1)%cols][(y+1)%rows]*0.05;
+}
+
+function make2D(w,h,val) {
+  let a = new Array(w);
+  for (let i=0;i<w;i++) a[i] = new Array(h).fill(val);
+  return a;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 7.3 &mdash; Creative Seeding</div>
+        <p class="prompt">Instead of seeding chemical B in a simple circle, experiment with different initial conditions. Seed B along a sine wave, in a grid pattern, in a spiral, or in the shape of text. How do the initial conditions affect the final pattern? Create a sketch that uses at least two different seeding strategies and compare the results.</p>
+        <textarea class="cm-editor">// Experiment with different ways to seed chemical B
+// Try: sine wave, grid, diagonal lines, spiral, etc.
+
+function setup() {
+  createCanvas(400, 400);
+  // Your code here
+}
+
+function seedSineWave() {
+  // Seed B along a sine wave
+}
+
+function seedGrid() {
+  // Seed B in a grid of small circles
+}
+
+function draw() {
+  // Simulation and rendering
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let gridA, gridB, nextA, nextB;
+let cols, rows, cellSize = 2;
+let dA = 1.0, dB = 0.5;
+let feed = 0.055, kill = 0.062;
+let seedMode = 0;
+
+function setup() {
+  createCanvas(400, 420);
+  pixelDensity(1);
+  cols = floor(400 / cellSize);
+  rows = floor(400 / cellSize);
+  resetSim();
+}
+
+function resetSim() {
+  gridA = make2D(cols, rows, 1.0);
+  gridB = make2D(cols, rows, 0.0);
+  nextA = make2D(cols, rows, 0.0);
+  nextB = make2D(cols, rows, 0.0);
+
+  if (seedMode === 0) seedSineWave();
+  else if (seedMode === 1) seedGrid();
+  else seedSpiral();
+}
+
+function seedSineWave() {
+  for (let x = 0; x < cols; x++) {
+    let y = floor(rows/2 + sin(x * 0.1) * 30);
+    for (let dy = -3; dy <= 3; dy++) {
+      let yy = (y + dy + rows) % rows;
+      gridB[x][yy] = 1.0;
+    }
+  }
+}
+
+function seedGrid() {
+  let spacing = 30;
+  for (let gx = spacing; gx < cols; gx += spacing) {
+    for (let gy = spacing; gy < rows; gy += spacing) {
+      for (let dx = -3; dx <= 3; dx++)
+        for (let dy = -3; dy <= 3; dy++)
+          if (dx*dx+dy*dy < 9)
+            gridB[(gx+dx+cols)%cols][(gy+dy+rows)%rows] = 1.0;
+    }
+  }
+}
+
+function seedSpiral() {
+  let cx = cols/2, cy = rows/2;
+  for (let angle = 0; angle < TWO_PI * 3; angle += 0.05) {
+    let r = angle * 5;
+    let x = floor(cx + cos(angle) * r);
+    let y = floor(cy + sin(angle) * r);
+    if (x >= 0 && x < cols && y >= 0 && y < rows) {
+      for (let dx = -2; dx <= 2; dx++)
+        for (let dy = -2; dy <= 2; dy++)
+          gridB[(x+dx+cols)%cols][(y+dy+rows)%rows] = 1.0;
+    }
+  }
+}
+
+function draw() {
+  for (let s = 0; s < 10; s++) {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        let a = gridA[x][y], b = gridB[x][y];
+        let lA = lap(gridA,x,y), lB = lap(gridB,x,y);
+        let abb = a*b*b;
+        nextA[x][y] = constrain(a + dA*lA - abb + feed*(1-a), 0, 1);
+        nextB[x][y] = constrain(b + dB*lB + abb - (kill+feed)*b, 0, 1);
+      }
+    }
+    [gridA, nextA] = [nextA, gridA];
+    [gridB, nextB] = [nextB, gridB];
+  }
+
+  loadPixels();
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let val = floor(constrain((gridA[x][y]-gridB[x][y])*255, 0, 255));
+      for (let px = 0; px < cellSize; px++)
+        for (let py = 0; py < cellSize; py++) {
+          let idx = ((y*cellSize+py)*width + x*cellSize+px)*4;
+          pixels[idx]=val; pixels[idx+1]=val;
+          pixels[idx+2]=val; pixels[idx+3]=255;
+        }
+    }
+  }
+  updatePixels();
+
+  let names = ["Sine Wave", "Grid", "Spiral"];
+  fill(0); noStroke(); rect(0, 400, 400, 20);
+  fill(255); textSize(12); textFont('monospace');
+  text("Seed: " + names[seedMode] + " | Press 1/2/3 to change", 10, 414);
+}
+
+function keyPressed() {
+  if (key === '1') { seedMode = 0; resetSim(); }
+  if (key === '2') { seedMode = 1; resetSim(); }
+  if (key === '3') { seedMode = 2; resetSim(); }
+}
+
+function lap(g,x,y) {
+  return g[(x-1+cols)%cols][(y-1+rows)%rows]*0.05
+       + g[x][(y-1+rows)%rows]*0.2
+       + g[(x+1)%cols][(y-1+rows)%rows]*0.05
+       + g[(x-1+cols)%cols][y]*0.2 + g[x][y]*(-1.0)
+       + g[(x+1)%cols][y]*0.2
+       + g[(x-1+cols)%cols][(y+1)%rows]*0.05
+       + g[x][(y+1)%rows]*0.2
+       + g[(x+1)%cols][(y+1)%rows]*0.05;
+}
+
+function make2D(w,h,val) {
+  let a = new Array(w);
+  for (let i=0;i<w;i++) a[i] = new Array(h).fill(val);
+  return a;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- ===============================================================
+           CHAPTER NAVIGATION
+           =============================================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch06/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 6: GLSL Patterns &amp; Cellular Automata</span>
+        </a>
+        <a href="../ch08/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 8: Particle Systems &amp; Simulation</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

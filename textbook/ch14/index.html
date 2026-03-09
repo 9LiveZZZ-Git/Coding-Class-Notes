@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 14: WebGPU, Vectors &amp; Computation — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch14">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 14: WebGPU, Vectors &amp; Computation</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 14: WebGPU, Vectors &amp; Computation</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Vectors, linear algebra, color permutations, GPU compute, debugging, and the foundations of digital computation</p>
+
+
+      <!-- ===============================================
+           SECTION 14.1 — VECTORS AND LINEAR ALGEBRA
+           =============================================== -->
+      <h2 id="vectors-linear-algebra">14.1 Vectors and Linear Algebra</h2>
+
+      <p>Vectors are among the most important mathematical objects in creative coding. Every time you move a particle, steer an agent, compute a force, or describe a direction, you are working with vectors. This section builds a thorough understanding of vectors from the ground up.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Vector</strong> &mdash; A mathematical object that has both <em>magnitude</em> (length) and <em>direction</em>. Vectors are distinct from <em>scalars</em>, which have magnitude only (e.g., temperature, mass).</p>
+      </div>
+
+      <h3>14.1.1 Geometric Interpretation</h3>
+
+      <p>A vector can be visualized as an arrow pointing from one location to another. The arrow's length represents the magnitude and its orientation represents the direction. Importantly, vectors do not have a fixed position &mdash; the vector $(3, 4)$ is the same regardless of where you draw it. It encodes a <em>displacement</em>: "move 3 units right and 4 units up."</p>
+
+      <h3>14.1.2 Component Form</h3>
+
+      <p>In 2D, a vector $\vec{v}$ is written as an ordered pair of components:</p>
+
+      <p>$$\vec{v} = (v_x, v_y)$$</p>
+
+      <p>In 3D, we add a third component: $\vec{v} = (v_x, v_y, v_z)$. Each component represents the vector's projection onto the corresponding axis.</p>
+
+      <h3>14.1.3 Magnitude</h3>
+
+      <p>The <strong>magnitude</strong> (or length) of a 2D vector is computed using the Pythagorean theorem:</p>
+
+      <p>$$|\vec{v}| = \sqrt{v_x^2 + v_y^2}$$</p>
+
+      <p>For a 3D vector: $|\vec{v}| = \sqrt{v_x^2 + v_y^2 + v_z^2}$.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>When you only need to <em>compare</em> magnitudes (e.g., "is this particle closer than that one?"), use the <strong>squared magnitude</strong> $v_x^2 + v_y^2$ instead. It avoids the expensive square root operation, which matters at scale in simulations.</p>
+      </div>
+
+      <h3>14.1.4 Unit Vectors</h3>
+
+      <p>A <strong>unit vector</strong> has a magnitude of exactly 1. It encodes pure direction with no magnitude information. To <em>normalize</em> a vector (convert it to a unit vector), divide each component by the magnitude:</p>
+
+      <p>$$\hat{v} = \frac{\vec{v}}{|\vec{v}|} = \left(\frac{v_x}{|\vec{v}|}, \frac{v_y}{|\vec{v}|}\right)$$</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Normalizing a zero vector $(0, 0)$ produces a division by zero, resulting in <code>NaN</code>. Always check that the magnitude is greater than a small threshold before normalizing: <code>if (v.mag() > 0.001) v.normalize();</code></p>
+      </div>
+
+      <h3>14.1.5 Vector Arithmetic</h3>
+
+      <p><strong>Addition</strong> combines two vectors component-wise. Geometrically, place the second vector's tail at the first vector's head:</p>
+
+      <p>$$\vec{a} + \vec{b} = (a_x + b_x,\ a_y + b_y)$$</p>
+
+      <p><strong>Subtraction</strong> gives the vector <em>from</em> $\vec{b}$ <em>to</em> $\vec{a}$:</p>
+
+      <p>$$\vec{a} - \vec{b} = (a_x - b_x,\ a_y - b_y)$$</p>
+
+      <p><strong>Scalar multiplication</strong> scales a vector's magnitude without changing its direction (unless the scalar is negative, which reverses direction):</p>
+
+      <p>$$k \cdot \vec{v} = (k \cdot v_x,\ k \cdot v_y)$$</p>
+
+      <h3>14.1.6 The Dot Product</h3>
+
+      <p>The <strong>dot product</strong> (or scalar product) of two vectors produces a single number:</p>
+
+      <p>$$\vec{a} \cdot \vec{b} = a_x b_x + a_y b_y$$</p>
+
+      <p>This value has a deep geometric meaning. It equals:</p>
+
+      <p>$$\vec{a} \cdot \vec{b} = |\vec{a}|\ |\vec{b}|\ \cos\theta$$</p>
+
+      <p>where $\theta$ is the angle between the two vectors. This gives us three critical interpretations:</p>
+
+      <ul>
+        <li><strong>Positive dot product</strong>: the vectors point in roughly the same direction ($\theta &lt; 90^\circ$)</li>
+        <li><strong>Zero dot product</strong>: the vectors are perpendicular ($\theta = 90^\circ$)</li>
+        <li><strong>Negative dot product</strong>: the vectors point in roughly opposite directions ($\theta &gt; 90^\circ$)</li>
+      </ul>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Angle from Dot Product</div>
+        <p>To find the angle between two vectors, rearrange the formula:</p>
+        <p>$$\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}|\ |\vec{b}|}\right)$$</p>
+        <p>If both vectors are unit vectors, this simplifies to $\theta = \arccos(\vec{a} \cdot \vec{b})$.</p>
+      </div>
+
+      <p>The dot product is used extensively in creative coding: lighting calculations in shaders, detecting whether an agent can "see" a target (field of view), computing projections, and measuring alignment between motion and a desired direction.</p>
+
+      <h3>14.1.8 Scalar Projection</h3>
+
+      <p>The <strong>scalar projection</strong> of $\vec{a}$ onto $\vec{b}$ tells you how far along $\vec{b}$ the vector $\vec{a}$ reaches:</p>
+
+      <p>$$\text{proj}_{\vec{b}}\vec{a} = \frac{\vec{a} \cdot \vec{b}}{|\vec{b}|}$$</p>
+
+      <p>The <strong>vector projection</strong> gives the actual component of $\vec{a}$ in the direction of $\vec{b}$:</p>
+
+      <p>$$\text{proj}_{\vec{b}}\vec{a} = \frac{\vec{a} \cdot \vec{b}}{|\vec{b}|^2}\vec{b}$$</p>
+
+      <p>Projection is used in physics to decompose forces into components (e.g., gravity on a slope: project the gravity vector onto the slope direction to get the sliding force and onto the slope normal to get the compression force).</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Gram-Schmidt Orthogonalization</div>
+        <p>Given two non-parallel vectors, you can create two perpendicular vectors using projection. Subtract the projection of $\vec{b}$ onto $\vec{a}$ from $\vec{b}$: the result $\vec{b} - \text{proj}_{\vec{a}}\vec{b}$ is perpendicular to $\vec{a}$. This process, extended to more vectors, is called Gram-Schmidt orthogonalization.</p>
+      </div>
+
+      <h3>14.1.7 The Cross Product (3D)</h3>
+
+      <p>The <strong>cross product</strong> is defined only for 3D vectors and produces a new vector that is perpendicular to both inputs:</p>
+
+      <p>$$\vec{a} \times \vec{b} = (a_y b_z - a_z b_y,\ a_z b_x - a_x b_z,\ a_x b_y - a_y b_x)$$</p>
+
+      <p>Its magnitude equals $|\vec{a}|\ |\vec{b}|\ \sin\theta$, which represents the area of the parallelogram formed by the two vectors. The direction follows the <em>right-hand rule</em>. In 2D creative coding, the "2D cross product" $a_x b_y - a_y b_x$ gives a scalar whose sign tells you which side of vector $\vec{a}$ the vector $\vec{b}$ lies on &mdash; useful for steering behaviors.</p>
+
+      <h3>14.1.9 Linear Interpolation (Lerp)</h3>
+
+      <p><strong>Linear interpolation</strong> blends between two vectors using a parameter $t \in [0, 1]$:</p>
+
+      <p>$$\text{lerp}(\vec{a}, \vec{b}, t) = (1 - t)\vec{a} + t\vec{b}$$</p>
+
+      <p>At $t = 0$ you get $\vec{a}$; at $t = 1$ you get $\vec{b}$; at $t = 0.5$ you get the midpoint. Lerp is used for smooth animation, easing, color blending, and camera motion. A common pattern for smooth following:</p>
+
+      <pre><code>// Each frame, move 5% of the way toward the target
+pos = p5.Vector.lerp(pos, target, 0.05);</code></pre>
+
+      <p>This creates exponential decay toward the target &mdash; fast when far away, slow when close &mdash; producing natural-looking smooth motion without requiring explicit velocity or acceleration variables.</p>
+
+      <p>You can also lerp between colors, angles, and any other numeric quantity. p5.js provides standalone <code>lerp(a, b, t)</code> and <code>lerpColor(c1, c2, t)</code> functions for these cases.</p>
+
+      <h3>14.1.10 p5.Vector Methods</h3>
+
+      <p>The p5.js library provides a <code>p5.Vector</code> class that implements all of these operations. Here is a summary of the most important methods:</p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Description</th><th>Returns</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>createVector(x, y)</code></td><td>Create a new vector</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.add(other)</code></td><td>Add another vector (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.sub(other)</code></td><td>Subtract another vector (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.mult(n)</code></td><td>Scale by n (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.div(n)</code></td><td>Divide by n (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.mag()</code></td><td>Compute magnitude</td><td>Number</td></tr>
+          <tr><td><code>v.magSq()</code></td><td>Compute magnitude squared (fast)</td><td>Number</td></tr>
+          <tr><td><code>v.normalize()</code></td><td>Set magnitude to 1 (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.setMag(n)</code></td><td>Set magnitude to n (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.limit(n)</code></td><td>Cap magnitude at n</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.heading()</code></td><td>Angle of vector in radians</td><td>Number</td></tr>
+          <tr><td><code>v.rotate(angle)</code></td><td>Rotate by angle (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.dot(other)</code></td><td>Dot product</td><td>Number</td></tr>
+          <tr><td><code>v.cross(other)</code></td><td>Cross product</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.dist(other)</code></td><td>Distance to other vector</td><td>Number</td></tr>
+          <tr><td><code>v.lerp(other, t)</code></td><td>Linear interpolation (mutates v)</td><td>p5.Vector</td></tr>
+          <tr><td><code>v.copy()</code></td><td>Create a clone</td><td>p5.Vector</td></tr>
+        </tbody>
+      </table>
+
+      <!-- Interactive: Vector Arithmetic Visualizer -->
+      <p>The following interactive sketch lets you visualize vector addition and subtraction. Drag the red and blue arrow heads to change the vectors; the green arrow shows their sum.</p>
+
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Vector Arithmetic Visualizer</span>
+        </div>
+        <textarea class="cm-editor">let aEnd, bEnd;
+let dragging = null;
+let origin;
+
+function setup() {
+  createCanvas(450, 400);
+  origin = createVector(width / 2, height / 2);
+  aEnd = createVector(120, -60);
+  bEnd = createVector(40, -120);
+}
+
+function draw() {
+  background(245);
+  translate(origin.x, origin.y);
+
+  // Grid
+  stroke(220);
+  strokeWeight(1);
+  for (let i = -200; i <= 200; i += 40) {
+    line(i, -200, i, 200);
+    line(-200, i, 200, i);
+  }
+  stroke(180);
+  line(-200, 0, 200, 0);
+  line(0, -200, 0, 200);
+
+  // Vector A (red)
+  stroke(220, 60, 60);
+  strokeWeight(3);
+  fill(220, 60, 60);
+  drawArrow(0, 0, aEnd.x, aEnd.y);
+  noStroke();
+  textSize(14);
+  textFont('Inter');
+  text('A (' + nf(aEnd.x/40,1,1) + ', ' + nf(-aEnd.y/40,1,1) + ')', aEnd.x + 8, aEnd.y - 8);
+
+  // Vector B (blue)
+  stroke(60, 100, 220);
+  strokeWeight(3);
+  fill(60, 100, 220);
+  drawArrow(0, 0, bEnd.x, bEnd.y);
+  noStroke();
+  fill(60, 100, 220);
+  text('B (' + nf(bEnd.x/40,1,1) + ', ' + nf(-bEnd.y/40,1,1) + ')', bEnd.x + 8, bEnd.y - 8);
+
+  // Sum A+B (green)
+  let sum = p5.Vector.add(aEnd, bEnd);
+  stroke(40, 180, 80);
+  strokeWeight(3);
+  fill(40, 180, 80);
+  drawArrow(0, 0, sum.x, sum.y);
+  noStroke();
+  fill(40, 180, 80);
+  text('A+B', sum.x + 8, sum.y - 8);
+
+  // Parallelogram
+  stroke(40, 180, 80, 60);
+  strokeWeight(1);
+  noFill();
+  beginShape();
+  vertex(0, 0);
+  vertex(aEnd.x, aEnd.y);
+  vertex(sum.x, sum.y);
+  vertex(bEnd.x, bEnd.y);
+  endShape(CLOSE);
+
+  // Drag handles
+  fill(220, 60, 60);
+  noStroke();
+  ellipse(aEnd.x, aEnd.y, 14, 14);
+  fill(60, 100, 220);
+  ellipse(bEnd.x, bEnd.y, 14, 14);
+
+  // Legend
+  fill(80);
+  textSize(12);
+  text('Drag the dots to move vectors', -200, 190);
+}
+
+function drawArrow(x1, y1, x2, y2) {
+  line(x1, y1, x2, y2);
+  let angle = atan2(y2 - y1, x2 - x1);
+  let sz = 10;
+  triangle(
+    x2, y2,
+    x2 - sz * cos(angle - 0.4), y2 - sz * sin(angle - 0.4),
+    x2 - sz * cos(angle + 0.4), y2 - sz * sin(angle + 0.4)
+  );
+}
+
+function mousePressed() {
+  let mx = mouseX - origin.x;
+  let my = mouseY - origin.y;
+  if (dist(mx, my, aEnd.x, aEnd.y) < 15) dragging = aEnd;
+  else if (dist(mx, my, bEnd.x, bEnd.y) < 15) dragging = bEnd;
+}
+
+function mouseDragged() {
+  if (dragging) {
+    dragging.x = mouseX - origin.x;
+    dragging.y = mouseY - origin.y;
+  }
+}
+
+function mouseReleased() {
+  dragging = null;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.2 — MATRICES AND TRANSFORMATIONS
+           =============================================== -->
+      <h2 id="matrices-transformations">14.2 Matrices and Transformations</h2>
+
+      <p>A <strong>matrix</strong> is a rectangular grid of numbers. In creative coding, matrices encode <em>transformations</em> &mdash; operations like rotation, scaling, reflection, and shearing that change the positions of points in space. Every time you call <code>rotate()</code> or <code>scale()</code> in p5.js, you are multiplying by a transformation matrix behind the scenes.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Transformation Matrix</strong> &mdash; A matrix $M$ that maps an input vector $\vec{v}$ to an output vector $\vec{v}'$ via matrix multiplication: $\vec{v}' = M \cdot \vec{v}$.</p>
+      </div>
+
+      <h3>14.2.1 The 2x2 Rotation Matrix</h3>
+
+      <p>To rotate a 2D point $(x, y)$ by angle $\theta$ counterclockwise around the origin:</p>
+
+      <p>$$\begin{pmatrix} x' \\ y' \end{pmatrix} = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix} \begin{pmatrix} x \\ y \end{pmatrix}$$</p>
+
+      <p>Expanding the multiplication gives:</p>
+
+      <p>$$x' = x\cos\theta - y\sin\theta$$</p>
+      <p>$$y' = x\sin\theta + y\cos\theta$$</p>
+
+      <h3>14.2.2 Scaling Matrix</h3>
+
+      <p>$$\begin{pmatrix} s_x & 0 \\ 0 & s_y \end{pmatrix}$$</p>
+
+      <p>This scales $x$ by $s_x$ and $y$ by $s_y$. If $s_x = s_y$, the scaling is <em>uniform</em>. If they differ, the shape is stretched or compressed along one axis.</p>
+
+      <h3>14.2.3 Homogeneous Coordinates</h3>
+
+      <p>A 2x2 matrix cannot represent <em>translation</em> (moving a point). To include translation, we use <strong>homogeneous coordinates</strong> &mdash; we add a third component (always 1) and use a 3x3 matrix:</p>
+
+      <p>$$\begin{pmatrix} x' \\ y' \\ 1 \end{pmatrix} = \begin{pmatrix} a & b & t_x \\ c & d & t_y \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} x \\ y \\ 1 \end{pmatrix}$$</p>
+
+      <p>This lets us combine rotation, scaling, and translation in a single matrix multiplication.</p>
+
+      <h3>14.2.4 Composition of Transformations</h3>
+
+      <p>Multiple transformations can be combined by multiplying their matrices. If you first rotate by matrix $R$ then translate by matrix $T$, the combined transformation is $T \cdot R$. Note that matrix multiplication is <strong>not commutative</strong>: $T \cdot R \neq R \cdot T$ in general. The order matters &mdash; rotating then translating produces a different result from translating then rotating.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>In p5.js, transformations are applied in <em>reverse order</em> of how they are written. The call <code>translate(100, 0); rotate(PI/4);</code> first rotates, then translates. Think of it as building up a coordinate system: you move the paper, then spin it.</p>
+      </div>
+
+      <!-- Interactive: Matrix Transformation Demo -->
+      <p>This demo shows a shape being transformed by a 2x2 matrix. Adjust the matrix values to see rotation, scaling, shearing, and reflection.</p>
+
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Matrix Transformation Demo</span>
+        </div>
+        <textarea class="cm-editor">// Matrix transformation demo
+// Change a, b, c, d to see different transforms
+let angle = 0;
+
+function setup() {
+  createCanvas(450, 400);
+  textFont('monospace');
+}
+
+function draw() {
+  background(240);
+  angle += 0.015;
+
+  // Animated rotation matrix
+  let a = cos(angle);
+  let b = -sin(angle);
+  let c = sin(angle);
+  let d = cos(angle);
+
+  // Also add some scaling
+  let scale = 1.0 + 0.3 * sin(angle * 1.7);
+  a *= scale;
+  b *= scale;
+  c *= scale;
+  d *= scale;
+
+  translate(width/2, height/2);
+
+  // Draw axes
+  stroke(200);
+  strokeWeight(1);
+  line(-180, 0, 180, 0);
+  line(0, -180, 0, 180);
+
+  // Original shape (unit square corners)
+  let pts = [
+    {x: -40, y: -40},
+    {x:  40, y: -40},
+    {x:  40, y:  40},
+    {x: -40, y:  40}
+  ];
+
+  // Draw original (gray)
+  stroke(180);
+  strokeWeight(1);
+  fill(180, 180, 180, 50);
+  beginShape();
+  for (let p of pts) vertex(p.x, p.y);
+  endShape(CLOSE);
+
+  // Transform and draw (blue)
+  stroke(60, 100, 220);
+  strokeWeight(2);
+  fill(60, 100, 220, 60);
+  beginShape();
+  for (let p of pts) {
+    let tx = a * p.x + b * p.y;
+    let ty = c * p.x + d * p.y;
+    vertex(tx, ty);
+  }
+  endShape(CLOSE);
+
+  // Draw basis vectors
+  strokeWeight(3);
+  // Transformed x-axis (red)
+  stroke(220, 60, 60);
+  line(0, 0, a * 60, c * 60);
+  // Transformed y-axis (green)
+  stroke(40, 180, 80);
+  line(0, 0, b * 60, d * 60);
+
+  // Show matrix values
+  resetMatrix();
+  fill(50);
+  noStroke();
+  textSize(13);
+  text('Matrix:', 15, 25);
+  text('| ' + nf(a,1,2) + '  ' + nf(b,1,2) + ' |', 15, 45);
+  text('| ' + nf(c,1,2) + '  ' + nf(d,1,2) + ' |', 15, 63);
+  fill(100);
+  textSize(11);
+  text('Gray = original, Blue = transformed', 15, 390);
+  text('Red = x-basis, Green = y-basis', 15, 375);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <h3>14.2.5 Inverse Transformations</h3>
+
+      <p>Every invertible transformation has an <strong>inverse</strong> that undoes it. For a 2x2 matrix $M = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, the inverse is:</p>
+
+      <p>$$M^{-1} = \frac{1}{ad - bc}\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}$$</p>
+
+      <p>The value $\det(M) = ad - bc$ is the <strong>determinant</strong>. If the determinant is zero, the matrix has no inverse &mdash; the transformation collapses space into a lower dimension (e.g., squishing 2D into a line).</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The determinant tells you how the matrix changes area. A determinant of 2 means areas double; a determinant of -1 means areas stay the same size but orientation flips (reflection). A determinant of 0 means the transformation is irreversible &mdash; information is lost.</p>
+      </div>
+
+      <h3>14.2.6 Reflection and Shearing</h3>
+
+      <p><strong>Reflection</strong> across the x-axis uses the matrix $\begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}$. Reflection across the y-axis: $\begin{pmatrix} -1 & 0 \\ 0 & 1 \end{pmatrix}$. Reflection across the line $y = x$: $\begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$.</p>
+
+      <p><strong>Shearing</strong> shifts coordinates proportionally to the other axis. A horizontal shear: $\begin{pmatrix} 1 & k \\ 0 & 1 \end{pmatrix}$ adds $k \cdot y$ to the x-coordinate of every point. This is how italic text is created &mdash; it is a shear transformation applied to upright letterforms.</p>
+
+      <h3>14.2.7 Transformations in p5.js</h3>
+
+      <p>p5.js provides high-level transformation functions that build the transformation matrix for you:</p>
+
+      <pre><code>translate(tx, ty);   // Move the origin
+rotate(angle);       // Rotate around the origin
+scale(sx, sy);       // Scale from the origin
+shearX(angle);       // Horizontal shear
+shearY(angle);       // Vertical shear
+push(); pop();       // Save/restore transformation state
+resetMatrix();       // Reset to identity</code></pre>
+
+      <p>Internally, p5.js maintains a <strong>transformation stack</strong>. Each call to <code>push()</code> saves the current matrix, and <code>pop()</code> restores it. This is essential for drawing complex scenes where different objects have different transformations.</p>
+
+      <pre><code>// Example: draw two rotating squares independently
+push();
+  translate(150, 200);
+  rotate(angle);
+  rect(-25, -25, 50, 50);  // rotates around (150, 200)
+pop();
+
+push();
+  translate(350, 200);
+  rotate(-angle * 0.7);
+  rect(-25, -25, 50, 50);  // rotates around (350, 200)
+pop();</code></pre>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Matrix transformations in computer graphics were formalized by Ivan Sutherland in his 1963 PhD thesis "Sketchpad," the first interactive computer graphics program. The use of homogeneous coordinates for combining translation with linear transformations was adapted from projective geometry, a branch of mathematics dating to the 17th century.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.3 — COLOR THEORY AND PERMUTATIONS
+           =============================================== -->
+      <h2 id="color-permutations">14.3 Color Theory and Permutations</h2>
+
+      <p>Color is a fundamental element of visual art and design. In this section, we combine color theory with <strong>combinatorics</strong> &mdash; the branch of mathematics that counts arrangements and selections of objects.</p>
+
+      <h3>14.3.1 The RGB Color Cube</h3>
+
+      <p>In digital art, colors are specified by Red, Green, and Blue channels, each ranging from 0 to 255 (or 0.0 to 1.0). This creates a three-dimensional color space &mdash; a cube where each axis represents one channel. There are $256^3 = 16{,}777{,}216$ possible colors in 8-bit RGB.</p>
+
+      <h3>14.3.2 Combinatorics: Counting Arrangements</h3>
+
+      <p>When we systematically generate color palettes, we encounter combinatorial questions.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Factorial</strong> &mdash; $n! = n \times (n-1) \times (n-2) \times \cdots \times 1$. It counts the number of ways to arrange $n$ distinct items in a line. For example, $5! = 120$.</p>
+      </div>
+
+      <p><strong>Permutations</strong> count ordered arrangements. The number of ways to choose and arrange $r$ items from $n$ distinct items is:</p>
+
+      <p>$$P(n, r) = \frac{n!}{(n - r)!}$$</p>
+
+      <p><strong>Combinations</strong> count unordered selections (where arrangement does not matter):</p>
+
+      <p>$$C(n, r) = \binom{n}{r} = \frac{n!}{r!(n - r)!}$$</p>
+
+      <h3>14.3.3 RGB Permutation Palettes</h3>
+
+      <p>If we allow each of R, G, B to take one of $k$ evenly spaced values, we generate $k^3$ distinct colors. For example, with $k = 3$ values ($0, 0.5, 1.0$), we get $3^3 = 27$ colors &mdash; a systematic sampling of the color cube.</p>
+
+      <h3>14.3.4 Color Harmony</h3>
+
+      <p>Color harmony describes pleasing color combinations based on their positions on the <strong>color wheel</strong> (HSB hue):</p>
+
+      <ul>
+        <li><strong>Complementary</strong>: two colors 180 degrees apart (e.g., red and cyan)</li>
+        <li><strong>Analogous</strong>: colors within 30 degrees of each other (e.g., red, orange, yellow)</li>
+        <li><strong>Triadic</strong>: three colors evenly spaced at 120 degrees (e.g., red, green, blue)</li>
+        <li><strong>Split-complementary</strong>: a base color plus two colors adjacent to its complement</li>
+        <li><strong>Tetradic (square)</strong>: four colors at 90-degree intervals</li>
+      </ul>
+
+      <h3>14.3.5 Perceived Brightness</h3>
+
+      <p>Human vision does not perceive R, G, and B equally. Green appears brightest. The standard luminance formula for perceived brightness is:</p>
+
+      <p>$$L = 0.299R + 0.587G + 0.114B$$</p>
+
+      <p>Use this to automatically choose light vs. dark text on colored backgrounds.</p>
+
+      <h3>14.3.6 HSB Color Space</h3>
+
+      <p>While RGB treats color as a mixture of light primaries, <strong>HSB</strong> (Hue, Saturation, Brightness) models color as humans perceive it:</p>
+
+      <ul>
+        <li><strong>Hue</strong> (0-360): the color's position on the color wheel (0 = red, 120 = green, 240 = blue)</li>
+        <li><strong>Saturation</strong> (0-100): how vivid the color is (0 = gray, 100 = fully saturated)</li>
+        <li><strong>Brightness</strong> (0-100): how light or dark (0 = black, 100 = full brightness)</li>
+      </ul>
+
+      <p>HSB makes it easy to create color harmonies programmatically:</p>
+
+      <pre><code>colorMode(HSB, 360, 100, 100);
+
+// Complementary: 180 degrees apart
+let hue = 30; // orange
+fill(hue, 80, 90);            // orange
+fill((hue + 180) % 360, 80, 90); // blue (complement)
+
+// Triadic: 120 degrees apart
+fill(hue, 80, 90);
+fill((hue + 120) % 360, 80, 90);
+fill((hue + 240) % 360, 80, 90);
+
+// Analogous: 30 degrees apart
+for (let i = -2; i <= 2; i++) {
+  fill((hue + i * 30 + 360) % 360, 80, 90);
+}</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>When generating color palettes algorithmically, work in HSB. Vary hue for distinct colors, reduce saturation for muted/pastel palettes, and adjust brightness for contrast. Convert to RGB only for final output.</p>
+      </div>
+
+      <h3>14.3.7 Generating Permutations Programmatically</h3>
+
+      <p>To generate all permutations of an array in JavaScript, you can use a recursive approach:</p>
+
+      <pre><code>function getPermutations(arr) {
+  if (arr.length <= 1) return [arr];
+  let result = [];
+  for (let i = 0; i < arr.length; i++) {
+    let rest = arr.slice(0, i).concat(arr.slice(i + 1));
+    let perms = getPermutations(rest);
+    for (let perm of perms) {
+      result.push([arr[i], ...perm]);
+    }
+  }
+  return result;
+}
+
+// Example: permutations of [1, 2, 3]
+// Returns: [[1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]]</code></pre>
+
+      <p>For $n$ items, this produces $n!$ permutations. Be careful: $10! = 3{,}628{,}800$ and $13! = 6{,}227{,}020{,}800$. Permutation counts grow extremely fast (faster than exponential), so this approach is only practical for small sets.</p>
+
+      <!-- Interactive: Color Permutation Generator -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Color Permutation Generator</span>
+        </div>
+        <textarea class="cm-editor">// Generate k^3 colors from k channel values
+// Try changing steps to 2, 3, 4, or 5
+let steps = 3;
+
+function setup() {
+  createCanvas(450, 380);
+  colorMode(RGB, 1.0);
+  noLoop();
+}
+
+function draw() {
+  background(0.95);
+
+  let values = [];
+  for (let i = 0; i < steps; i++) {
+    values.push(i / (steps - 1));
+  }
+
+  let colors = [];
+  for (let r of values)
+    for (let g of values)
+      for (let b of values)
+        colors.push({r, g, b});
+
+  // Sort by luminance
+  colors.sort((a, b) => {
+    let la = 0.299*a.r + 0.587*a.g + 0.114*a.b;
+    let lb = 0.299*b.r + 0.587*b.g + 0.114*b.b;
+    return la - lb;
+  });
+
+  // Draw swatches
+  let cols = ceil(sqrt(colors.length));
+  let sw = (width - 20) / cols - 4;
+  let sh = sw;
+
+  fill(0);
+  noStroke();
+  textSize(13);
+  textFont('Inter');
+  text(steps + ' steps per channel = ' +
+       colors.length + ' colors (sorted by luminance)', 10, 20);
+
+  for (let i = 0; i < colors.length; i++) {
+    let col = i % cols;
+    let row = floor(i / cols);
+    let c = colors[i];
+    noStroke();
+    fill(c.r, c.g, c.b);
+    rect(10 + col * (sw + 4), 35 + row * (sh + 4), sw, sh, 3);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 1 -->
+      <div class="quiz" data-id="ch14-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">If vectors $\vec{a}$ and $\vec{b}$ have a dot product of zero, what does this tell us about their relationship?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch14-q1" value="a"> They are parallel (pointing in the same direction)</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q1" value="b"> One of them must be the zero vector</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q1" value="c" data-correct> They are perpendicular (at a 90-degree angle)</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q1" value="d"> They have equal magnitude</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The dot product $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}|\cos\theta$. When it equals zero (and neither vector is zero), $\cos\theta = 0$, which means $\theta = 90^\circ$ &mdash; the vectors are perpendicular. This is used extensively in computer graphics for lighting and collision detection.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.4 — THE p5.Vector CLASS
+           =============================================== -->
+      <h2 id="p5-vector-class">14.4 The p5.Vector Class</h2>
+
+      <p>The <code>p5.Vector</code> class is the workhorse of physics simulations in p5.js. It wraps vector math into a clean, chainable API.</p>
+
+      <h3>14.4.1 Creating Vectors</h3>
+
+      <pre><code>let pos = createVector(100, 200);        // from components
+let dir = p5.Vector.random2D();          // random unit vector
+let angled = p5.Vector.fromAngle(PI/4);  // unit vector at 45 degrees
+let zero = createVector();               // (0, 0, 0)</code></pre>
+
+      <h3>14.4.2 Instance vs. Static Methods</h3>
+
+      <p><strong>Instance methods</strong> modify the vector they are called on (mutation):</p>
+
+      <pre><code>let a = createVector(3, 4);
+a.add(createVector(1, 1)); // a is now (4, 5)</code></pre>
+
+      <p><strong>Static methods</strong> create a <em>new</em> vector without modifying the inputs:</p>
+
+      <pre><code>let a = createVector(3, 4);
+let b = createVector(1, 1);
+let c = p5.Vector.add(a, b); // c is (4, 5); a and b unchanged</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Use static methods when you need to preserve the original vectors. Use <code>v.copy()</code> when you need to make a safe duplicate before mutating. A common pattern: <code>let desired = p5.Vector.sub(target, pos);</code> which computes the vector from <code>pos</code> to <code>target</code> without modifying either.</p>
+      </div>
+
+      <h3>14.4.3 Method Chaining</h3>
+
+      <p>Most instance methods return <code>this</code>, allowing chaining:</p>
+
+      <pre><code>let force = p5.Vector.sub(target, pos).normalize().mult(maxSpeed);</code></pre>
+
+      <p>This single line computes a direction from <code>pos</code> to <code>target</code>, normalizes it to a unit vector, and scales it to <code>maxSpeed</code>.</p>
+
+      <h3>14.4.4 The Position-Velocity-Acceleration Pattern</h3>
+
+      <p>Nearly every physics simulation in p5.js uses this fundamental pattern:</p>
+
+      <pre><code>// In setup:
+pos = createVector(x, y);
+vel = createVector(0, 0);
+acc = createVector(0, 0);
+
+// In draw:
+// 1. Compute forces and set acceleration
+// 2. vel.add(acc);
+// 3. vel.limit(maxSpeed);
+// 4. pos.add(vel);
+// 5. acc.mult(0);  // reset for next frame</code></pre>
+
+      <h3>14.4.5 Useful Patterns</h3>
+
+      <p><strong>Distance check</strong> (without sqrt):</p>
+      <pre><code>if (p5.Vector.sub(a, b).magSq() < threshold * threshold) { ... }</code></pre>
+
+      <p><strong>Linear interpolation</strong> &mdash; blend between two positions:</p>
+      <pre><code>let smooth = p5.Vector.lerp(current, target, 0.05);</code></pre>
+
+      <p><strong>Heading and rotation</strong>:</p>
+      <pre><code>let angle = vel.heading();  // direction of motion
+let perpendicular = vel.copy().rotate(HALF_PI);  // 90 degrees</code></pre>
+
+      <h3>14.4.6 Random and Directional Vectors</h3>
+
+      <p><code>p5.Vector.random2D()</code> returns a unit vector pointing in a random direction, uniformly distributed around the circle. This is useful for initial velocities, scatter effects, and random exploration:</p>
+
+      <pre><code>// Random initial velocity with magnitude between 1 and 3
+let vel = p5.Vector.random2D().mult(random(1, 3));
+
+// Random position within a circle of radius r
+let offset = p5.Vector.random2D().mult(random(r));</code></pre>
+
+      <p><code>p5.Vector.fromAngle(angle)</code> creates a unit vector at a specific angle (in radians). This is useful for creating vectors in known directions:</p>
+
+      <pre><code>// Spread 12 particles in a circle
+for (let i = 0; i < 12; i++) {
+  let angle = (TWO_PI / 12) * i;
+  let dir = p5.Vector.fromAngle(angle);
+  // dir points outward from center at even intervals
+}</code></pre>
+
+      <h3>14.4.7 Practical Example: Collision Detection</h3>
+
+      <p>Vectors simplify collision detection. To check if two circles overlap:</p>
+
+      <pre><code>let d = p5.Vector.dist(posA, posB);  // distance between centers
+if (d < radiusA + radiusB) {
+  // Collision! Compute response direction:
+  let normal = p5.Vector.sub(posB, posA).normalize();
+  // Push them apart along the normal
+}</code></pre>
+
+      <p>The <strong>normal vector</strong> (direction from A to B, normalized) tells you which direction to push the objects apart. The <strong>tangent vector</strong> (perpendicular to the normal) represents the sliding direction.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Elastic Collision Formula</div>
+        <p>For two equal-mass particles colliding in 2D, the velocity component along the collision normal is exchanged between the particles, while the tangential components remain unchanged. This is computed using dot products to project velocities onto the normal direction.</p>
+      </div>
+
+      <!-- Interactive: Steering Behavior -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>p5.Vector Steering Behavior (Seek)</span>
+        </div>
+        <textarea class="cm-editor">let pos, vel, acc;
+let maxSpeed = 5;
+let maxForce = 0.3;
+let trail = [];
+
+function setup() {
+  createCanvas(450, 380);
+  pos = createVector(width/2, height/2);
+  vel = createVector(2, -1);
+  acc = createVector(0, 0);
+}
+
+function draw() {
+  background(20, 20, 40);
+
+  // Target is mouse
+  let target = createVector(mouseX, mouseY);
+
+  // Seek steering: desired = target - pos
+  let desired = p5.Vector.sub(target, pos);
+  desired.setMag(maxSpeed);
+
+  // Steering = desired - velocity
+  let steer = p5.Vector.sub(desired, vel);
+  steer.limit(maxForce);
+
+  // Apply force
+  acc.add(steer);
+
+  // Update physics
+  vel.add(acc);
+  vel.limit(maxSpeed);
+  pos.add(vel);
+  acc.mult(0);
+
+  // Store trail
+  trail.push(pos.copy());
+  if (trail.length > 120) trail.shift();
+
+  // Draw trail
+  noFill();
+  for (let i = 1; i < trail.length; i++) {
+    let alpha = map(i, 0, trail.length, 0, 200);
+    stroke(100, 200, 255, alpha);
+    strokeWeight(2);
+    line(trail[i-1].x, trail[i-1].y, trail[i].x, trail[i].y);
+  }
+
+  // Draw target
+  noStroke();
+  fill(255, 100, 100, 150);
+  ellipse(target.x, target.y, 16, 16);
+
+  // Draw agent as triangle pointing in direction of motion
+  push();
+  translate(pos.x, pos.y);
+  rotate(vel.heading());
+  fill(100, 200, 255);
+  noStroke();
+  triangle(15, 0, -8, -7, -8, 7);
+  pop();
+
+  // Info
+  fill(150);
+  noStroke();
+  textSize(11);
+  textFont('monospace');
+  text('Speed: ' + nf(vel.mag(), 1, 2), 10, 20);
+  text('Move mouse to set target', 10, 370);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 2 -->
+      <div class="quiz" data-id="ch14-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which matrix rotates a point 90 degrees counterclockwise around the origin?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch14-q2" value="a"> $\begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix}$</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q2" value="b" data-correct> $\begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q2" value="c"> $\begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix}$</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q2" value="d"> $\begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}$</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The rotation matrix $\begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}$ with $\theta = 90^\circ$ gives $\cos 90^\circ = 0$ and $\sin 90^\circ = 1$, producing $\begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$. Applying this to $(1, 0)$ gives $(0, 1)$, confirming the 90-degree rotation.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.5 — INTRODUCTION TO WEBGPU
+           =============================================== -->
+      <h2 id="intro-webgpu">14.5 Introduction to WebGPU</h2>
+
+      <p>WebGPU is the next-generation graphics and compute API for the web, designed to replace WebGL. It provides lower overhead, better support for modern GPU features, and most importantly, <strong>compute shaders</strong> &mdash; programs that run general-purpose computation on the GPU without being tied to the rendering pipeline.</p>
+
+      <h3>14.5.1 The Evolution: WebGL to WebGPU</h3>
+
+      <p><strong>WebGL</strong> (2011) brought GPU rendering to the browser. It is based on OpenGL ES, a specification from the 1990s. While powerful, WebGL has limitations:</p>
+
+      <ul>
+        <li>No compute shaders &mdash; you must "hack" general computation through fragment shaders and textures</li>
+        <li>Data must be encoded as pixel colors (limited to 8-bit precision per channel in basic textures)</li>
+        <li>Shader language (GLSL) has no support for typed storage buffers</li>
+        <li>High overhead for state changes</li>
+      </ul>
+
+      <p><strong>WebGPU</strong> (2023+) is based on modern APIs (Vulkan, Metal, Direct3D 12) and addresses all of these issues:</p>
+
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>WebGL</th><th>WebGPU</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Shader language</td><td>GLSL</td><td>WGSL</td></tr>
+          <tr><td>Compute shaders</td><td>No</td><td>Yes</td></tr>
+          <tr><td>Data storage</td><td>Textures (8-bit)</td><td>Typed buffers (32-bit float)</td></tr>
+          <tr><td>API overhead</td><td>High</td><td>Low</td></tr>
+          <tr><td>Error handling</td><td>Silent failures</td><td>Explicit validation</td></tr>
+          <tr><td>Multi-threading</td><td>No</td><td>Yes (via workers)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>14.5.2 Compute Shaders vs. Fragment Shaders</h3>
+
+      <p>In WebGL, to run a computation on every pixel, you draw a full-screen quad and use a <em>fragment shader</em>. The GPU computes a color for each pixel. You store data as colors in textures and read them back. This works but is a workaround &mdash; you are "abusing" the rendering pipeline for general computation.</p>
+
+      <p>In WebGPU, <strong>compute shaders</strong> run independently of the rendering pipeline. You write to and read from typed <code>storage</code> buffers with full 32-bit floating-point precision. No more encoding data as pixel colors.</p>
+
+      <h3>14.5.3 Why WebGPU Matters for Creative Coding</h3>
+
+      <ul>
+        <li><strong>Particle systems</strong> with millions of particles, all updated on the GPU</li>
+        <li><strong>Cellular automata</strong> (Game of Life, Reaction-Diffusion) without texture encoding hacks</li>
+        <li><strong>Physics simulations</strong> with direct buffer access</li>
+        <li><strong>Machine learning</strong> inference on the GPU in the browser</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>WebGPU was developed by the W3C GPU for the Web Community Group, with contributions from Apple, Google, Mozilla, Microsoft, and Intel. Chrome shipped WebGPU support in version 113 (May 2023). Firefox and Safari have experimental support as of 2024-2025.</p>
+      </div>
+
+      <h3>14.5.4 Browser Support</h3>
+
+      <p>As of early 2026, WebGPU is available in:</p>
+      <ul>
+        <li>Chrome/Edge: Full support (desktop)</li>
+        <li>Firefox: Behind a flag (partial support)</li>
+        <li>Safari: Experimental support (macOS/iOS)</li>
+        <li>Mobile: Limited support, rapidly improving</li>
+      </ul>
+
+      <p>For this reason, the WebGPU examples in this chapter are shown as <strong>static code</strong>. The interactive p5.js runners above use CPU-based p5.js which works in all browsers.</p>
+
+      <h3>14.5.5 The WebGPU Pipeline</h3>
+
+      <p>A WebGPU program follows these steps:</p>
+
+      <ol>
+        <li><strong>Request adapter and device</strong> &mdash; get a handle to the GPU hardware</li>
+        <li><strong>Create buffers</strong> &mdash; allocate memory on the GPU for input and output data</li>
+        <li><strong>Write shader modules</strong> &mdash; WGSL code that runs on the GPU</li>
+        <li><strong>Create pipeline</strong> &mdash; compile shaders and configure the execution pipeline</li>
+        <li><strong>Create bind groups</strong> &mdash; connect buffers to shader variables</li>
+        <li><strong>Encode commands</strong> &mdash; specify what work to dispatch</li>
+        <li><strong>Submit to queue</strong> &mdash; send commands to the GPU for execution</li>
+      </ol>
+
+      <p>This is verbose &mdash; a simple "double every element" example requires ~80 lines of raw WebGPU code. Frameworks like seagulls reduce this to ~20 lines by handling steps 1, 4, 5, 6, and 7 automatically.</p>
+
+      <h3>14.5.6 WGSL vs. GLSL: Key Differences</h3>
+
+      <table>
+        <thead><tr><th>Feature</th><th>GLSL</th><th>WGSL</th></tr></thead>
+        <tbody>
+          <tr><td>Variable declaration</td><td><code>float x = 1.0;</code></td><td><code>var x: f32 = 1.0;</code></td></tr>
+          <tr><td>Vector construction</td><td><code>vec2(1.0, 2.0)</code></td><td><code>vec2f(1.0, 2.0)</code></td></tr>
+          <tr><td>Function syntax</td><td><code>float f(float x) { ... }</code></td><td><code>fn f(x: f32) -> f32 { ... }</code></td></tr>
+          <tr><td>Entry point</td><td><code>void main() { ... }</code></td><td><code>@compute fn main(...) { ... }</code></td></tr>
+          <tr><td>Swizzling</td><td><code>v.xy</code>, <code>v.rgb</code></td><td><code>v.xy</code> (no color aliases)</td></tr>
+          <tr><td>Type casting</td><td><code>float(i)</code></td><td><code>f32(i)</code></td></tr>
+          <tr><td>Storage buffers</td><td>Not available</td><td><code>var&lt;storage&gt;</code></td></tr>
+        </tbody>
+      </table>
+
+      <!-- Quiz 3 -->
+      <div class="quiz" data-id="ch14-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">How many different ordered arrangements (permutations) can be made from 5 distinct items taken 3 at a time? (i.e., what is $P(5, 3)$?)</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch14-q3" value="a"> 10</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q3" value="b"> 15</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q3" value="c" data-correct> 60</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q3" value="d"> 125</label></li>
+        </ul>
+        <div class="explanation">
+          <p>$P(5, 3) = \frac{5!}{(5-3)!} = \frac{120}{2} = 60$. There are 5 choices for the first position, 4 for the second, and 3 for the third: $5 \times 4 \times 3 = 60$.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.6 — SEAGULLS FRAMEWORK
+           =============================================== -->
+      <h2 id="seagulls-framework">14.6 Seagulls: A WebGPU Framework</h2>
+
+      <p><strong>Seagulls</strong> is a lightweight creative coding framework built on WebGPU, designed by Charlie Roberts for courses like MAT 200C. It provides a simplified API for writing compute and render shaders without needing to manage the verbose WebGPU boilerplate.</p>
+
+      <h3>14.6.1 Setup and Initialization</h3>
+
+      <pre><code>import Seagulls from 'seagulls';
+
+const sg = await Seagulls.init();  // Initialize WebGPU context</code></pre>
+
+      <p>Seagulls handles device creation, pipeline setup, and buffer management behind the scenes.</p>
+
+      <h3>14.6.2 The Compute-Render Pipeline</h3>
+
+      <p>A typical seagulls program has three stages:</p>
+
+      <ol>
+        <li><strong>Create data buffers</strong> on the CPU</li>
+        <li><strong>Run compute shaders</strong> to process the data on the GPU</li>
+        <li><strong>Run render shaders</strong> to display the results</li>
+      </ol>
+
+      <pre><code>const initialData = new Float32Array(512 * 512 * 2);
+// Fill initialData...
+
+const sg = await Seagulls.init();
+sg.buffer(initialData)
+  .compute(computeShader, [512 / 64])  // dispatch workgroups
+  .render(renderShader)
+  .run();</code></pre>
+
+      <h3>14.6.3 Passing Data Between CPU and GPU</h3>
+
+      <p>Data flows through <strong>storage buffers</strong> declared in WGSL:</p>
+
+      <pre><code>@group(0) @binding(0) var&lt;storage, read&gt;       input:  array&lt;f32&gt;;
+@group(0) @binding(1) var&lt;storage, read_write&gt; output: array&lt;f32&gt;;</code></pre>
+
+      <p>The <code>@group</code> and <code>@binding</code> attributes tell WebGPU which buffer to bind. The <code>read</code> and <code>read_write</code> qualifiers control access patterns. Seagulls handles the binding setup &mdash; you just specify the buffers in order.</p>
+
+      <h3>14.6.4 Double Buffering</h3>
+
+      <p>For simulations like cellular automata, you need two buffers: one to read from (current state) and one to write to (next state). After each frame, the buffers are swapped. Seagulls supports this pattern natively through its <code>.pingpong()</code> method.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Double buffering prevents read-write conflicts. If you read from and write to the same buffer simultaneously, some threads may read values that other threads have already modified, creating race conditions and visual artifacts.</p>
+      </div>
+
+
+      <h3>14.6.5 Uniforms in Seagulls</h3>
+
+      <p>Seagulls supports passing uniform values (mouse position, time, resolution) from JavaScript to shaders:</p>
+
+      <pre><code>const sg = await Seagulls.init();
+sg.buffer(data)
+  .uniforms({ mouse: [0, 0], resolution: [512, 512], frame: 0 })
+  .compute(computeShader, [512 / 64])
+  .render(renderShader)
+  .onframe(() => {
+    sg.uniforms.mouse = [mouseX / width, mouseY / height];
+    sg.uniforms.frame++;
+  })
+  .run();</code></pre>
+
+      <p>In the WGSL shader, uniforms are accessed through a struct:</p>
+
+      <pre><code>struct Uniforms {
+    mouse: vec2f,
+    resolution: vec2f,
+    frame: f32
+}
+@group(0) @binding(2) var&lt;uniform&gt; u: Uniforms;</code></pre>
+
+      <h3>14.6.6 Full Example: Cellular Automaton</h3>
+
+      <p>Here is a conceptual outline of a Game of Life implementation in seagulls:</p>
+
+      <pre><code>// 1. Create initial state buffer (512x512 grid)
+const state = new Float32Array(512 * 512);
+// Seed with random cells
+for (let i = 0; i < state.length; i++) {
+  state[i] = Math.random() > 0.8 ? 1.0 : 0.0;
+}
+
+// 2. Compute shader: count neighbors, apply rules
+const compute = `
+@group(0) @binding(0) var&lt;storage, read&gt; stateIn: array&lt;f32&gt;;
+@group(0) @binding(1) var&lt;storage, read_write&gt; stateOut: array&lt;f32&gt;;
+
+fn getCell(x: i32, y: i32) -> f32 {
+    let wx = (x + 512) % 512;
+    let wy = (y + 512) % 512;
+    return stateIn[u32(wy) * 512u + u32(wx)];
+}
+
+@compute @workgroup_size(8, 8)
+fn main(@builtin(global_invocation_id) id: vec3u) {
+    let x = i32(id.x);
+    let y = i32(id.y);
+    var neighbors: f32 = 0.0;
+    for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+            if (dx == 0 && dy == 0) { continue; }
+            neighbors += getCell(x + dx, y + dy);
+        }
+    }
+    let alive = getCell(x, y);
+    var next: f32 = 0.0;
+    if (alive > 0.5 && (neighbors == 2.0 || neighbors == 3.0)) {
+        next = 1.0;
+    } else if (alive < 0.5 && neighbors == 3.0) {
+        next = 1.0;
+    }
+    stateOut[id.y * 512u + id.x] = next;
+}
+`;
+
+// 3. Render shader maps state to pixel colors
+// 4. sg.buffer(state).compute(compute, [64, 64])
+//      .pingpong().render(render).run();</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>When writing compute shaders for grid simulations, always handle <strong>boundary wrapping</strong> explicitly. Using <code>(x + width) % width</code> ensures that cells at the edge correctly read their neighbors on the opposite side (toroidal topology).</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.7 — COMPUTE SHADERS
+           =============================================== -->
+      <h2 id="compute-shaders">14.7 Compute Shaders</h2>
+
+      <p>Compute shaders are the defining feature of WebGPU for creative coders. Unlike fragment shaders, which process one pixel at a time as part of the rendering pipeline, compute shaders run <em>independently</em> and can read/write arbitrary data.</p>
+
+      <h3>14.7.1 WGSL Language Basics</h3>
+
+      <p>WGSL (WebGPU Shading Language) uses Rust-like syntax with explicit types:</p>
+
+      <pre><code>// Variables
+var x: f32 = 1.0;           // 32-bit float
+var v: vec2f = vec2f(1.0, 2.0);  // 2D float vector
+var i: u32 = 42u;           // unsigned 32-bit integer
+
+// Functions
+fn square(x: f32) -> f32 {
+    return x * x;
+}
+
+// Built-in types
+// f32, i32, u32           -- scalars
+// vec2f, vec3f, vec4f     -- float vectors
+// vec2u, vec3u, vec4u     -- unsigned int vectors
+// mat2x2f, mat3x3f, mat4x4f -- matrices</code></pre>
+
+      <h3>14.7.2 Workgroups and Thread Indexing</h3>
+
+      <p>When you dispatch a compute shader, you specify how many <strong>workgroups</strong> to launch. Each workgroup contains a fixed number of threads (the <strong>workgroup size</strong>).</p>
+
+      <pre><code>@compute @workgroup_size(64)
+fn main(@builtin(global_invocation_id) id: vec3u) {
+    let index = id.x;
+    // Each thread processes element at 'index'
+}</code></pre>
+
+      <p>If you have 512 elements and a workgroup size of 64, you dispatch $512 / 64 = 8$ workgroups. Each thread gets a unique <code>global_invocation_id</code>.</p>
+
+      <p>For 2D grids (like images), use 2D workgroups:</p>
+
+      <pre><code>@compute @workgroup_size(8, 8)
+fn main(@builtin(global_invocation_id) id: vec3u) {
+    let x = id.x;
+    let y = id.y;
+    let index = y * width + x;
+}</code></pre>
+
+      <h3>14.7.3 Shared Memory and Synchronization</h3>
+
+      <p>Threads within a workgroup can share data through <strong>workgroup-shared memory</strong>, which is much faster than global memory:</p>
+
+      <pre><code>var&lt;workgroup&gt; tile: array&lt;f32, 64&gt;;
+
+@compute @workgroup_size(64)
+fn main(@builtin(local_invocation_id) lid: vec3u,
+        @builtin(global_invocation_id) gid: vec3u) {
+    // Load data into shared memory
+    tile[lid.x] = globalData[gid.x];
+
+    // Synchronize: wait for all threads to finish loading
+    workgroupBarrier();
+
+    // Now all threads can safely read from tile[]
+    let left = tile[max(lid.x, 1u) - 1u];
+    let right = tile[min(lid.x + 1u, 63u)];
+    let center = tile[lid.x];
+
+    // Process using neighbor values...
+}</code></pre>
+
+      <p>The <code>workgroupBarrier()</code> function ensures all threads in the workgroup have reached that point before any thread continues. Without it, some threads might read uninitialized values from shared memory.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Never assume threads execute in a particular order. Without explicit synchronization (barriers), the order in which threads read and write shared memory is undefined. This is the source of many subtle GPU programming bugs.</p>
+      </div>
+
+      <h3>14.7.4 Practical Considerations</h3>
+
+      <p><strong>Workgroup size selection</strong>: Common choices are 64, 128, or 256. The optimal size depends on the GPU hardware. For 2D grids, 8x8 = 64 or 16x16 = 256 are typical. Larger workgroups can share more data but may leave some GPU resources idle.</p>
+
+      <p><strong>Memory access patterns</strong>: GPU memory is fastest when adjacent threads access adjacent memory locations (coalesced access). If thread 0 accesses element 0, thread 1 accesses element 1, etc., memory reads are efficient. Random access patterns are much slower.</p>
+
+      <p><strong>Branching</strong>: Unlike CPUs, GPUs execute threads in lockstep within a warp/wavefront (typically 32 threads). If threads within a warp take different branches of an <code>if</code> statement, <em>both</em> branches execute and the unwanted results are discarded, wasting computation. Minimize divergent branching in shaders.</p>
+
+      <h3>14.7.5 When to Use Compute vs. Fragment</h3>
+
+      <ul>
+        <li><strong>Fragment shaders</strong>: when you are computing a color per pixel with no inter-pixel dependencies (fractals, patterns, color effects)</li>
+        <li><strong>Compute shaders</strong>: when you need to read from and write to arbitrary buffer locations, when you need shared memory between threads, or when the computation is not pixel-aligned (particle systems, physics, sorting)</li>
+      </ul>
+
+
+      <!-- ===============================================
+           SECTION 14.8 — GPU-ACCELERATED SIMULATIONS
+           =============================================== -->
+      <h2 id="gpu-simulations">14.8 GPU-Accelerated Simulations</h2>
+
+      <p>The GPU's massive parallelism makes it ideal for simulations where the same operation is applied to many data points simultaneously.</p>
+
+      <h3>14.8.1 Particle Systems on the GPU</h3>
+
+      <p>A particle system with 100,000 particles is impractical on the CPU but trivial on the GPU. The compute shader updates each particle's position and velocity in parallel:</p>
+
+      <pre><code>// Each particle: [posX, posY, velX, velY] = 4 floats
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) id: vec3u) {
+    let i = id.x * 4u;
+    var px = particles[i];
+    var py = particles[i + 1u];
+    var vx = particles[i + 2u];
+    var vy = particles[i + 3u];
+
+    // Apply gravity
+    vy += 0.001;
+
+    // Update position
+    px += vx;
+    py += vy;
+
+    // Bounce off walls
+    if (px < 0.0 || px > 1.0) { vx = -vx * 0.9; }
+    if (py < 0.0 || py > 1.0) { vy = -vy * 0.9; }
+
+    // Write back
+    particles[i]      = clamp(px, 0.0, 1.0);
+    particles[i + 1u] = clamp(py, 0.0, 1.0);
+    particles[i + 2u] = vx;
+    particles[i + 3u] = vy;
+}</code></pre>
+
+      <p>With a workgroup size of 256, processing 100,000 particles requires only 391 workgroups &mdash; easily within a single GPU dispatch. The render shader then draws each particle as a colored point based on its velocity.</p>
+
+      <h3>14.8.2 Reaction-Diffusion on WebGPU</h3>
+
+      <p>The Gray-Scott reaction-diffusion model is a perfect candidate for GPU computation. Each cell updates independently based on its neighbors. The equations:</p>
+
+      <p>$$A' = A + (D_A \nabla^2 A - AB^2 + f(1-A)) \cdot dt$$</p>
+      <p>$$B' = B + (D_B \nabla^2 B + AB^2 - (k+f)B) \cdot dt$$</p>
+
+      <p>In WGSL (seagulls):</p>
+
+      <pre><code>@compute @workgroup_size(8, 8)
+fn main(@builtin(global_invocation_id) id: vec3u) {
+    let x = i32(id.x);
+    let y = i32(id.y);
+
+    let a = getA(x, y);
+    let b = getB(x, y);
+    let lapA = laplacian_A(x, y);
+    let lapB = laplacian_B(x, y);
+    let reaction = a * b * b;
+
+    let newA = clamp(a + dA * lapA - reaction
+               + feed * (1.0 - a), 0.0, 1.0);
+    let newB = clamp(b + dB * lapB + reaction
+               - (kill + feed) * b, 0.0, 1.0);
+
+    let i = idx(x, y);
+    stateOut[i] = newA;
+    stateOut[i + 1] = newB;
+}</code></pre>
+
+      <p>Different parameter values produce strikingly different patterns:</p>
+
+      <table>
+        <thead><tr><th>Pattern</th><th>feed</th><th>kill</th></tr></thead>
+        <tbody>
+          <tr><td>Mitosis (dividing spots)</td><td>0.055</td><td>0.062</td></tr>
+          <tr><td>Stable spots</td><td>0.04</td><td>0.06</td></tr>
+          <tr><td>Stripes</td><td>0.025</td><td>0.05</td></tr>
+          <tr><td>Worms / coral</td><td>0.078</td><td>0.061</td></tr>
+        </tbody>
+      </table>
+
+      <h3>14.8.3 Performance: CPU vs. GPU</h3>
+
+      <table>
+        <thead><tr><th>Grid Size</th><th>CPU (p5.js)</th><th>GPU (WebGPU)</th><th>Speedup</th></tr></thead>
+        <tbody>
+          <tr><td>128 x 128</td><td>~60 fps</td><td>~60 fps</td><td>1x (both fast)</td></tr>
+          <tr><td>256 x 256</td><td>~15 fps</td><td>~60 fps</td><td>~4x</td></tr>
+          <tr><td>512 x 512</td><td>~3 fps</td><td>~60 fps</td><td>~20x</td></tr>
+          <tr><td>1024 x 1024</td><td>&lt;1 fps</td><td>~60 fps</td><td>100x+</td></tr>
+        </tbody>
+      </table>
+
+      <p>The GPU processes all cells in parallel. A 512x512 grid has 262,144 cells; a GPU with 2,048 cores can process them all in roughly 128 batches, while the CPU must process them one at a time (or a few at a time with SIMD).</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The idea of using GPUs for general-purpose computation (GPGPU) dates to the early 2000s. Researchers at Stanford and other universities realized that the massive parallelism designed for pixel processing could be repurposed for scientific computing, leading eventually to CUDA (2007), OpenCL (2009), and now WebGPU.</p>
+      </div>
+
+      <!-- Quiz 4 -->
+      <div class="quiz" data-id="ch14-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the most significant advantage of WebGPU over WebGL for general-purpose computation?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch14-q4" value="a"> WebGPU supports more colors per pixel</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q4" value="b" data-correct> WebGPU provides compute shaders with typed storage buffers (32-bit float)</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q4" value="c"> WebGPU uses JavaScript instead of a shader language</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q4" value="d"> WebGPU renders 3D scenes faster</label></li>
+        </ul>
+        <div class="explanation">
+          <p>WebGPU's compute shaders can read and write typed storage buffers with full 32-bit floating-point precision, eliminating the need to encode data as pixel colors in textures (limited to 8-bit in basic WebGL). This makes general-purpose GPU computation far more natural and precise.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.9 — DEBUGGING CREATIVE CODE
+           =============================================== -->
+      <h2 id="debugging">14.9 Debugging Creative Code</h2>
+
+      <p>Debugging is an essential skill for any programmer, and creative coding presents unique challenges: visual output that "looks wrong" without clear error messages, real-time animation loops, and GPU code that cannot use <code>console.log()</code>.</p>
+
+      <h3>14.9.1 Systematic Debugging Methodology</h3>
+
+      <ol>
+        <li><strong>Read the error message</strong> &mdash; they are usually more helpful than you think</li>
+        <li><strong>Check the console</strong> &mdash; press F12 in the browser to open DevTools</li>
+        <li><strong>Isolate</strong> &mdash; comment out code until the error disappears, then re-add code to find the culprit</li>
+        <li><strong>Verify assumptions</strong> &mdash; log values; output as colors in GLSL</li>
+        <li><strong>Simplify</strong> &mdash; reproduce the bug in the smallest possible sketch</li>
+        <li><strong>Search</strong> &mdash; paste the error message into a search engine</li>
+        <li><strong>Take a break</strong> &mdash; fresh eyes find bugs faster</li>
+      </ol>
+
+      <h3>14.9.2 JavaScript Debugging Techniques</h3>
+
+      <p><code>console.log()</code> is your primary debugging tool. Always label your output:</p>
+
+      <pre><code>console.log("pos:", pos.x, pos.y, "vel:", vel.mag());</code></pre>
+
+      <p>In <code>draw()</code>, limit logging to avoid flooding the console:</p>
+
+      <pre><code>if (frameCount % 60 === 0) {
+  console.log("fps:", frameRate().toFixed(1));
+}</code></pre>
+
+      <h3>14.9.3 Common JavaScript Errors</h3>
+
+      <table>
+        <thead><tr><th>Error</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>X is not defined</code></td><td>Typo or wrong scope</td><td>Check spelling; declare at top level</td></tr>
+          <tr><td><code>Cannot read property of undefined</code></td><td>Object is <code>undefined</code></td><td>Check array bounds; verify initialization</td></tr>
+          <tr><td><code>NaN</code></td><td>Division by zero; normalizing zero vector</td><td>Add <code>if (dist > 0.001)</code> guards</td></tr>
+          <tr><td>Screen is blank</td><td><code>background()</code> called after drawing</td><td>Move <code>background()</code> to top of <code>draw()</code></td></tr>
+          <tr><td>Shapes not visible</td><td>Drawing outside canvas bounds</td><td>Log coordinates; check <code>translate()</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>14.9.4 GLSL/Shader Debugging</h3>
+
+      <p>Shaders have no <code>console.log()</code>. Instead, <strong>output values as colors</strong>:</p>
+
+      <pre><code>// Show UV coordinates as color (should be red-to-green gradient)
+gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);
+
+// Show a value as grayscale
+gl_FragColor = vec4(vec3(value), 1.0);
+
+// Show positive (red) vs negative (blue)
+gl_FragColor = vec4(max(value, 0.0), 0.0, max(-value, 0.0), 1.0);</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>The number-one GLSL error: integer vs. float strictness. <code>float x = 1;</code> is an error on many GLSL implementations. Always write <code>float x = 1.0;</code> with the decimal point.</p>
+      </div>
+
+      <h3>14.9.5 Visual Debugging</h3>
+
+      <p>For visual code, draw debug information directly on screen:</p>
+
+      <ul>
+        <li>Draw velocity vectors as lines from each particle</li>
+        <li>Draw bounding boxes around collision regions</li>
+        <li>Color-code agent states (seeking = blue, fleeing = red)</li>
+        <li>Display frame rate, particle count, and other metrics</li>
+      </ul>
+
+      <h3>14.9.6 Performance Profiling</h3>
+
+      <p>Use the browser's Performance tab (F12) to identify bottlenecks:</p>
+
+      <ul>
+        <li><strong>Long frames</strong> in the flame chart indicate slow code</li>
+        <li><strong>Garbage collection</strong> spikes suggest excessive object creation in <code>draw()</code></li>
+        <li>Watch <code>frameRate()</code> to detect performance drops</li>
+        <li>Use <code>millis()</code> to time specific operations</li>
+      </ul>
+
+      <h3>14.9.7 Performance Optimization Strategies</h3>
+
+      <p>When your sketch runs below 60 fps, apply these strategies in order:</p>
+
+      <ol>
+        <li><strong>Reduce draw calls</strong>: batch similar shapes together. Drawing 1,000 separate <code>rect()</code> calls is slower than using <code>beginShape()</code>/<code>endShape()</code> with vertices.</li>
+        <li><strong>Avoid allocations in draw()</strong>: create vectors and objects in <code>setup()</code> and reuse them. <code>createVector()</code> in every frame creates garbage that must be collected.</li>
+        <li><strong>Use squared distance</strong>: replace <code>dist()</code> with manual squared distance to avoid square root.</li>
+        <li><strong>Spatial partitioning</strong>: for N-body interactions, use a grid or quadtree to avoid $O(n^2)$ pairwise checks.</li>
+        <li><strong>Reduce canvas size</strong>: a 400x400 canvas processes 4x fewer pixels than 800x800.</li>
+        <li><strong>Move to shaders</strong>: if the bottleneck is per-pixel computation, move it to a GLSL fragment shader or WebGPU compute shader.</li>
+      </ol>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The most common performance problem in p5.js sketches is creating objects inside <code>draw()</code>. Every <code>createVector()</code>, <code>color()</code>, or array literal allocates memory that the garbage collector must eventually reclaim, causing periodic frame drops ("jank"). Pre-allocate and reuse whenever possible.</p>
+      </div>
+
+      <h3>14.9.8 Debugging Checklist</h3>
+
+      <p>When your sketch does not work, work through this checklist:</p>
+
+      <ul>
+        <li>Is the canvas the right size? (<code>createCanvas()</code> called correctly?)</li>
+        <li>Is <code>background()</code> at the top of <code>draw()</code>?</li>
+        <li>Are you drawing inside the canvas bounds? (Log coordinates)</li>
+        <li>Is <code>fill()</code> or <code>stroke()</code> set to a visible color?</li>
+        <li>Is the shape too small to see? (Check size parameters)</li>
+        <li>Is the animation actually running? (Check for <code>noLoop()</code> or missing <code>draw()</code>)</li>
+        <li>Are variables initialized before first use?</li>
+        <li>Is the loop running the expected number of iterations? (Log loop counter)</li>
+      </ul>
+
+
+      <!-- ===============================================
+           SECTION 14.10 — COMPUTATION FUNDAMENTALS
+           =============================================== -->
+      <h2 id="computation-fundamentals">14.10 Computation Fundamentals</h2>
+
+      <p>Understanding how computers represent and manipulate numbers helps you write better code and debug mysterious errors &mdash; especially in shaders, where precision issues are common.</p>
+
+      <h3>14.10.1 Bits and Bytes</h3>
+
+      <p>A <strong>bit</strong> is the smallest unit of information: 0 or 1. A <strong>byte</strong> is 8 bits, capable of representing $2^8 = 256$ different values. All digital data &mdash; numbers, text, images, audio, code &mdash; is ultimately a sequence of bits.</p>
+
+      <h3>14.10.2 Integer Representation</h3>
+
+      <p>Unsigned integers map bit patterns directly to values. An 8-bit unsigned integer represents values 0 to 255. A 32-bit unsigned integer represents values 0 to $2^{32} - 1 = 4{,}294{,}967{,}295$.</p>
+
+      <p>Signed integers use <strong>two's complement</strong>, where the most significant bit indicates the sign. A 32-bit signed integer represents values from $-2{,}147{,}483{,}648$ to $2{,}147{,}483{,}647$.</p>
+
+      <h3>14.10.3 Floating Point (IEEE 754)</h3>
+
+      <p>Real numbers are stored in <strong>floating-point</strong> format, which is similar to scientific notation: $\text{value} = \text{sign} \times \text{mantissa} \times 2^{\text{exponent}}$.</p>
+
+      <p>A 32-bit float (<code>float</code> in GLSL, <code>f32</code> in WGSL) has:</p>
+
+      <ul>
+        <li>1 sign bit</li>
+        <li>8 exponent bits (range of magnitudes)</li>
+        <li>23 mantissa bits (precision: about 7 significant decimal digits)</li>
+      </ul>
+
+      <p>A 64-bit float (<code>double</code>, JavaScript's <code>Number</code>) has about 16 significant digits.</p>
+
+      <h3>14.10.4 Precision Issues in Shaders</h3>
+
+      <p>Shaders typically use 32-bit floats (<code>mediump</code> or <code>highp</code> in GLSL). With only ~7 digits of precision, problems arise:</p>
+
+      <ul>
+        <li><strong>Large coordinates</strong>: at $x = 100{,}000$, the precision is about 0.01. Fine details are lost.</li>
+        <li><strong>Catastrophic cancellation</strong>: subtracting two nearly equal large numbers destroys precision.</li>
+        <li><strong>Accumulated error</strong>: adding small increments over many frames drifts from the true value.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Always use <code>precision highp float;</code> in GLSL fragment shaders. The difference between <code>mediump</code> (16-bit) and <code>highp</code> (32-bit) is dramatic for fractal zooming, distance field calculations, and any computation involving large coordinate values.</p>
+      </div>
+
+      <h3>14.10.5 Overflow and Underflow</h3>
+
+      <p><strong>Overflow</strong> occurs when a computation exceeds the maximum representable value. For floats, this produces <code>Infinity</code>. For integers, it wraps around (in many languages) or is undefined behavior.</p>
+
+      <p><strong>Underflow</strong> occurs when a value is too small (too close to zero) to represent. It gets rounded to zero, which can cause division-by-zero errors in subsequent operations.</p>
+
+      <!-- Interactive: Floating Point Precision Demo -->
+      <div class="code-runner" data-height="380">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Floating Point Precision Demo</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(450, 340);
+  noLoop();
+  textFont('monospace');
+}
+
+function draw() {
+  background(30);
+  fill(200);
+  textSize(13);
+
+  let y = 25;
+  let lh = 22;
+
+  fill(100, 200, 255);
+  text('Floating Point Surprises', 15, y); y += lh + 5;
+
+  fill(200);
+  // Classic: 0.1 + 0.2
+  let r1 = 0.1 + 0.2;
+  text('0.1 + 0.2 = ' + r1, 15, y); y += lh;
+  text('  (expected 0.3, got extra digits)', 15, y); y += lh + 5;
+
+  // Large number precision
+  let big = 1e8;
+  let r2 = big + 0.001;
+  text('1e8 + 0.001 = ' + r2, 15, y); y += lh;
+  text('  (the 0.001 is lost!)', 15, y); y += lh + 5;
+
+  // Catastrophic cancellation
+  let a = 1.000000001;
+  let b = 1.000000000;
+  let r3 = a - b;
+  text('1.000000001 - 1.000000000 = ' + r3, 15, y); y += lh;
+  text('  (only ~1 digit of precision left)', 15, y);
+  y += lh + 5;
+
+  // Accumulated error
+  let sum = 0;
+  for (let i = 0; i < 1000; i++) sum += 0.1;
+  text('0.1 added 1000 times = ' + sum, 15, y); y += lh;
+  text('  (expected 100, drift: ' +
+    (sum - 100).toExponential(2) + ')', 15, y);
+  y += lh + 5;
+
+  // Integer limits
+  text('2^53 = ' + Math.pow(2,53), 15, y); y += lh;
+  text('2^53 + 1 = ' + (Math.pow(2,53) + 1), 15, y); y += lh;
+  text('  (same! JS cannot distinguish them)', 15, y);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>14.10.6 Logic Gates: The Foundation</h3>
+
+      <p>Every digital computer is built from <strong>logic gates</strong>. A NAND gate &mdash; the "universal gate" &mdash; takes two inputs and outputs 0 only when both are 1. Every other gate (AND, OR, NOT, XOR) can be built from NAND gates alone.</p>
+
+      <table>
+        <thead><tr><th>A</th><th>B</th><th>NAND(A,B)</th><th>AND(A,B)</th><th>OR(A,B)</th><th>XOR(A,B)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+          <tr><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+          <tr><td>1</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+        </tbody>
+      </table>
+
+      <p>Building blocks derived from NAND:</p>
+
+      <pre><code>NOT(A)    = NAND(A, A)
+AND(A, B) = NAND(NAND(A, B), NAND(A, B))
+OR(A, B)  = NAND(NAND(A, A), NAND(B, B))
+XOR(A, B) = NAND(NAND(A, NAND(A,B)), NAND(B, NAND(A,B)))</code></pre>
+
+      <h3>14.10.7 From Adders to CPU</h3>
+
+      <p>A <strong>half adder</strong> adds two single bits, producing a sum (XOR) and a carry (AND). A <strong>full adder</strong> adds two bits plus a carry-in, built from two half adders. Chain 32 full adders together and you have a 32-bit adder &mdash; the core of your CPU's arithmetic unit.</p>
+
+      <p>The <strong>ALU</strong> (Arithmetic Logic Unit) combines adders with logic gates and multiplexers to perform addition, subtraction, AND, OR, and comparison operations. <strong>Memory</strong> is built from cross-coupled NAND gates (SR latches) that can store a single bit indefinitely.</p>
+
+      <p>The <strong>CPU</strong> repeats a cycle billions of times per second:</p>
+
+      <ol>
+        <li><strong>Fetch</strong> an instruction from memory</li>
+        <li><strong>Decode</strong> what the instruction means</li>
+        <li><strong>Execute</strong> the operation using the ALU</li>
+      </ol>
+
+      <h3>14.10.8 CPU vs. GPU Architecture</h3>
+
+      <p>A 3 GHz CPU executes 3 billion simple operations per second. This seems fast, but a 600x600 pixel canvas at 60 fps requires processing 21.6 million pixels per second. If each pixel requires 100 operations, that is 2.16 billion operations &mdash; a significant fraction of the CPU's capacity.</p>
+
+      <table>
+        <thead><tr><th>Property</th><th>CPU</th><th>GPU</th></tr></thead>
+        <tbody>
+          <tr><td>Core count</td><td>4-16 (complex, fast)</td><td>2,048-16,384 (simple)</td></tr>
+          <tr><td>Clock speed</td><td>3-5 GHz</td><td>1-2 GHz</td></tr>
+          <tr><td>Paradigm</td><td>Sequential / task-parallel</td><td>Massively data-parallel</td></tr>
+          <tr><td>Best for</td><td>Complex logic, branching</td><td>Same operation on many data points</td></tr>
+          <tr><td>Memory</td><td>Large cache hierarchy</td><td>High bandwidth, high latency</td></tr>
+        </tbody>
+      </table>
+
+      <p>This is why we move pixel-parallel work to the GPU: thousands of simpler cores running simultaneously vastly outperform a few fast CPU cores for data-parallel tasks.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The nand2tetris course (<a href="https://www.nand2tetris.org" target="_blank">nand2tetris.org</a>) teaches you to build an entire computer from NAND gates, then write an assembler, compiler, and operating system for it. The nandgame (<a href="https://nandgame.com" target="_blank">nandgame.com</a>) offers a browser-based puzzle version of the same journey. Both are highly recommended for understanding what lies beneath your code.</p>
+      </div>
+
+      <!-- Quiz 5 -->
+      <div class="quiz" data-id="ch14-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In JavaScript, what is the result of <code>0.1 + 0.2 === 0.3</code>?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch14-q5" value="a"> <code>true</code></label></li>
+          <li class="option"><label><input type="radio" name="ch14-q5" value="b" data-correct> <code>false</code></label></li>
+          <li class="option"><label><input type="radio" name="ch14-q5" value="c"> It throws an error</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q5" value="d"> <code>undefined</code></label></li>
+        </ul>
+        <div class="explanation">
+          <p>Due to IEEE 754 floating-point representation, <code>0.1 + 0.2</code> equals <code>0.30000000000000004</code>, not exactly <code>0.3</code>. This is why the equality check returns <code>false</code>. When comparing floats, use a tolerance: <code>Math.abs(a - b) &lt; 0.0001</code>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- Interactive: Dot Product Angle Calculator -->
+      <h2 id="interactive-demos">14.11 Additional Interactive Demonstrations</h2>
+
+      <p>The following demos provide hands-on exploration of the concepts covered in this chapter.</p>
+
+      <h3>Dot Product Angle Calculator</h3>
+      <p>Drag the vector endpoints to see how the dot product and angle between vectors change in real time.</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Dot Product &amp; Angle Calculator</span>
+        </div>
+        <textarea class="cm-editor">let aEnd, bEnd;
+let dragging = null;
+let origin;
+
+function setup() {
+  createCanvas(450, 380);
+  origin = createVector(225, 200);
+  aEnd = createVector(100, -50);
+  bEnd = createVector(-30, -110);
+}
+
+function draw() {
+  background(245);
+  translate(origin.x, origin.y);
+
+  // Grid
+  stroke(225); strokeWeight(1);
+  for (let i = -200; i <= 200; i += 40) {
+    line(i, -200, i, 200);
+    line(-200, i, 200, i);
+  }
+  stroke(190); line(-200, 0, 200, 0); line(0, -200, 0, 200);
+
+  // Calculate dot product
+  let a = createVector(aEnd.x, -aEnd.y);
+  let b = createVector(bEnd.x, -bEnd.y);
+  let dotProd = a.dot(b);
+  let magA = a.mag();
+  let magB = b.mag();
+  let angleBetween = 0;
+  if (magA > 0.01 && magB > 0.01) {
+    angleBetween = acos(constrain(dotProd / (magA * magB), -1, 1));
+  }
+
+  // Draw angle arc
+  noFill();
+  stroke(200, 150, 50);
+  strokeWeight(2);
+  let arcR = 40;
+  let startA = atan2(aEnd.y, aEnd.x);
+  let endA = atan2(bEnd.y, bEnd.x);
+  arc(0, 0, arcR*2, arcR*2, min(startA, endA), max(startA, endA));
+
+  // Vector A
+  stroke(220, 60, 60); strokeWeight(3); fill(220, 60, 60);
+  line(0, 0, aEnd.x, aEnd.y);
+  ellipse(aEnd.x, aEnd.y, 12, 12);
+
+  // Vector B
+  stroke(60, 100, 220); strokeWeight(3); fill(60, 100, 220);
+  line(0, 0, bEnd.x, bEnd.y);
+  ellipse(bEnd.x, bEnd.y, 12, 12);
+
+  // Info panel
+  resetMatrix();
+  noStroke();
+  fill(50);
+  textSize(12);
+  textFont('monospace');
+  let iy = 18;
+  text('A = (' + nf(a.x/40,1,1) + ', ' + nf(a.y/40,1,1) + ')', 10, iy); iy += 18;
+  text('B = (' + nf(b.x/40,1,1) + ', ' + nf(b.y/40,1,1) + ')', 10, iy); iy += 18;
+  text('A . B = ' + nf(dotProd/1600, 1, 3), 10, iy); iy += 18;
+
+  let deg = degrees(angleBetween);
+  text('Angle = ' + nf(deg, 1, 1) + ' degrees', 10, iy); iy += 18;
+
+  // Interpretation
+  fill(100);
+  if (dotProd > 100) text('Vectors point in similar directions', 10, iy);
+  else if (dotProd < -100) text('Vectors point in opposite directions', 10, iy);
+  else text('Vectors are nearly perpendicular', 10, iy);
+
+  fill(150);
+  textSize(10);
+  text('Drag red/blue dots', 10, 370);
+}
+
+function mousePressed() {
+  let mx = mouseX - origin.x, my = mouseY - origin.y;
+  if (dist(mx, my, aEnd.x, aEnd.y) < 15) dragging = aEnd;
+  else if (dist(mx, my, bEnd.x, bEnd.y) < 15) dragging = bEnd;
+}
+function mouseDragged() {
+  if (dragging) { dragging.x = mouseX - origin.x; dragging.y = mouseY - origin.y; }
+}
+function mouseReleased() { dragging = null; }</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Vector Field from Perlin Noise</h3>
+      <p>A <strong>flow field</strong> is a grid of vectors generated from Perlin noise. Particles follow the local vector at their position, creating organic, flowing patterns.</p>
+
+      <div class="code-runner" data-height="430">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Vector Field from Noise</span>
+        </div>
+        <textarea class="cm-editor">let particles = [];
+let flowField;
+let cols, rows;
+let scl = 18;
+let zOff = 0;
+
+function setup() {
+  createCanvas(450, 380);
+  cols = floor(width / scl);
+  rows = floor(height / scl);
+  flowField = new Array(cols * rows);
+  for (let i = 0; i < 250; i++) {
+    particles.push({
+      pos: createVector(random(width), random(height)),
+      vel: createVector(0, 0),
+      prev: createVector(0, 0)
+    });
+  }
+  background(15, 15, 30);
+}
+
+function draw() {
+  // Semi-transparent background for trails
+  // Uncomment next line for clear background:
+  // background(15, 15, 30);
+
+  // Build flow field
+  let yoff = 0;
+  for (let y = 0; y < rows; y++) {
+    let xoff = 0;
+    for (let x = 0; x < cols; x++) {
+      let angle = noise(xoff, yoff, zOff) * TWO_PI * 2;
+      flowField[x + y * cols] = p5.Vector.fromAngle(angle);
+      xoff += 0.08;
+    }
+    yoff += 0.08;
+  }
+  zOff += 0.003;
+
+  // Update particles
+  for (let p of particles) {
+    p.prev = p.pos.copy();
+
+    let col = constrain(floor(p.pos.x / scl), 0, cols - 1);
+    let row = constrain(floor(p.pos.y / scl), 0, rows - 1);
+    let force = flowField[col + row * cols];
+    p.vel.add(p5.Vector.mult(force, 0.15));
+    p.vel.limit(2);
+    p.pos.add(p.vel);
+
+    // Wrap edges
+    if (p.pos.x > width) { p.pos.x = 0; p.prev = p.pos.copy(); }
+    if (p.pos.x < 0) { p.pos.x = width; p.prev = p.pos.copy(); }
+    if (p.pos.y > height) { p.pos.y = 0; p.prev = p.pos.copy(); }
+    if (p.pos.y < 0) { p.pos.y = height; p.prev = p.pos.copy(); }
+
+    // Draw line segment
+    let hue = (noise(p.pos.x * 0.005, p.pos.y * 0.005) * 360);
+    colorMode(HSB, 360, 100, 100, 255);
+    stroke(hue, 70, 90, 20);
+    strokeWeight(1.2);
+    line(p.prev.x, p.prev.y, p.pos.x, p.pos.y);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Particle System with Vectors</h3>
+      <p>A complete particle system using the position-velocity-acceleration pattern with gravity and mouse interaction.</p>
+
+      <div class="code-runner" data-height="430">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Particle System with Vectors</span>
+        </div>
+        <textarea class="cm-editor">let particles = [];
+
+function setup() {
+  createCanvas(450, 380);
+}
+
+function draw() {
+  background(15, 15, 35);
+
+  // Spawn particles at mouse
+  if (frameCount % 2 === 0) {
+    particles.push(new Particle(mouseX, mouseY));
+  }
+
+  // Update and draw (reverse loop for safe removal)
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+    p.applyForce(createVector(0, 0.06));  // gravity
+
+    // Slight wind
+    p.applyForce(createVector(0.01 * sin(frameCount * 0.02), 0));
+
+    p.update();
+    p.display();
+    if (p.isDead()) particles.splice(i, 1);
+  }
+
+  // Info
+  fill(150);
+  noStroke();
+  textSize(11);
+  textFont('monospace');
+  text('Particles: ' + particles.length, 10, 20);
+  text('Move mouse to emit particles', 10, 370);
+}
+
+class Particle {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.vel = p5.Vector.random2D().mult(random(1, 4));
+    this.vel.y -= random(1, 3); // upward bias
+    this.acc = createVector(0, 0);
+    this.life = 255;
+    this.decay = random(2, 5);
+    this.size = random(3, 10);
+    this.hue = random(360);
+  }
+
+  applyForce(f) {
+    this.acc.add(f);
+  }
+
+  update() {
+    this.vel.add(this.acc);
+    this.vel.limit(8);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
+    this.life -= this.decay;
+  }
+
+  display() {
+    colorMode(HSB, 360, 100, 100, 255);
+    noStroke();
+    fill(this.hue, 80, 90, this.life);
+    ellipse(this.pos.x, this.pos.y, this.size);
+
+    // Glow effect
+    fill(this.hue, 60, 100, this.life * 0.2);
+    ellipse(this.pos.x, this.pos.y, this.size * 2.5);
+  }
+
+  isDead() {
+    return this.life <= 0;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 14.12 — SUMMARY
+           =============================================== -->
+      <h2 id="summary">14.12 Summary</h2>
+
+      <ul>
+        <li><strong>Vectors</strong> represent quantities with magnitude and direction. The dot product reveals angle relationships; the cross product produces perpendicular vectors. The <code>p5.Vector</code> class provides a comprehensive API for vector math.</li>
+        <li><strong>Matrices</strong> encode transformations (rotation, scaling, translation). Homogeneous coordinates unify all affine transformations into matrix multiplication. Transformation order matters.</li>
+        <li><strong>Color permutations</strong> systematically explore the RGB color cube. Combinatorics ($n!$, $P(n,r)$, $C(n,r)$) count the arrangements. Luminance weighting accounts for human perception.</li>
+        <li><strong>WebGPU</strong> is the successor to WebGL, offering compute shaders and typed storage buffers for general-purpose GPU computation. The seagulls library makes it accessible for creative coding.</li>
+        <li><strong>Compute shaders</strong> use WGSL, organize work into workgroups and threads, and excel at data-parallel computation. They are ideal for particle systems, cellular automata, and reaction-diffusion.</li>
+        <li><strong>Debugging</strong> requires systematic methodology. Use <code>console.log()</code> for JavaScript and color-as-output for shaders. Isolate, simplify, and verify assumptions.</li>
+        <li><strong>Computation fundamentals</strong>: all digital computation is built from logic gates. Floating-point numbers have limited precision (~7 digits for 32-bit), which matters especially in shader code.</li>
+      </ul>
+
+
+      <!-- ===============================================
+           SECTION 14.13 — REFERENCES
+           =============================================== -->
+      <h2 id="references">14.13 References</h2>
+
+      <ul>
+        <li><a href="https://p5js.org/reference/p5.Vector/" target="_blank">p5.Vector Reference</a> &mdash; Official p5.js documentation for the Vector class</li>
+        <li><a href="https://natureofcode.com" target="_blank">The Nature of Code</a> by Daniel Shiffman &mdash; Comprehensive guide to physics simulations with vectors</li>
+        <li><a href="https://github.com/charlieroberts/seagulls" target="_blank">Seagulls</a> &mdash; WebGPU creative coding framework by Charlie Roberts</li>
+        <li><a href="https://www.nand2tetris.org" target="_blank">nand2tetris</a> &mdash; Build an entire computer from NAND gates</li>
+        <li><a href="https://nandgame.com" target="_blank">nandgame</a> &mdash; Browser puzzle game: build gates, adders, ALU, and CPU from NAND</li>
+        <li><a href="https://www.davepagurek.com/blog/p5-webgpu" target="_blank">p5.js WebGPU</a> &mdash; Dave Pagurek's guide to WebGPU integration with p5.js</li>
+        <li><a href="https://beta.p5js.org/tutorials/field-guide-to-debugging" target="_blank">Field Guide to Debugging</a> &mdash; p5.js debugging tutorial</li>
+        <li><a href="https://en.wikipedia.org/wiki/IEEE_754" target="_blank">IEEE 754</a> &mdash; Wikipedia article on floating-point representation</li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/egBA_dDU3" target="_blank">Color permutations (instructor)</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/reGRzww4_" target="_blank">Flow field (instructor)</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/p0lKbTuhU" target="_blank">Reaction-Diffusion WebGPU (instructor)</a></li>
+      </ul>
+
+
+      <!-- ===============================================
+           CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">14.14 Code Challenges</h2>
+
+      <!-- Challenge 1: dotProduct -->
+      <div class="code-challenge" data-id="ch14-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>dotProduct</code> that takes two vectors (objects with <code>x</code> and <code>y</code> properties) and returns their dot product. Recall: $\vec{a} \cdot \vec{b} = a_x b_x + a_y b_y$.</p>
+        <textarea class="cm-editor">function dotProduct(v1, v2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "dotProduct({x:1, y:0}, {x:0, y:1})", "expected": 0},
+          {"call": "dotProduct({x:3, y:4}, {x:4, y:3})", "expected": 24},
+          {"call": "dotProduct({x:1, y:1}, {x:-1, y:-1})", "expected": -2},
+          {"call": "dotProduct({x:5, y:0}, {x:5, y:0})", "expected": 25}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2: angleBetween -->
+      <div class="code-challenge" data-id="ch14-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>angleBetween</code> that takes two vectors (objects with <code>x</code> and <code>y</code> properties) and returns the angle between them <strong>in radians</strong>. Use the formula: $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$. Return <code>0</code> if either vector has zero magnitude.</p>
+        <textarea class="cm-editor">function angleBetween(v1, v2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "angleBetween({x:1, y:0}, {x:0, y:1})", "expected": 1.5707963267948966},
+          {"call": "angleBetween({x:1, y:0}, {x:1, y:0})", "expected": 0},
+          {"call": "angleBetween({x:1, y:0}, {x:-1, y:0})", "expected": 3.141592653589793},
+          {"call": "angleBetween({x:0, y:0}, {x:1, y:0})", "expected": 0}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3: rotateVector -->
+      <div class="code-challenge" data-id="ch14-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>rotateVector</code> that takes a vector (object with <code>x</code> and <code>y</code>) and an angle in radians, and returns a <strong>new object</strong> with the rotated <code>x</code> and <code>y</code> values. Use the rotation formulas: $x' = x\cos\theta - y\sin\theta$, $y' = x\sin\theta + y\cos\theta$.</p>
+        <textarea class="cm-editor">function rotateVector(v, angle) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "rotateVector({x:1, y:0}, 0)", "expected": {"x": 1, "y": 0}},
+          {"call": "rotateVector({x:1, y:0}, Math.PI/2)", "expected": {"x": 0, "y": 1}},
+          {"call": "rotateVector({x:0, y:1}, Math.PI/2)", "expected": {"x": -1, "y": 0}},
+          {"call": "rotateVector({x:1, y:0}, Math.PI)", "expected": {"x": -1, "y": 0}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 4: permutations -->
+      <div class="code-challenge" data-id="ch14-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>permutations</code> that computes $P(n, r) = \frac{n!}{(n - r)!}$ &mdash; the number of ways to arrange $r$ items from $n$ distinct items. Both <code>n</code> and <code>r</code> are non-negative integers with $r \leq n$.</p>
+        <textarea class="cm-editor">function permutations(n, r) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "permutations(5, 3)", "expected": 60},
+          {"call": "permutations(4, 4)", "expected": 24},
+          {"call": "permutations(10, 2)", "expected": 90},
+          {"call": "permutations(6, 0)", "expected": 1},
+          {"call": "permutations(1, 1)", "expected": 1}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===============================================
+           OPEN-ENDED EXERCISES
+           =============================================== -->
+      <h2 id="exercises">14.15 Exercises</h2>
+
+      <!-- Exercise 1: Vector-based steering -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 14.1 &mdash; Vector-Based Seek Steering</div>
+        <p class="prompt">Create a sketch with an agent that uses the <strong>seek</strong> steering behavior to follow the mouse. The agent should have a triangular shape that rotates to face its direction of motion. Use <code>p5.Vector</code> for all position, velocity, and force calculations. Implement maximum speed and maximum steering force.</p>
+        <textarea class="cm-editor">let pos, vel, acc;
+let maxSpeed = 4;
+let maxForce = 0.2;
+
+function setup() {
+  createCanvas(450, 350);
+  pos = createVector(width/2, height/2);
+  vel = createVector(0, 0);
+  acc = createVector(0, 0);
+}
+
+function draw() {
+  background(30);
+
+  // TODO: Implement seek behavior
+  // 1. Compute desired velocity toward mouse
+  // 2. Compute steering force (desired - velocity)
+  // 3. Apply force, update velocity and position
+  // 4. Draw triangle pointing in direction of motion
+
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let pos, vel, acc;
+let maxSpeed = 4;
+let maxForce = 0.2;
+
+function setup() {
+  createCanvas(450, 350);
+  pos = createVector(width/2, height/2);
+  vel = createVector(1, 0);
+  acc = createVector(0, 0);
+}
+
+function draw() {
+  background(30);
+
+  // Seek: desired velocity points toward mouse
+  let target = createVector(mouseX, mouseY);
+  let desired = p5.Vector.sub(target, pos);
+  desired.setMag(maxSpeed);
+
+  // Steering = desired - current velocity
+  let steer = p5.Vector.sub(desired, vel);
+  steer.limit(maxForce);
+  acc.add(steer);
+
+  // Update physics
+  vel.add(acc);
+  vel.limit(maxSpeed);
+  pos.add(vel);
+  acc.mult(0);
+
+  // Draw target
+  noStroke();
+  fill(255, 80, 80, 120);
+  ellipse(target.x, target.y, 12, 12);
+
+  // Draw agent as rotated triangle
+  push();
+  translate(pos.x, pos.y);
+  rotate(vel.heading());
+  fill(80, 200, 255);
+  noStroke();
+  triangle(18, 0, -10, -8, -10, 8);
+  pop();
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: Color palette generator -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 14.2 &mdash; Color Palette Generator Using Permutations</div>
+        <p class="prompt">Generate a palette of $4^3 = 64$ colors using 4 steps per channel (values 0, 0.33, 0.67, 1.0). Sort them by perceived luminance ($L = 0.299R + 0.587G + 0.114B$). Display them as an 8x8 grid of swatches with the luminance value printed below each swatch (use dark text on light swatches, light text on dark ones).</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(450, 380);
+  colorMode(RGB, 1.0);
+  noLoop();
+}
+
+function draw() {
+  background(0.1);
+
+  // TODO: Generate 64 colors, sort by luminance,
+  // draw as 8x8 grid with adaptive text color
+
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(450, 380);
+  colorMode(RGB, 1.0);
+  textFont('monospace');
+  noLoop();
+}
+
+function draw() {
+  background(0.1);
+
+  let vals = [0, 0.33, 0.67, 1.0];
+  let colors = [];
+
+  for (let r of vals)
+    for (let g of vals)
+      for (let b of vals) {
+        let lum = 0.299*r + 0.587*g + 0.114*b;
+        colors.push({r, g, b, lum});
+      }
+
+  colors.sort((a, b) => a.lum - b.lum);
+
+  let cols = 8;
+  let rows = 8;
+  let sw = (width - 20) / cols - 4;
+  let sh = (height - 30) / rows - 6;
+
+  for (let i = 0; i < colors.length; i++) {
+    let col = i % cols;
+    let row = floor(i / cols);
+    let c = colors[i];
+    let x = 10 + col * (sw + 4);
+    let y = 10 + row * (sh + 6);
+
+    noStroke();
+    fill(c.r, c.g, c.b);
+    rect(x, y, sw, sh, 3);
+
+    // Adaptive text color
+    fill(c.lum > 0.5 ? 0 : 1);
+    textSize(8);
+    textAlign(CENTER);
+    text(nf(c.lum, 1, 2), x + sw/2, y + sh - 3);
+    textAlign(LEFT);
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3: Matrix transformation animation -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 14.3 &mdash; Matrix Transformation Animation</div>
+        <p class="prompt">Create a sketch that animates a shape through multiple matrix transformations. Draw a square at the origin, then apply rotation (animated over time), scaling (pulsing), and translation. Show the original shape in gray and the transformed shape in color. Display the current transformation matrix values on screen. Do <em>not</em> use p5's built-in <code>rotate()</code> or <code>scale()</code> &mdash; apply the matrix math manually.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(450, 380);
+}
+
+function draw() {
+  background(240);
+
+  // TODO: Apply rotation + scaling manually
+  // using the 2x2 matrix formulas
+  // Draw original and transformed shapes
+
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(450, 380);
+  textFont('monospace');
+}
+
+function draw() {
+  background(240);
+
+  let angle = frameCount * 0.02;
+  let s = 1.0 + 0.4 * sin(frameCount * 0.03);
+
+  // Combined rotation + scale matrix
+  let a = cos(angle) * s;
+  let b = -sin(angle) * s;
+  let c = sin(angle) * s;
+  let d = cos(angle) * s;
+
+  // Translation
+  let tx = width / 2;
+  let ty = height / 2;
+
+  // Original square vertices (centered at origin)
+  let pts = [
+    {x: -35, y: -35}, {x: 35, y: -35},
+    {x: 35, y: 35},   {x: -35, y: 35}
+  ];
+
+  // Draw original at center (gray)
+  push();
+  translate(tx, ty);
+  stroke(180);
+  strokeWeight(1);
+  fill(220, 220, 220, 100);
+  beginShape();
+  for (let p of pts) vertex(p.x, p.y);
+  endShape(CLOSE);
+  pop();
+
+  // Draw transformed (blue)
+  stroke(50, 100, 220);
+  strokeWeight(2);
+  fill(50, 100, 220, 80);
+  beginShape();
+  for (let p of pts) {
+    let nx = a * p.x + b * p.y + tx;
+    let ny = c * p.x + d * p.y + ty;
+    vertex(nx, ny);
+  }
+  endShape(CLOSE);
+
+  // Display matrix
+  noStroke();
+  fill(50);
+  textSize(12);
+  text('Transformation Matrix:', 10, 22);
+  text('| ' + nf(a,1,2) + '  ' + nf(b,1,2) +
+       '  ' + nf(tx,1,0) + ' |', 10, 42);
+  text('| ' + nf(c,1,2) + '  ' + nf(d,1,2) +
+       '  ' + nf(ty,1,0) + ' |', 10, 58);
+  text('| 0.00  0.00  1 |', 10, 74);
+  fill(120);
+  textSize(10);
+  text('Scale: ' + nf(s,1,2) +
+       '  Angle: ' + nf(degrees(angle)%360,1,0) + ' deg', 10, 370);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER END QUIZ
+           =============================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 14 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of vectors, transformations, WebGPU, color theory, and computation fundamentals.</p>
+
+        <div class="quiz" data-id="ch14-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">What is the magnitude of the vector $(3, 4)$?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch14-fq1" value="a"> 7</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq1" value="b" data-correct> 5</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq1" value="c"> 12</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq1" value="d"> 25</label></li>
+          </ul>
+          <div class="explanation"><p>$|\vec{v}| = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5$. This is the classic 3-4-5 right triangle.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch14-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">In p5.js, what is the difference between <code>a.add(b)</code> and <code>p5.Vector.add(a, b)</code>?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch14-fq2" value="a"> They produce different results</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq2" value="b" data-correct> <code>a.add(b)</code> modifies <code>a</code> in place; <code>p5.Vector.add(a, b)</code> returns a new vector</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq2" value="c"> <code>p5.Vector.add</code> is faster</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq2" value="d"> <code>a.add(b)</code> also modifies <code>b</code></label></li>
+          </ul>
+          <div class="explanation"><p>Instance methods like <code>a.add(b)</code> mutate the object they are called on (<code>a</code> is changed, <code>b</code> is not). Static methods like <code>p5.Vector.add(a, b)</code> return a new vector, leaving both inputs unchanged. Use static methods when you need to preserve the originals.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch14-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">Why should you use <code>v.magSq()</code> instead of <code>v.mag()</code> when comparing distances?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch14-fq3" value="a"> <code>magSq()</code> gives a more accurate result</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq3" value="b"> <code>magSq()</code> returns a vector instead of a number</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq3" value="c" data-correct> <code>magSq()</code> avoids the expensive square root operation</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq3" value="d"> <code>magSq()</code> works in 3D while <code>mag()</code> does not</label></li>
+          </ul>
+          <div class="explanation"><p>Computing <code>mag()</code> requires a square root, which is computationally expensive. Since $|a| &lt; |b|$ if and only if $|a|^2 &lt; |b|^2$, you can compare squared magnitudes instead. In a simulation with hundreds of pairwise distance checks per frame, this optimization makes a real difference.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch14-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">In WGSL, what does <code>@workgroup_size(8, 8)</code> mean?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch14-fq4" value="a"> The output image is 8x8 pixels</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq4" value="b" data-correct> Each workgroup contains 64 threads arranged in an 8x8 grid</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq4" value="c"> The shader runs for 8 frames then stops</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq4" value="d"> There are 8 compute shaders running in parallel</label></li>
+          </ul>
+          <div class="explanation"><p><code>@workgroup_size(8, 8)</code> declares that each workgroup consists of $8 \times 8 = 64$ threads arranged in a 2D grid. For a 512x512 image, you would dispatch $(512/8) \times (512/8) = 64 \times 64 = 4{,}096$ workgroups, each processing an 8x8 tile of the image.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch14-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">A 32-bit IEEE 754 floating-point number provides approximately how many significant decimal digits of precision?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch14-fq5" value="a"> 3 digits</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq5" value="b" data-correct> 7 digits</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq5" value="c"> 16 digits</label></li>
+            <li class="option"><label><input type="radio" name="ch14-fq5" value="d"> 32 digits</label></li>
+          </ul>
+          <div class="explanation"><p>A 32-bit float has 23 mantissa bits, providing about $\log_{10}(2^{23}) \approx 6.9$ significant decimal digits, commonly stated as ~7 digits. This is why zooming deep into the Mandelbrot set in a fragment shader produces blocky artifacts &mdash; you run out of precision. Use 64-bit doubles (JavaScript) or arbitrary-precision libraries for deeper zoom.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch13/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 13: Algorithmic Thinking &amp; Shader Porting</span>
+        </a>
+        <a href="../ch15/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 15: Supplementary Topics</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

@@ -1,0 +1,2509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 6: GLSL Patterns &amp; Cellular Automata — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch06">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 6: GLSL Patterns &amp; Cellular Automata</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar: progress + theme toggle -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 6: GLSL Patterns &amp; Cellular Automata</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Generating complexity from simple rules, on the GPU and the grid</p>
+
+      <!-- ===============================================================
+           6.1 INTRODUCTION
+           =============================================================== -->
+      <h2 id="introduction">6.1 Introduction</h2>
+
+      <p>This chapter brings together two of the most powerful techniques in creative computing: <strong>GLSL pattern generation</strong> and <strong>cellular automata</strong>. At first glance these domains may seem unrelated &mdash; one is about drawing with mathematics on the GPU, the other is about simulating grids of cells that evolve over time. But they share a profound connection: both produce complex visual output from simple, local rules applied uniformly across space.</p>
+
+      <p>In a GLSL fragment shader, each pixel computes its color independently using a mathematical function of its coordinates. In a cellular automaton, each cell computes its next state independently using a rule based on its neighbors. Both systems are <em>massively parallel</em>, and both demonstrate that extraordinary richness can emerge from simplicity.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Emergence</strong> &mdash; Complex global behavior arising from simple local rules. This is the unifying theme of this chapter: whether we are computing pixel colors with math or evolving cell states with lookup tables, the expressive power comes not from the complexity of the rules themselves, but from their <em>uniform, parallel application</em> across a large space.</p>
+      </div>
+
+      <p>The connection between these two domains runs deeper than analogy. In Section 6.9, we will see that cellular automata can be implemented directly as GLSL shaders using the frame feedback technique, unifying the two approaches into a single GPU-based pipeline. The Game of Life becomes a fragment shader; each pixel is both a pixel and a cell.</p>
+
+      <p>This chapter also touches on one of the deepest questions in science: <strong>where does complexity come from?</strong> Both GLSL patterns and cellular automata demonstrate that you do not need complex rules to produce complex output. You need simple rules, applied in parallel, with local interactions. This is the same principle that underlies crystal growth, snowflake formation, animal coat patterns, and neural computation. As Stephen Wolfram argued in <em>A New Kind of Science</em>, simple programs may be more fundamental to understanding nature than the traditional approach of simple equations.</p>
+
+      <p>By the end of this chapter you will be able to:</p>
+      <ul>
+        <li>Construct a variety of GLSL patterns using UV coordinates, distance fields, and periodic functions</li>
+        <li>Compose multiple patterns through arithmetic operations and domain warping</li>
+        <li>Explain the history and formal definition of cellular automata</li>
+        <li>Implement elementary (1D) cellular automata and classify them using Wolfram's scheme</li>
+        <li>Implement Conway's Game of Life and identify emergent structures</li>
+        <li>Port cellular automata to the GPU using GLSL and frame feedback</li>
+        <li>Articulate the connections between mathematical patterns and computational emergence</li>
+      </ul>
+
+      <!-- ===============================================================
+           6.2 GLSL PATTERN FUNDAMENTALS
+           =============================================================== -->
+      <h2 id="glsl-fundamentals">6.2 GLSL Pattern Fundamentals</h2>
+
+      <h3>6.2.1 The Fragment Shader Mindset</h3>
+
+      <p>In a fragment shader you do not "draw" shapes imperatively ("draw a circle here, draw a line there"). Instead, you write a function that answers one question for every pixel: <strong>"What color should I be?"</strong></p>
+
+      <p>The shader runs simultaneously for every pixel on the screen. Each pixel knows only its own coordinates. It cannot (in most cases) ask what color its neighbor is. The entire pattern must be described as a pure mathematical function of position. This constraint is also a superpower: because every pixel is independent, the GPU can compute them all in parallel, achieving real-time performance even for complex patterns at high resolutions.</p>
+
+      <p>Think of it this way: in a traditional drawing program, you might write code like "move the pen to position (100, 200), draw a circle with radius 50, fill it with red." This is <strong>imperative</strong> drawing. In a fragment shader, you instead write: "for ANY position $(x, y)$, if the distance from $(x, y)$ to $(100, 200)$ is less than 50, the color is red; otherwise it is white." This is <strong>functional</strong> drawing &mdash; you define the image as a mathematical function rather than a sequence of drawing commands.</p>
+
+      <p>This functional approach has profound consequences:</p>
+      <ul>
+        <li><strong>Resolution independence:</strong> The function works at any resolution. Zoom in and the pattern remains sharp because you are evaluating a mathematical function, not sampling stored pixels.</li>
+        <li><strong>Infinite canvas:</strong> The function is defined for all $(x, y)$, not just those within a bounded image. You can scroll, zoom, and pan freely.</li>
+        <li><strong>Composability:</strong> Functions compose naturally. You can combine, transform, and nest them to build complex patterns from simple parts.</li>
+        <li><strong>Parallelism:</strong> Because each pixel is independent, a GPU with thousands of cores can compute all pixels simultaneously.</li>
+      </ul>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Fragment Shader</strong> &mdash; A program that runs once per pixel (fragment) on the GPU. It receives the pixel's screen coordinates and must output a color (typically as an RGBA <code>vec4</code>). Fragment shaders are written in GLSL (OpenGL Shading Language) and execute in massively parallel fashion. A modern GPU can run fragment shaders for millions of pixels simultaneously, which is why shaders achieve real-time performance even for mathematically complex patterns.</p>
+      </div>
+
+      <p>To understand the execution model more concretely: for a 400x400 canvas, the fragment shader runs 160,000 times per frame &mdash; once for each pixel. At 60 fps, that is 9.6 million shader invocations per second. A modern GPU handles this trivially because its thousands of shader cores execute many of these invocations simultaneously. The fragment shader is the most computationally intensive stage of the graphics pipeline, and it is where all the creative work happens in shader art.</p>
+
+      <p>The key uniforms (values passed from the CPU to all shader invocations) that we use throughout this chapter are:</p>
+      <ul>
+        <li><code>u_resolution</code> (<code>vec2</code>): The canvas size in pixels, e.g., (400.0, 400.0)</li>
+        <li><code>u_time</code> (<code>float</code>): Elapsed time in seconds since the shader started running</li>
+        <li><code>u_mouse</code> (<code>vec2</code>): The mouse position in pixels (if supported by the environment)</li>
+      </ul>
+
+      <h3>6.2.2 UV Coordinates and Normalization</h3>
+
+      <p>The first step in any shader pattern is establishing a coordinate system. Raw pixel coordinates (<code>gl_FragCoord.xy</code>) range from 0 to the canvas width/height in pixels. This is awkward for mathematical patterns because the coordinate range depends on the canvas size. A circle with radius 100 pixels would look different on a 200x200 canvas versus a 1000x1000 canvas. Instead, we <em>normalize</em> the coordinates to a standard range:</p>
+
+      <pre><code>// Simple normalization: 0 to 1 (origin at bottom-left)
+vec2 uv = gl_FragCoord.xy / u_resolution;
+
+// Centered at origin, aspect-ratio corrected
+vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;</code></pre>
+
+      <p>The first form maps coordinates to $[0, 1]$ in both axes. This is useful for simple patterns but distorts the aspect ratio on non-square canvases.</p>
+
+      <p>The second form is the most commonly used in shader art. It first subtracts half the resolution to center the origin, then divides by <code>u_resolution.y</code> only (not <code>.xy</code>). After this transformation:</p>
+      <ul>
+        <li>The center of the screen is at $(0, 0)$</li>
+        <li>The top and bottom edges are at $y = +0.5$ and $y = -0.5$</li>
+        <li>The left and right edges depend on the aspect ratio (for a square canvas, $x$ also ranges from $-0.5$ to $+0.5$; for a 16:9 canvas, $x$ ranges from about $-0.89$ to $+0.89$)</li>
+        <li>Dividing by <code>u_resolution.y</code> (not <code>.xy</code>) ensures that circles look like circles, not ellipses &mdash; this preserves the <strong>aspect ratio</strong></li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Beginners often normalize by dividing by <code>u_resolution.xy</code> (both components), which maps both axes to the same range but <em>distorts</em> the aspect ratio. Circles become ellipses, squares become rectangles. Always divide by a single scalar (typically <code>u_resolution.y</code>) to maintain correct proportions. You can also use <code>min(u_resolution.x, u_resolution.y)</code> to ensure the entire $[-0.5, 0.5]$ range is visible on both axes.</p>
+      </div>
+
+      <p>A third common normalization maps coordinates to $[-1, 1]$ on both axes:</p>
+      <pre><code>// -1 to 1, centered (may distort aspect ratio)
+vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution.xy) / u_resolution.y;</code></pre>
+      <p>This is popular in ShaderToy and gives a larger working range. Choose whichever normalization suits your pattern; just be consistent.</p>
+
+      <h3>6.2.3 Essential GLSL Functions</h3>
+
+      <p>GLSL provides a rich set of built-in functions for pattern creation. Understanding these is the key to unlocking shader art:</p>
+
+      <table>
+        <thead>
+          <tr><th>Function</th><th>Signature</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>step(edge, x)</code></td><td><code>float &rarr; float</code></td><td>Returns 0.0 if $x &lt; \text{edge}$, else 1.0. A hard threshold.</td></tr>
+          <tr><td><code>smoothstep(a, b, x)</code></td><td><code>float &rarr; float</code></td><td>Returns 0.0 if $x \le a$, 1.0 if $x \ge b$, and a smooth Hermite interpolation between for $a &lt; x &lt; b$.</td></tr>
+          <tr><td><code>mix(a, b, t)</code></td><td><code>float &rarr; float</code></td><td>Linear interpolation: returns $a \cdot (1 - t) + b \cdot t$.</td></tr>
+          <tr><td><code>fract(x)</code></td><td><code>float &rarr; float</code></td><td>Returns the fractional part: $x - \lfloor x \rfloor$. Creates repeating tiles.</td></tr>
+          <tr><td><code>mod(x, y)</code></td><td><code>float &rarr; float</code></td><td>Modulo: $x - y \cdot \lfloor x/y \rfloor$. Useful for wrapping and parity checks.</td></tr>
+          <tr><td><code>floor(x)</code></td><td><code>float &rarr; float</code></td><td>Rounds down: $\lfloor x \rfloor$. Converts continuous space to discrete cells.</td></tr>
+          <tr><td><code>length(v)</code></td><td><code>vec2 &rarr; float</code></td><td>Euclidean distance from origin: $\sqrt{x^2 + y^2}$.</td></tr>
+          <tr><td><code>atan(y, x)</code></td><td><code>float, float &rarr; float</code></td><td>Arctangent: returns angle in radians from $-\pi$ to $\pi$.</td></tr>
+          <tr><td><code>clamp(x, lo, hi)</code></td><td><code>float &rarr; float</code></td><td>Constrains $x$ to the range $[\text{lo}, \text{hi}]$.</td></tr>
+          <tr><td><code>abs(x)</code></td><td><code>float &rarr; float</code></td><td>Absolute value: $|x|$.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong><code>smoothstep</code> is the anti-aliasing workhorse.</strong> Instead of a hard edge (<code>step</code>), <code>smoothstep(a, b, x)</code> creates a soft transition over the interval $[a, b]$. The formula is a cubic Hermite polynomial: $3t^2 - 2t^3$ where $t = \frac{x - a}{b - a}$, clamped to $[0, 1]$. This eliminates jagged edges on curved boundaries.</p>
+      </div>
+
+      <p>Let us look at some of these functions in more detail, since they form the vocabulary of all shader patterns:</p>
+
+      <h4>step() and smoothstep() Compared</h4>
+
+      <p><code>step(edge, x)</code> is a binary threshold: it returns exactly 0 or 1 with no transition. This produces hard, aliased edges &mdash; fine for some designs, but jagged on curves. <code>smoothstep(edge0, edge1, x)</code> provides a smooth transition between 0 and 1 over the range $[\text{edge0}, \text{edge1}]$. The width of this transition zone controls the "softness" of the edge:</p>
+
+      <pre><code>// Hard edge: circle with aliased boundary
+float circle_hard = step(0.25, length(uv));
+
+// Soft edge: anti-aliased circle
+float circle_soft = smoothstep(0.25, 0.26, length(uv));
+
+// Very soft edge: blurry glow
+float circle_glow = smoothstep(0.1, 0.4, length(uv));</code></pre>
+
+      <h4>fract() and floor(): The Tiling Duo</h4>
+
+      <p><code>fract(x)</code> and <code>floor(x)</code> are complementary: for any value $x$, we have $x = \text{floor}(x) + \text{fract}(x)$. Together they let you work with tiled patterns:</p>
+      <ul>
+        <li><code>floor(uv * freq)</code> gives you the <strong>cell index</strong> &mdash; which tile you are in (an integer)</li>
+        <li><code>fract(uv * freq)</code> gives you the <strong>position within the cell</strong> &mdash; where you are inside the tile (0 to 1)</li>
+      </ul>
+
+      <p>This decomposition is the foundation of all tiled patterns: grids, dot arrays, brick patterns, and more.</p>
+
+      <h4>mix(): Linear Interpolation</h4>
+
+      <p><code>mix(a, b, t)</code> computes $a \cdot (1 - t) + b \cdot t$. When $t = 0$ you get $a$; when $t = 1$ you get $b$; in between you get a weighted blend. This is fundamental for color gradients, blending between patterns, and smooth transitions. It works on all GLSL types: <code>float</code>, <code>vec2</code>, <code>vec3</code>, <code>vec4</code>.</p>
+
+      <pre><code>// Color gradient from red to blue based on x position
+vec3 col = mix(vec3(1,0,0), vec3(0,0,1), uv.x + 0.5);
+
+// Blend between two patterns based on distance
+float pattern = mix(stripes, dots, smoothstep(0.2, 0.3, length(uv)));</code></pre>
+
+      <h3>6.2.4 Distance and Angle: The Polar Toolkit</h3>
+
+      <p>Two operations form the foundation of most patterns:</p>
+
+      <p><strong>Distance from a point:</strong></p>
+      <pre><code>float d = length(uv);              // distance from the origin
+float d = distance(uv, somePoint); // distance from any point</code></pre>
+
+      <p><strong>Angle from a point:</strong></p>
+      <pre><code>float angle = atan(uv.y, uv.x);   // returns -PI to PI</code></pre>
+
+      <p>Together, these convert Cartesian coordinates $(x, y)$ to polar coordinates $(r, \theta)$, which are the natural language for circular and radial patterns.</p>
+
+      <p>$$r = \sqrt{x^2 + y^2}, \qquad \theta = \text{atan2}(y, x)$$</p>
+
+      <p>Why are polar coordinates so useful for patterns? Because many natural patterns have rotational symmetry: ripples on water, flower petals, spider webs, radar displays. In polar coordinates, a circle is simply $r = \text{const}$, and a spiral is $r = a + b\theta$. These are far simpler expressions than their Cartesian equivalents.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>The GLSL <code>atan(y, x)</code> function (two-argument arctangent) returns values in $[-\pi, \pi]$. Be aware of the <strong>discontinuity</strong> at $\theta = \pm\pi$ (the negative x-axis). Patterns that cross this line may show a seam. To avoid the seam, you can remap: <code>float angle = atan(uv.y, uv.x) + 3.14159;</code> shifts the discontinuity to the positive x-axis, and <code>angle / 6.28318</code> normalizes to $[0, 1]$.</p>
+      </div>
+
+      <h3>6.2.5 GLSL Color Palettes</h3>
+
+      <p>One of the most effective techniques for creating visually appealing shader art is using <strong>cosine-based color palettes</strong>, popularized by Inigo Quilez. The formula:</p>
+
+      <p>$$\text{color}(t) = a + b \cdot \cos\bigl(2\pi(c \cdot t + d)\bigr)$$</p>
+
+      <p>where $a$, $b$, $c$, and $d$ are <code>vec3</code> parameters controlling the palette. In GLSL:</p>
+
+      <pre><code>vec3 palette(float t) {
+  vec3 a = vec3(0.5, 0.5, 0.5);
+  vec3 b = vec3(0.5, 0.5, 0.5);
+  vec3 c = vec3(1.0, 1.0, 1.0);
+  vec3 d = vec3(0.00, 0.33, 0.67);
+  return a + b * cos(6.28318 * (c * t + d));
+}</code></pre>
+
+      <p>By varying the four parameters, you can create an infinite variety of smooth, aesthetically pleasing color palettes. The input $t$ is typically derived from position, distance, or time. A common shorthand used in many shader examples is:</p>
+
+      <pre><code>vec3 col = 0.5 + 0.5 * cos(u_time + uv.xyx + vec3(0, 2, 4));</code></pre>
+
+      <p>This creates a smoothly shifting rainbow palette where the three color channels are offset by different amounts.</p>
+
+      <!-- ===============================================================
+           6.3 BUILDING PATTERNS
+           =============================================================== -->
+      <h2 id="building-patterns">6.3 Building Patterns</h2>
+
+      <p>Now that we have the fundamental tools &mdash; normalized coordinates, distance functions, periodic functions, and color palettes &mdash; we can build a library of patterns. Each pattern below demonstrates a different technique, and all of them can be combined using the composition methods in Section 6.4.</p>
+
+      <p>The patterns in this section progress from simple (stripes) to complex (Moire/interference). For each pattern, we present the core mathematical idea, a GLSL code snippet, and variations to explore. The interactive examples let you modify the code and see the results immediately.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Pattern Vocabulary:</strong> Think of each pattern as a "word" in a visual language. Stripes, circles, checkerboards, fans, and tiles are the basic vocabulary. Composition techniques (multiplication, domain warping, masking) are the grammar. A complex shader is a "sentence" built from these elements. Once you internalize the vocabulary, you can "read" any shader by identifying the component patterns and how they are composed.</p>
+      </div>
+
+      <h3>6.3.1 Stripes</h3>
+
+      <p>Stripes are perhaps the simplest repeating pattern. They use periodic functions to create alternating bands of color. The key insight is that <code>floor(uv.y * freq)</code> converts a smooth coordinate into an integer "band index," and taking <code>mod 2</code> alternates between 0 and 1:</p>
+
+      <p>$$\text{stripe} = \text{mod}\bigl(\lfloor y \cdot f \rfloor, \; 2\bigr)$$</p>
+
+      <p>where $f$ is the frequency (number of stripe pairs). Try changing the frequency and direction in the shader below:</p>
+
+      <!-- INTERACTIVE: GLSL Stripe Pattern -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Stripe Pattern &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+
+  // Try changing: uv.x for vertical, uv.x+uv.y for diagonal
+  float freq = 12.0;
+  float stripe = mod(floor(uv.y * freq), 2.0);
+
+  // Smooth gradient stripes (uncomment to try):
+  // stripe = sin(uv.y * freq * 6.28) * 0.5 + 0.5;
+
+  // Animate by adding time:
+  // stripe = mod(floor((uv.y + u_time * 0.1) * freq), 2.0);
+
+  vec3 col1 = vec3(0.1, 0.1, 0.3);
+  vec3 col2 = vec3(0.9, 0.8, 0.2);
+  vec3 color = mix(col1, col2, stripe);
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p><strong>Variations to explore:</strong></p>
+      <ul>
+        <li><code>uv.x</code> for vertical stripes</li>
+        <li><code>uv.x + uv.y</code> for diagonal stripes at 45 degrees</li>
+        <li><code>sin(uv.y * freq * 6.28) * 0.5 + 0.5</code> for smooth gradient stripes instead of hard-edged bands</li>
+        <li>Add <code>u_time</code> to the coordinate for animation: stripes that scroll</li>
+        <li><code>sin(uv.x * freq * 6.28) * sin(uv.y * freq * 6.28)</code> for a grid of soft diamonds</li>
+        <li>Use non-uniform frequency: <code>floor(uv.y * (8.0 + 4.0 * sin(uv.x * 3.0)))</code> for stripes with variable spacing</li>
+      </ul>
+
+      <p>The stripe pattern is deceptively fundamental. Many complex patterns are built by applying stripes in transformed coordinate spaces. Stripes in polar coordinates become concentric rings (r-stripes) or fan blades (theta-stripes). Stripes in a warped coordinate space become organic, flowing bands. The humble stripe is the atom of shader patterns.</p>
+
+      <h3>6.3.2 Checkerboard</h3>
+
+      <p>The checkerboard pattern combines stripes in both dimensions using a <strong>parity check</strong>. We compute integer cell coordinates in both $x$ and $y$, add them, and take mod 2. This works because:</p>
+      <ul>
+        <li>even + even = even (white)</li>
+        <li>odd + odd = even (white)</li>
+        <li>even + odd = odd (black)</li>
+      </ul>
+
+      <p>$$\text{checker} = \text{mod}\bigl(\lfloor x \cdot f \rfloor + \lfloor y \cdot f \rfloor, \; 2\bigr)$$</p>
+
+      <p>The checkerboard is mathematically interesting because it is equivalent to the XOR of two stripe patterns: horizontal stripes XOR vertical stripes. This connection to XOR (exclusive or) appears throughout pattern generation and cellular automata &mdash; Rule 90 is also based on XOR, and it produces the Sierpinski triangle.</p>
+
+      <p>You can create <strong>colored checkerboards</strong> by using the checker value to index into different color palettes:</p>
+
+      <pre><code>vec3 colA = vec3(0.9, 0.1, 0.2);  // Red squares
+vec3 colB = vec3(0.1, 0.2, 0.9);  // Blue squares
+vec3 color = mix(colA, colB, checker);</code></pre>
+
+      <p>For a <strong>3D-looking</strong> checkerboard (alternating raised/lowered squares), add a subtle brightness variation based on the cell position within each square:</p>
+
+      <pre><code>vec2 cellUV = fract(uv * freq);
+float edge = smoothstep(0.0, 0.05, cellUV.x) * smoothstep(0.0, 0.05, cellUV.y)
+           * smoothstep(0.0, 0.05, 1.0 - cellUV.x) * smoothstep(0.0, 0.05, 1.0 - cellUV.y);
+float shaded = checker * edge;  // Squared-off tiles with rounded edges</code></pre>
+
+      <!-- INTERACTIVE: GLSL Checkerboard -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Checkerboard Pattern &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+  float freq = 8.0;
+
+  // Integer grid cell coordinates
+  float cellX = floor(uv.x * freq);
+  float cellY = floor(uv.y * freq);
+
+  // Parity check: XOR-like alternation
+  float checker = mod(cellX + cellY, 2.0);
+
+  // Color the squares
+  vec3 col1 = vec3(0.15, 0.15, 0.2);
+  vec3 col2 = vec3(0.95, 0.95, 0.9);
+  vec3 color = mix(col1, col2, checker);
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <h3>6.3.3 Circles (Distance-Based)</h3>
+
+      <p>A filled circle is defined by a <strong>distance threshold</strong>. We compute the distance from each pixel to a center point, then test whether that distance is less than a radius. Using <code>smoothstep</code> instead of <code>step</code> gives us an anti-aliased edge:</p>
+
+      <pre><code>float d = length(uv);
+float circle = 1.0 - smoothstep(0.25, 0.26, d);</code></pre>
+
+      <p>The <code>smoothstep(0.25, 0.26, d)</code> creates an anti-aliased edge over a 0.01-unit transition zone. The outer <code>1.0 -</code> inverts it so the circle interior is white (1.0) and the exterior is black (0.0).</p>
+
+      <p>This pattern is incredibly versatile. By modifying the distance function, you can create many different shapes:</p>
+
+      <pre><code>// Ring (annulus): two smoothsteps for inner and outer edge
+float ring = smoothstep(0.24, 0.25, d) - smoothstep(0.29, 0.30, d);
+
+// Soft glow: exponential falloff from center
+float glow = exp(-d * 5.0);
+
+// Multiple circles at different positions
+float d1 = length(uv - vec2(-0.2, 0.0));
+float d2 = length(uv - vec2( 0.2, 0.0));
+float circles = max(1.0 - smoothstep(0.15, 0.16, d1),
+                    1.0 - smoothstep(0.15, 0.16, d2));</code></pre>
+
+      <p>The circle is the fundamental building block of <strong>signed distance fields (SDFs)</strong>, which we explored in Chapter 5. Here we use it purely for pattern creation, but the same distance-based approach extends to any shape that can be described by a distance function.</p>
+
+      <h3>6.3.4 Concentric Rings</h3>
+
+      <p>Rings combine distance with periodic functions. By passing the distance through <code>sin()</code>, we create repeating bands that radiate from the center. Subtracting <code>u_time</code> inside the <code>sin()</code> makes the rings expand outward:</p>
+
+      <p>$$\text{rings} = \sin(r \cdot f - t) \cdot 0.5 + 0.5$$</p>
+
+      <p>The parameter $f$ controls the ring density (higher = more tightly packed rings), and $t$ (typically <code>u_time</code>) controls the animation speed. The <code>* 0.5 + 0.5</code> remaps the sine wave from $[-1, 1]$ to $[0, 1]$ for use as a brightness value.</p>
+
+      <p><strong>Variations:</strong></p>
+      <ul>
+        <li><strong>Sharp rings:</strong> Use <code>step(0.5, sin(d * 40.0))</code> instead of the smooth sine for alternating black/white bands with hard edges</li>
+        <li><strong>Pulsing rings:</strong> Modulate the frequency with time: <code>sin(d * (30.0 + 10.0 * sin(u_time)) - u_time * 2.0)</code></li>
+        <li><strong>Eccentric rings:</strong> Offset the center from (0,0) to create rings centered at a different point. Move the center with the mouse for interactive patterns.</li>
+        <li><strong>Rings from multiple centers:</strong> Compute distances from several points and combine: <code>sin(d1 * 40.0) + sin(d2 * 40.0)</code> creates interference/Moire fringes</li>
+      </ul>
+
+      <!-- INTERACTIVE: GLSL Concentric Rings -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Concentric Rings &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+
+  float d = length(uv);
+
+  // Smooth expanding rings
+  float rings = sin(d * 40.0 - u_time * 2.0) * 0.5 + 0.5;
+
+  // Sharp rings (uncomment to try):
+  // rings = step(0.5, sin(d * 40.0 - u_time * 2.0));
+
+  // Color gradient based on distance
+  vec3 inner = vec3(0.1, 0.3, 0.8);
+  vec3 outer = vec3(0.9, 0.2, 0.3);
+  vec3 color = mix(inner, outer, d * 2.0) * rings;
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <h3>6.3.5 Fan (Angular) Patterns</h3>
+
+      <p>Fan patterns use the angle in polar coordinates. <code>atan(uv.y, uv.x)</code> returns an angle from $-\pi$ to $\pi$. Passing this through <code>sin()</code> with a multiplier creates segments that radiate from the center like the spokes of a wheel:</p>
+
+      <pre><code>float angle = atan(uv.y, uv.x);     // -PI to PI
+float fan = sin(angle * 10.0) * 0.5 + 0.5;</code></pre>
+
+      <p>The multiplier (10.0 in this case) controls the number of fan blades: <code>sin(angle * N)</code> produces $2N$ alternating sectors (N bright and N dark). With <code>step</code> instead of <code>sin</code>, you get sharp-edged pie slices; with <code>sin</code>, you get smooth gradient fans.</p>
+
+      <p>Combining angular patterns with distance creates spirals:</p>
+
+      <pre><code>// Spiral: angle + distance creates spiral arms
+float spiral = sin(angle * 3.0 + length(uv) * 20.0 - u_time) * 0.5 + 0.5;</code></pre>
+
+      <p>The <code>length(uv)</code> term adds a radial offset to the angular pattern, causing the bands to twist into spiral arms. The number of arms equals the angular multiplier (3 in this case). Subtracting <code>u_time</code> makes the spiral rotate.</p>
+
+      <h3>6.3.6 Tiled Patterns with fract()</h3>
+
+      <p>The <code>fract()</code> function is the key to tiling. It returns the fractional part of a number, effectively wrapping coordinates back to the $[0, 1)$ range. This means you can define a pattern in one "cell" and have it repeat infinitely across the canvas:</p>
+
+      <pre><code>vec2 cell = fract(uv * 8.0);  // 8x8 grid of repeating cells
+float d = length(cell - 0.5); // distance from cell center
+float dot = 1.0 - smoothstep(0.15, 0.16, d); // circle in each cell</code></pre>
+
+      <p>The technique works in three steps:</p>
+      <ol>
+        <li><strong>Scale:</strong> Multiply UV coordinates by the tile frequency (<code>uv * 8.0</code>). This stretches the coordinate space so that [0,1] now maps to [0,8].</li>
+        <li><strong>Tile:</strong> Apply <code>fract()</code> to wrap back to [0,1] within each tile. Now you have a local coordinate system that repeats 8 times.</li>
+        <li><strong>Pattern:</strong> Use the local coordinates to draw any shape within one tile. It automatically repeats across the grid.</li>
+      </ol>
+
+      <p>You can get the <strong>tile index</strong> (which tile you are in) using <code>floor()</code>:</p>
+
+      <pre><code>vec2 id = floor(uv * 8.0);    // Integer tile ID (0,0) to (7,7)
+vec2 local = fract(uv * 8.0); // Position within tile (0 to 1)</code></pre>
+
+      <p>The tile ID is useful for making each tile slightly different &mdash; for example, by using it as a seed for a hash function to randomize colors or sizes:</p>
+
+      <pre><code>float r = hash(id);                  // Random value per tile
+float size = 0.1 + 0.15 * r;        // Random circle size
+float d = length(local - 0.5);
+float dot = 1.0 - smoothstep(size, size + 0.01, d);</code></pre>
+
+      <p>More advanced tiling techniques include:</p>
+
+      <h4>Brick Pattern (Offset Tiling)</h4>
+      <p>Offset every other row by half a tile width to create a brick-laying pattern:</p>
+      <pre><code>vec2 p = uv * vec2(8.0, 16.0);        // More rows than columns
+float row = floor(p.y);
+p.x += mod(row, 2.0) * 0.5;           // Shift odd rows by half
+vec2 cell = fract(p);
+float d = length(cell - 0.5);</code></pre>
+
+      <h4>Hexagonal Tiling</h4>
+      <p>Hexagonal grids provide 6-fold symmetry, which is more isotropic than the 4-fold symmetry of square grids. Implementing hex tiling in GLSL requires some coordinate transformations but produces beautiful, natural-looking tessellations.</p>
+
+      <h4>Truchet Tiles</h4>
+      <p>Truchet tiles use a single tile design with rotational variants. Each cell randomly selects an orientation (0, 90, 180, or 270 degrees), creating maze-like or circuit-board patterns. The tile ID (from <code>floor()</code>) is used as a hash seed to determine the rotation:</p>
+      <pre><code>vec2 id = floor(uv * 8.0);
+float rotation = floor(hash(id) * 4.0) * 1.5708; // 0, PI/2, PI, 3PI/2
+vec2 local = fract(uv * 8.0) - 0.5;
+local = rotate2D(local, rotation);
+// Draw arcs or diagonal lines in the rotated local space</code></pre>
+
+      <p>Truchet tiles are a beautiful example of how <em>randomness</em> and <em>simple geometry</em> combine to produce complex, visually interesting patterns. They are widely used in generative art and fabric design.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Truchet Tiles</strong> are named after <strong>S&eacute;bastien Truchet</strong>, a French Dominican priest and mathematician who studied them in 1704. He was interested in how simple square tiles with diagonal lines, when placed in random orientations, could create complex and aesthetically pleasing patterns. The modern resurgence of interest in Truchet tiles came with the work of Cyril Stanley Smith (1987) and their adoption by the generative art and creative coding communities. In GLSL, Truchet tiles are easy to implement and produce mesmerizing results.</p>
+      </div>
+
+      <h3>6.3.7 Moire Patterns and Interference</h3>
+
+      <p>Moire patterns arise from the <strong>interference</strong> between two similar repeating patterns. When two sets of concentric rings are centered at slightly different points, the phase differences create large-scale interference fringes that are far more complex than either pattern alone:</p>
+
+      <pre><code>float d1 = length(uv - vec2(-0.1, 0.0));
+float d2 = length(uv - vec2( 0.1, 0.0));
+float moire = sin(d1 * 60.0) * 0.5 + sin(d2 * 60.0) * 0.5;</code></pre>
+
+      <p>Moire patterns are a real-world phenomenon: you can see them when two chain-link fences overlap, when a fine-striped shirt is filmed on TV, or when two glass panes with etched lines are overlaid. In mathematics, they arise from the <strong>beat frequency</strong> between two similar periodic signals:</p>
+
+      <p>$$\sin(f_1 x) + \sin(f_2 x) = 2 \cos\!\left(\frac{f_1 - f_2}{2} x\right) \sin\!\left(\frac{f_1 + f_2}{2} x\right)$$</p>
+
+      <p>When $f_1$ and $f_2$ are close, the cosine term produces a slow oscillation (the Moire fringe) that modulates the fast sine pattern. In 2D with concentric rings, this produces spectacular hyperbolic interference fringes.</p>
+
+      <p><strong>Interference patterns</strong> more generally occur whenever two or more wave-like patterns are combined. The resulting pattern contains spatial frequencies not present in either original, creating richness from simplicity &mdash; a theme that connects directly to cellular automata.</p>
+
+      <h3>6.3.8 Rotation</h3>
+
+      <p>Rotation transforms the coordinate space before computing the pattern. The standard 2D rotation matrix is:</p>
+
+      <p>$$R(\theta) = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}$$</p>
+
+      <pre><code>vec2 rotate2D(vec2 p, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return mat2(c, -s, s, c) * p;
+}</code></pre>
+
+      <p>Applying this before a pattern computation rotates the entire pattern. Animate the angle with <code>u_time</code> for spinning effects:</p>
+
+      <pre><code>// Spinning checkerboard
+vec2 ruv = rotate2D(uv, u_time * 0.5);
+float checker = mod(floor(ruv.x * 8.0) + floor(ruv.y * 8.0), 2.0);</code></pre>
+
+      <p>You can also use rotation for more subtle effects, like creating kaleidoscope-style symmetry by rotating copies of the same pattern:</p>
+
+      <pre><code>// 6-fold symmetry (kaleidoscope)
+float angle = atan(uv.y, uv.x);
+float sector = 6.28318 / 6.0;            // 60 degrees
+angle = mod(angle, sector);               // Fold into one sector
+angle = abs(angle - sector * 0.5);        // Mirror within sector
+vec2 kuv = vec2(cos(angle), sin(angle)) * length(uv);</code></pre>
+
+      <h3>6.3.9 Noise and Randomness</h3>
+
+      <p>GLSL does not have a built-in random number generator. Instead, shader artists use <strong>hash functions</strong> &mdash; deterministic functions that produce pseudo-random output from their input. A common 2D hash function:</p>
+
+      <pre><code>float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}</code></pre>
+
+      <p>This takes a 2D position and returns a pseudo-random float in $[0, 1)$. Despite being completely deterministic (the same input always gives the same output), the output <em>appears</em> random. This is used for:</p>
+      <ul>
+        <li>Random initial states for CAs on the GPU</li>
+        <li>Adding variation to tiled patterns (each tile gets a different random value from its cell index)</li>
+        <li>Building value noise and gradient noise (Perlin noise) for organic textures</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>The hash function above relies on floating-point precision of the <code>sin</code> and <code>dot</code> functions. On some GPUs (especially mobile), the precision is lower, and the "random" values may show visible patterns or banding. For more robust hashing, use integer-based hash functions or multiple iterations.</p>
+      </div>
+
+      <!-- ===============================================================
+           6.4 PATTERN COMPOSITION
+           =============================================================== -->
+      <h2 id="pattern-composition">6.4 Pattern Composition</h2>
+
+      <p>Individual patterns are building blocks. The real creative power comes from <em>composing</em> multiple patterns together. If each pattern is a function $f_i : \mathbb{R}^2 \to [0, 1]$, composition creates a new function from the old ones. There are several fundamental composition techniques:</p>
+
+      <h3>6.4.1 Arithmetic Composition</h3>
+
+      <p>The simplest way to combine patterns is through arithmetic operations on their output values. If we treat each pattern as a function that maps position to a brightness value in $[0, 1]$, then:</p>
+
+      <ul>
+        <li><strong>Multiplication ($C = A \times B$)</strong> creates intersection-like effects: both patterns must be bright for the result to be bright. If either pattern is dark (0), the result is dark. This is useful for masking and for creating patterns that appear only where two conditions are simultaneously met.</li>
+        <li><strong>Addition ($C = \text{clamp}(A + B, 0, 1)$)</strong> creates union-like effects: either pattern contributes brightness. Bright regions from both patterns appear in the result. Clamping prevents values from exceeding 1.0.</li>
+        <li><strong>Subtraction ($C = \text{clamp}(A - B, 0, 1)$)</strong> carves one pattern out of another. Pattern B's bright regions are "cut" from pattern A. This is useful for creating shapes with holes or borders.</li>
+        <li><strong>Maximum ($C = \max(A, B)$)</strong> takes the brightest value at each pixel. Similar to addition but preserves the original brightness levels without clipping.</li>
+        <li><strong>Minimum ($C = \min(A, B)$)</strong> takes the darkest value. Creates a strict intersection: only where both patterns are bright.</li>
+        <li><strong>XOR / Mod 2 ($C = \text{mod}(A + B, 2)$)</strong> creates alternating interference effects. Where both patterns are 0 or both are 1, the result is 0; where they differ, the result is 1. This produces striking Op-Art-style interference fringes.</li>
+        <li><strong>mix() ($C = \text{mix}(A, B, t)$)</strong> blends smoothly between two patterns using a third value $t$ as a crossfader. When $t$ itself is a pattern, you get spatial blending where different regions of the screen show different patterns.</li>
+      </ul>
+
+      <h3>6.4.2 Masking</h3>
+
+      <p>Use one pattern as a <strong>mask</strong> to control where another pattern appears. A mask is simply a pattern used as a multiplier: where the mask is 1.0, the other pattern shows through; where the mask is 0.0, the result is black. For example, use a circle as a mask for a stripe pattern:</p>
+
+      <pre><code>float stripes = mod(floor(uv.y * 20.0), 2.0);
+float mask = 1.0 - smoothstep(0.3, 0.31, length(uv));
+float result = stripes * mask;  // stripes only inside the circle</code></pre>
+
+      <p>Masking is multiplication, which means it can also be used for more subtle effects. A soft-edged mask (created with a wide <code>smoothstep</code> transition) creates a gradual fade rather than a hard cutoff. You can use any pattern as a mask: distance fields, angular patterns, noise, or even the output of another composition.</p>
+
+      <p>A common use of masking is creating <strong>windowed patterns</strong> &mdash; a complex pattern that only appears in certain regions of the screen, with a simpler background elsewhere:</p>
+
+      <pre><code>// Complex pattern visible only in a ring shape
+float ring = smoothstep(0.2, 0.21, d) * (1.0 - smoothstep(0.35, 0.36, d));
+vec3 result = mix(backgroundColor, patternColor, ring);</code></pre>
+
+      <h3>6.4.3 Domain Warping</h3>
+
+      <p><strong>Domain warping</strong> is one of the most powerful and visually stunning composition techniques. Instead of combining the <em>outputs</em> of two patterns, you use one pattern to <em>distort the input coordinates</em> of another. This creates organic, fluid effects that are impossible to achieve with simple arithmetic:</p>
+
+      <p>$$\text{color} = f\bigl(\mathbf{uv} + g(\mathbf{uv})\bigr)$$</p>
+
+      <p>where $f$ is the base pattern and $g$ is the warping function. The result looks like the base pattern has been stirred, melted, or viewed through rippled glass.</p>
+
+      <p>The warp function $g$ is typically built from <code>sin</code>/<code>cos</code> waves that vary across the canvas. The <code>warpAmount</code> parameter controls the intensity of the distortion. Small values (0.01&ndash;0.05) give a subtle wobble; large values (0.2+) produce dramatic swirling. Adding <code>u_time</code> to the wave phases animates the distortion.</p>
+
+      <p>Domain warping can be <strong>iterated</strong> (applied recursively) for increasingly organic results. Inigo Quilez demonstrated that applying warp-of-warp-of-warp produces patterns resembling clouds, marble, and geological strata:</p>
+
+      <pre><code>// First warp
+vec2 q = vec2(fbm(uv), fbm(uv + vec2(1.7, 9.2)));
+// Second warp using q
+vec2 r = vec2(fbm(uv + 4.0*q), fbm(uv + 4.0*q + vec2(8.3, 2.8)));
+// Final pattern
+float f = fbm(uv + 4.0*r);</code></pre>
+
+      <p>(Here <code>fbm</code> stands for <em>fractal Brownian motion</em>, a noise-based function we will study in later chapters. The same principle works with simpler warp functions.)</p>
+
+      <!-- INTERACTIVE: GLSL Domain Warping -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Domain Warping &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+
+  // Warping function: distort the coordinates
+  float warpAmount = 0.15;
+  vec2 warp = vec2(
+    sin(uv.y * 8.0 + u_time) * warpAmount,
+    cos(uv.x * 8.0 + u_time * 0.7) * warpAmount
+  );
+
+  // Apply warp to the coordinates
+  vec2 warped = uv + warp;
+
+  // Base pattern: checkerboard on warped coordinates
+  float freq = 10.0;
+  float cx = floor(warped.x * freq);
+  float cy = floor(warped.y * freq);
+  float checker = mod(cx + cy, 2.0);
+
+  // Second layer of warping for color
+  vec2 warp2 = vec2(
+    sin(uv.y * 4.0 + u_time * 1.3),
+    cos(uv.x * 4.0 + u_time * 0.9)
+  ) * 0.1;
+  float d = length(uv + warp2);
+
+  vec3 col1 = vec3(0.05, 0.1, 0.2);
+  vec3 col2 = 0.5 + 0.5 * cos(u_time + d * 4.0 + vec3(0, 2, 4));
+  vec3 color = mix(col1, col2, checker);
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Domain warping</strong> is the secret behind much of the organic, fluid-looking shader art you see on ShaderToy. The technique can be applied recursively: warp the coordinates, compute a pattern, use <em>that</em> pattern to warp coordinates again, and so on. Inigo Quilez's article "Warping" is the definitive reference for this technique.</p>
+      </div>
+
+      <h3>6.4.4 Combining Rings and Fans</h3>
+
+      <p>One of the most visually striking compositions combines radial (rings) and angular (fans) patterns. Using XOR (mod 2 addition) creates a complex interference pattern reminiscent of Op Art:</p>
+
+      <pre><code>float d = length(uv);
+float angle = atan(uv.y, uv.x);
+
+float rings = step(0.0, sin(d * 30.0 - u_time * 2.0));
+float fan   = step(0.0, sin(angle * 8.0 + u_time));
+
+// XOR combination
+float pattern = mod(rings + fan, 2.0);</code></pre>
+
+      <p>This XOR combination produces a pattern where the rings and fans create a constantly shifting "chessboard in polar coordinates." Where both patterns agree (both black or both white), the result is black; where they disagree, the result is white. The animation creates a hypnotic spinning effect. This type of pattern is central to <strong>Op Art</strong> (Optical Art), the art movement pioneered by Bridget Riley and Victor Vasarely in the 1960s, which used precise geometric patterns to create visual illusions of movement and depth.</p>
+
+      <p>The XOR technique also connects directly to cellular automata: Rule 90 (the Sierpinski triangle rule) is exactly XOR applied to the left and right neighbors. Both the visual XOR patterns in GLSL and the computational XOR in CAs demonstrate the same principle: combining two simple regular structures through XOR produces complex, fractal-like output.</p>
+
+      <h3>6.4.5 Layered Composition</h3>
+
+      <p>Complex shader art typically uses <strong>many layers</strong> composed together. A typical approach:</p>
+
+      <ol>
+        <li><strong>Background gradient:</strong> A smooth color wash based on position or distance</li>
+        <li><strong>Primary pattern:</strong> The main geometric pattern (e.g., tiled shapes)</li>
+        <li><strong>Secondary pattern:</strong> An overlay or modifier (e.g., domain warping)</li>
+        <li><strong>Lighting/shading:</strong> Simulated 3D effects using distance fields</li>
+        <li><strong>Vignette:</strong> Darkening the edges for visual focus</li>
+        <li><strong>Color grading:</strong> Final color adjustments (contrast, saturation, palette mapping)</li>
+      </ol>
+
+      <p>Each layer is computed independently and combined using <code>mix</code>, multiplication, or addition. The vignette effect (darkening edges) is particularly common:</p>
+
+      <pre><code>// Simple vignette: multiply by (1 - distance^2)
+float vignette = 1.0 - dot(uv, uv) * 2.0;
+color *= clamp(vignette, 0.0, 1.0);</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Thinking in Layers:</strong> When designing a shader pattern, sketch out the layers on paper first. What is the background? What is the primary pattern? How will you add visual interest and color? This layer-by-layer approach makes complex shaders manageable and debuggable &mdash; you can comment out individual layers to isolate problems.</p>
+      </div>
+
+      <!-- ===============================================================
+           6.5 CELLULAR AUTOMATA: HISTORY AND THEORY
+           =============================================================== -->
+      <h2 id="ca-history">6.5 Cellular Automata: History and Theory</h2>
+
+      <h3>6.5.1 Origins: Von Neumann and Ulam</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>In the 1940s, <strong>John von Neumann</strong> was working on the problem of self-reproducing machines &mdash; could a machine build a copy of itself? His colleague <strong>Stanislaw Ulam</strong> suggested that instead of thinking about physical machines with moving parts, von Neumann should work in an abstract mathematical universe: a grid of cells, each following simple rules. This was the birth of cellular automata.</p>
+      </div>
+
+      <p>Von Neumann designed a cellular automaton with 29 states per cell that was capable of <strong>universal construction</strong> &mdash; it could build any pattern within the grid, including a complete copy of itself. The automaton operated on a 2D grid and included components analogous to a construction arm, a blueprint reader, and a copy mechanism. His work established two foundational ideas:</p>
+
+      <ol>
+        <li><strong>Self-reproduction is possible in a computational system.</strong> A pattern of cells can contain the "blueprint" for itself and the "machinery" to read that blueprint and assemble a copy. Von Neumann proved that such a machine would need at least two parts: the constructor (which builds based on instructions) and the instructions themselves (which get copied verbatim to the offspring).</li>
+        <li><strong>Simple rules can support universal computation.</strong> If the rules are rich enough, any computation whatsoever can be carried out within the automaton.</li>
+      </ol>
+
+      <p>These ideas anticipated concepts in molecular biology by over a decade. When Watson and Crick discovered the structure of DNA in 1953, biologists realized that living cells work exactly as Von Neumann had described: DNA is the blueprint, the ribosome is the constructor that reads instructions and builds proteins, and when a cell divides, the DNA is copied verbatim to the daughter cell. Von Neumann had derived the logical <em>necessity</em> of this architecture from first principles, before anyone knew how biology actually implemented it.</p>
+
+      <p>In the 1960s and 1970s, cellular automata gained wider attention. <strong>Edgar Codd</strong> simplified Von Neumann's design to 8 states. <strong>John Conway</strong> created the Game of Life in 1970, which brought CAs to popular awareness. Then in the 1980s, <strong>Stephen Wolfram</strong> began a systematic study of the simplest possible CAs &mdash; the elementary (1D) rules &mdash; and discovered that even these minimal systems could produce behavior of remarkable complexity. Wolfram's work culminated in his 2002 book <em>A New Kind of Science</em>, a 1,280-page treatise arguing that simple computational programs (particularly CAs) are the key to understanding complexity in nature.</p>
+
+      <p>Today, CAs are used in a wide range of applications beyond theoretical computer science:</p>
+      <ul>
+        <li><strong>Cryptography:</strong> Rule 30 has been used as a pseudorandom number generator</li>
+        <li><strong>Traffic modeling:</strong> Rule 184 and Nagel-Schreckenberg models simulate traffic flow and jamming</li>
+        <li><strong>Physics:</strong> Lattice gas automata simulate fluid dynamics; lattice Boltzmann methods are CA-based fluid simulators used in engineering</li>
+        <li><strong>Biology:</strong> CAs model tumor growth, epidemics, forest fires, and predator-prey dynamics</li>
+        <li><strong>Art and design:</strong> CAs generate patterns for textiles, architectural facades, and generative art</li>
+        <li><strong>Music:</strong> CA rules have been used to generate melodies, rhythms, and harmonic progressions</li>
+      </ul>
+
+      <h3>6.5.2 Formal Definition</h3>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Cellular Automaton (CA)</strong> &mdash; A discrete computational system consisting of four components:</p>
+        <ol>
+          <li><strong>Lattice:</strong> A regular grid of cells (1D line, 2D grid, or higher dimensional)</li>
+          <li><strong>States:</strong> A finite set of possible values for each cell (e.g., {0, 1} or {dead, alive})</li>
+          <li><strong>Neighborhood:</strong> A fixed pattern defining which cells influence each cell (e.g., the 3-cell neighborhood in 1D, or the Moore 8-cell neighborhood in 2D)</li>
+          <li><strong>Transition Rule:</strong> A function $f$ that computes a cell's next state from its neighborhood's current states</li>
+        </ol>
+        <p>All cells update <strong>synchronously</strong> (simultaneously) at each time step.</p>
+      </div>
+
+      <p>The synchronous update is critical. If cells updated one at a time (asynchronously), the behavior would depend on the <em>order</em> of updates, breaking the parallel symmetry that gives CAs their character. Asynchronous CAs exist and are studied (they model certain physical systems more accurately), but they produce fundamentally different dynamics and are much harder to analyze.</p>
+
+      <p>Formally, given a lattice $L$, a state space $S$, a neighborhood function $N$, and a transition rule $f$, the CA evolves as:</p>
+
+      <p>$$s_i^{t+1} = f\!\left(s_{N(i)}^t\right) \qquad \text{for all cells } i \in L$$</p>
+
+      <p>where $s_i^t$ is the state of cell $i$ at time $t$, and $s_{N(i)}^t$ denotes the states of all cells in the neighborhood of $i$ at time $t$. The superscript $t$ on the right side (not $t+1$) emphasizes the synchronous nature: all reads come from time $t$, all writes go to time $t+1$.</p>
+
+      <h3>6.5.3 Neighborhoods</h3>
+
+      <p>Different neighborhood definitions lead to different CA behaviors:</p>
+
+      <h4>1D Neighborhoods</h4>
+      <ul>
+        <li><strong>Radius-1:</strong> Left, center, right (3 cells). This is the "elementary" CA neighborhood.</li>
+        <li><strong>Radius-2:</strong> Two cells on each side plus center (5 cells). $2^{32} = 4$ billion possible rules.</li>
+      </ul>
+
+      <h4>2D Neighborhoods</h4>
+      <ul>
+        <li><strong>Von Neumann neighborhood:</strong> The 4 orthogonal neighbors (N, S, E, W). Named after John von Neumann. Produces more rectilinear patterns.</li>
+        <li><strong>Moore neighborhood:</strong> All 8 surrounding cells (including diagonals). Used by the Game of Life. Produces more isotropic (rotationally symmetric) behavior.</li>
+        <li><strong>Extended neighborhoods:</strong> All cells within radius $r$ (e.g., a 5x5 square for $r = 2$). More neighbors = smoother behavior but exponentially more possible rules.</li>
+      </ul>
+
+      <pre><code>Von Neumann:    Moore:          Extended (r=2):
+    .#.         ###             #####
+    ###         ###             #####
+    .#.         ###             ##.##
+                                #####
+                                #####</code></pre>
+
+      <h3>6.5.4 The Space of Possible Rules</h3>
+
+      <p>For a 1D CA with $k$ states and a neighborhood of $n$ cells, the number of possible rules is:</p>
+
+      <p>$$N_{\text{rules}} = k^{k^n}$$</p>
+
+      <p>For elementary CAs ($k = 2$, $n = 3$): $2^{2^3} = 2^8 = 256$ rules. This is small enough to enumerate exhaustively, which is exactly what Wolfram did.</p>
+
+      <p>For a 2D CA with 2 states and the Moore neighborhood ($n = 9$ including the cell itself): $2^{2^9} = 2^{512} \approx 1.3 \times 10^{154}$. This is incomprehensibly large &mdash; far more than the number of atoms in the observable universe ($\sim 10^{80}$). Exhaustive enumeration is impossible; we can only explore specific rules of interest (like Life's B3/S23).</p>
+
+      <p>This combinatorial explosion means that the Game of Life, remarkable as it is, represents one point in an unimaginably vast space of 2D CAs. We have barely scratched the surface of what 2D CAs can do.</p>
+
+      <h3>6.5.5 Totalistic and Outer Totalistic Rules</h3>
+
+      <p>For 2D CAs with more than a handful of neighbors, specifying a separate output for every possible neighborhood configuration is impractical. A practical simplification is the <strong>totalistic</strong> approach: instead of considering the exact configuration of neighbors, only count the <em>total</em> number of live neighbors.</p>
+
+      <p>In a <strong>totalistic rule</strong>, the next state depends only on the sum of the neighbor states (including the cell itself). In an <strong>outer totalistic rule</strong>, the next state depends on the current state of the cell AND the sum of its neighbors' states (but not the exact arrangement). The Game of Life is outer totalistic: it distinguishes between a live cell and a dead cell, but treats all arrangements with the same neighbor count identically.</p>
+
+      <p>This is a dramatic reduction in the number of rules. For the Moore neighborhood with 2 states:</p>
+      <ul>
+        <li><strong>Full rule:</strong> $2^{512}$ possibilities (every configuration specified independently)</li>
+        <li><strong>Outer totalistic:</strong> $2^{18}$ = 262,144 possibilities (for each of the 2 cell states and 9 possible neighbor counts, specify an output)</li>
+        <li><strong>Life-like (B/S notation):</strong> $2^{18}$ = 262,144 possibilities (same as outer totalistic for 2-state systems)</li>
+      </ul>
+
+      <p>262,144 is large but manageable &mdash; computational surveys have explored significant fractions of this space, discovering thousands of interesting Life-like rules.</p>
+
+      <h3>6.5.6 Boundary Conditions</h3>
+
+      <p>Since any real grid is finite, we must decide how to handle cells at the edges. The choice of <strong>boundary conditions</strong> affects the dynamics significantly:</p>
+
+      <ul>
+        <li><strong>Toroidal (periodic):</strong> The grid wraps around &mdash; the right edge connects to the left, and the top connects to the bottom. Every cell has exactly the same number of neighbors. This is the most common choice for studying CAs because it eliminates edge artifacts.</li>
+        <li><strong>Fixed:</strong> Cells outside the grid are assumed to always be in a fixed state (usually dead/0). This creates a "wall" effect at the boundaries.</li>
+        <li><strong>Reflective:</strong> Cells at the edge "mirror" their interior neighbors. The edge acts like a mirror.</li>
+        <li><strong>Infinite:</strong> Conceptually, the grid extends infinitely in all directions. In practice, this is implemented with dynamic data structures that grow as the CA expands (used in advanced Life simulators like Golly with the HashLife algorithm).</li>
+      </ul>
+
+      <p>For the exercises and implementations in this chapter, we use toroidal boundary conditions unless otherwise stated. In code, toroidal wrapping is implemented with the modulo operator:</p>
+
+      <pre><code>// Toroidal wrapping in JavaScript
+let nx = (x + dx + cols) % cols;  // wraps x to [0, cols-1]
+let ny = (y + dy + rows) % rows;  // wraps y to [0, rows-1]
+
+// In GLSL with texture coordinates (automatically wraps if
+// texture wrap mode is set to GL_REPEAT)</code></pre>
+
+      <p>The <code>+ cols</code> before the modulo handles the case where <code>x + dx</code> is negative (i.e., going past the left edge). In JavaScript, <code>-1 % cols</code> returns a negative number, but <code>(-1 + cols) % cols</code> correctly wraps to <code>cols - 1</code>.</p>
+
+      <!-- ===============================================================
+           6.6 ELEMENTARY CELLULAR AUTOMATA
+           =============================================================== -->
+      <h2 id="elementary-ca">6.6 Elementary Cellular Automata</h2>
+
+      <h3>6.6.1 Wolfram's Numbering System</h3>
+
+      <p>Stephen Wolfram introduced a systematic numbering scheme for the 256 elementary (1D, 2-state, 3-neighbor) CAs. Each rule is identified by a number from 0 to 255. The rule number, written in binary, directly encodes the transition table.</p>
+
+      <p>Consider the 8 possible 3-cell neighborhoods, listed from 111 (=7) down to 000 (=0):</p>
+
+      <table>
+        <thead>
+          <tr><th>Neighborhood</th><th>111</th><th>110</th><th>101</th><th>100</th><th>011</th><th>010</th><th>001</th><th>000</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Rule 30</strong></td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+          <tr><td><strong>Rule 90</strong></td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+          <tr><td><strong>Rule 110</strong></td><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+        </tbody>
+      </table>
+
+      <p>Reading Rule 30's output row as binary: 00011110 = 30 in decimal. This is how the rule gets its name. Similarly, Rule 90 = 01011010 in binary, and Rule 110 = 01101110.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The rule number IS the lookup table.</strong> To decode a rule: convert the rule number to 8-bit binary. Bit $i$ of the result tells you the output when the neighborhood (left, center, right) has the binary value $i$. The neighborhood value is computed as $L \cdot 4 + C \cdot 2 + R$.</p>
+      </div>
+
+      <h3>6.6.2 Implementation</h3>
+
+      <p>The algorithm is straightforward:</p>
+      <ol>
+        <li>Initialize a 1D array of cells, typically with a single "on" cell in the center</li>
+        <li>For each generation, compute the next state of each cell by looking up its 3-cell neighborhood in the rule table</li>
+        <li>Draw each generation as a row of pixels, building a 2D image over time (time flows downward)</li>
+      </ol>
+
+      <p>The key implementation detail is converting a rule number into a lookup table. The rule number (0&ndash;255) is treated as an 8-bit binary number. Bit $i$ of this number gives the output for neighborhood configuration $i$:</p>
+
+      <pre><code>// Convert rule number to lookup table
+function ruleToTable(ruleNum) {
+  let table = new Array(8);
+  for (let i = 0; i < 8; i++) {
+    table[i] = (ruleNum >> i) & 1;  // Extract bit i
+  }
+  return table;
+}
+
+// Apply rule to a neighborhood
+// The neighborhood value L*4 + C*2 + R indexes into the table
+function applyRule(table, left, center, right) {
+  let idx = left * 4 + center * 2 + right;
+  return table[idx];
+}</code></pre>
+
+      <p>Let us trace through an example. For <strong>Rule 90</strong> (binary: 01011010):</p>
+      <ul>
+        <li>Bit 0 (neighborhood 000): 0 &mdash; dead stays dead</li>
+        <li>Bit 1 (neighborhood 001): 1 &mdash; right neighbor alive, center becomes alive</li>
+        <li>Bit 2 (neighborhood 010): 0 &mdash; only center alive, it dies</li>
+        <li>Bit 3 (neighborhood 011): 1 &mdash; center and right alive, stays alive</li>
+        <li>Bit 4 (neighborhood 100): 1 &mdash; left neighbor alive, center becomes alive</li>
+        <li>Bit 5 (neighborhood 101): 0 &mdash; left and right alive, center dies</li>
+        <li>Bit 6 (neighborhood 110): 1 &mdash; left and center alive, stays alive</li>
+        <li>Bit 7 (neighborhood 111): 0 &mdash; all alive, center dies</li>
+      </ul>
+
+      <p>Notice that Rule 90 is equivalent to XOR: the next state equals <code>left XOR right</code> (the center cell's own state is irrelevant!). This produces the Sierpinski triangle, which is also generated by Pascal's triangle modulo 2 &mdash; a beautiful mathematical connection between number theory, combinatorics, and cellular automata.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem</div>
+        <p><strong>Rule 90 and Pascal's Triangle.</strong> The output of Rule 90 from a single-cell initial condition is identical to Pascal's triangle modulo 2. Entry $(n, k)$ of Pascal's triangle (the binomial coefficient $\binom{n}{k}$) is the value of the cell at position $k$ in generation $n$ of Rule 90 (starting from a single cell at position 0). The Sierpinski triangle emerges because $\binom{n}{k} \bmod 2 = 1$ if and only if every bit of $k$ is also a bit of $n$ (Kummer's theorem). This produces a self-similar fractal with fractal dimension $\frac{\log 3}{\log 2} \approx 1.585$.</p>
+      </div>
+
+      <h4>Bit Manipulation Approach</h4>
+      <p>Since the rule table is encoded directly in the bits of the rule number, you can also implement the rule lookup without an explicit table, using bitwise operations:</p>
+      <pre><code>function wolframRule(ruleNumber, left, center, right) {
+  let idx = left * 4 + center * 2 + right;
+  return (ruleNumber >> idx) & 1;
+}</code></pre>
+      <p>This single-line implementation extracts bit <code>idx</code> from the rule number. It is equivalent to building the lookup table and indexing into it, but more concise.</p>
+
+      <h3>6.6.3 Notable Rules</h3>
+
+      <table>
+        <thead>
+          <tr><th>Rule</th><th>Wolfram Class</th><th>Visual Character</th><th>Notable Properties</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Rule 0</strong></td><td>I</td><td>All cells die immediately</td><td>Trivial &mdash; every cell becomes 0 regardless of neighborhood</td></tr>
+          <tr><td><strong>Rule 30</strong></td><td>III (Chaotic)</td><td>Aperiodic, random-looking</td><td>Used as pseudorandom number generator in Mathematica; appears on <em>Conus textile</em> sea snail shells</td></tr>
+          <tr><td><strong>Rule 90</strong></td><td>II (Periodic)</td><td>Sierpinski triangle fractal</td><td>Equivalent to XOR of left and right neighbors; produces a perfect fractal; related to Pascal's triangle mod 2</td></tr>
+          <tr><td><strong>Rule 110</strong></td><td>IV (Complex)</td><td>Mixture of structure and chaos</td><td>Proven Turing complete by Matthew Cook in 2004 &mdash; the simplest known Turing-complete system</td></tr>
+          <tr><td><strong>Rule 150</strong></td><td>III (Chaotic)</td><td>Chaotic with fractal structure</td><td>XOR of all three cells (left, center, right); produces a different fractal than Rule 90</td></tr>
+          <tr><td><strong>Rule 184</strong></td><td>II</td><td>Particles moving right</td><td>Models traffic flow; particles (1s) are conserved; exhibits jamming transitions</td></tr>
+          <tr><td><strong>Rule 54</strong></td><td>IV (Complex)</td><td>Complex structures on background</td><td>Produces localized structures that interact; possibly Turing complete (unproven)</td></tr>
+          <tr><td><strong>Rule 255</strong></td><td>I</td><td>All cells become alive</td><td>Trivial &mdash; every cell becomes 1 regardless of neighborhood</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Rule 30 in Nature:</strong> The cone snail <em>Conus textile</em> (also known as the "cloth of gold" cone snail) has a shell pattern that is remarkably similar to the output of Rule 30. The shell grows from a narrow apex, and the pigment-producing cells at the growing lip of the shell follow rules based on the pigment states of their neighbors &mdash; a natural 1D cellular automaton, with each growth line corresponding to one generation. This is one of the most striking examples of CA-like behavior in biology.</p>
+      </div>
+
+      <h3>6.6.4 Interactive Explorer</h3>
+
+      <p>Run the sketch below to see elementary CAs in action. Change the rule number to explore different behaviors. Try Rule 30, 90, and 110 to see the three most famous patterns:</p>
+
+      <!-- INTERACTIVE: Elementary CA (p5.js) -->
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Elementary CA Explorer &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">// Elementary Cellular Automaton
+// Change ruleNum to explore: 30, 90, 110, 150, 54, 73
+let ruleNum = 90;
+let cells, nextCells;
+let ruleTable;
+let cellSize = 3;
+let cols;
+let gen = 0;
+
+function setup() {
+  createCanvas(600, 400);
+  background(255);
+  cols = floor(width / cellSize);
+  cells = new Array(cols).fill(0);
+  nextCells = new Array(cols).fill(0);
+
+  // Start with single cell in center
+  cells[floor(cols / 2)] = 1;
+
+  ruleTable = ruleToTable(ruleNum);
+  drawRow(0);
+}
+
+function draw() {
+  if (gen * cellSize >= height) { noLoop(); return; }
+
+  for (let i = 0; i < cols; i++) {
+    let L = cells[(i - 1 + cols) % cols];
+    let C = cells[i];
+    let R = cells[(i + 1) % cols];
+    let idx = L * 4 + C * 2 + R;
+    nextCells[i] = ruleTable[idx];
+  }
+
+  let temp = cells;
+  cells = nextCells;
+  nextCells = temp;
+  gen++;
+  drawRow(gen);
+}
+
+function drawRow(row) {
+  let y = row * cellSize;
+  for (let i = 0; i < cols; i++) {
+    if (cells[i] === 1) {
+      fill(30, 60, 120);
+    } else {
+      fill(245);
+    }
+    noStroke();
+    rect(i * cellSize, y, cellSize, cellSize);
+  }
+}
+
+function ruleToTable(num) {
+  let t = new Array(8);
+  for (let i = 0; i < 8; i++) t[i] = (num >> i) & 1;
+  return t;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>When implementing 1D CAs, remember to use <strong>wrapping boundary conditions</strong>: the leftmost cell's left neighbor is the rightmost cell, and vice versa. Without this, edge cells will always see a "0" neighbor, producing artifacts. Use the modulo trick: <code>cells[(i - 1 + cols) % cols]</code>.</p>
+      </div>
+
+      <!-- ===============================================================
+           6.7 CONWAY'S GAME OF LIFE
+           =============================================================== -->
+      <h2 id="game-of-life">6.7 Conway's Game of Life</h2>
+
+      <h3>6.7.1 Rules</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The Game of Life was invented by mathematician <strong>John Horton Conway</strong> in 1970 and popularized by Martin Gardner's column in <em>Scientific American</em>. Conway spent years searching for rules that were neither too chaotic (most initial patterns die out) nor too explosive (patterns grow without bound). The result: a set of rules so simple they fit in a sentence, yet capable of supporting universal computation.</p>
+      </div>
+
+      <p>The Game of Life operates on a 2D grid with the <strong>Moore neighborhood</strong> (8 surrounding cells). Its rules are elegant in their simplicity:</p>
+
+      <ol>
+        <li><strong>Birth:</strong> A dead cell with <em>exactly 3</em> live neighbors becomes alive</li>
+        <li><strong>Survival:</strong> A live cell with <em>2 or 3</em> live neighbors stays alive</li>
+        <li><strong>Death by isolation:</strong> A live cell with fewer than 2 live neighbors dies</li>
+        <li><strong>Death by overcrowding:</strong> A live cell with more than 3 live neighbors dies</li>
+      </ol>
+
+      <p>In the notation used for "Life-like" automata, these rules are written as <strong>B3/S23</strong> (Birth with 3 neighbors, Survival with 2 or 3).</p>
+
+      <p>Let us trace through one generation to see how these rules work. Consider this 5x5 grid (# = alive, . = dead):</p>
+
+      <pre><code>. . . . .
+. . # . .
+. # # # .
+. . # . .
+. . . . .</code></pre>
+
+      <p>The center cell (row 2, col 2) is alive with 4 live neighbors. Since 4 is not 2 or 3, it <strong>dies</strong> by overcrowding. The cell at (row 1, col 1) is dead with 2 live neighbors. Since 2 is not 3, it stays dead. The cell at (row 0, col 2) is dead with 1 live neighbor &mdash; stays dead. The cell at (row 1, col 2) is alive with 2 live neighbors &mdash; <strong>survives</strong>.</p>
+
+      <p>The result after one generation is a "plus" pattern that has changed shape &mdash; demonstrating how even simple configurations evolve in non-obvious ways.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Why B3/S23?</strong> Conway tested many different birth/survival rules before settling on B3/S23. His criteria: the rules should produce behavior that is (1) not too boring (patterns should not immediately die or reach static equilibrium) and (2) not too chaotic (patterns should not explode to fill the grid). B3/S23 sits at the sweet spot &mdash; it is a Class IV system at the edge of chaos, capable of supporting stable structures, moving patterns, and universal computation.</p>
+      </div>
+
+      <h3>6.7.2 Emergent Structures</h3>
+
+      <p>Despite the simplicity of its rules, the Game of Life produces a rich taxonomy of self-organizing structures:</p>
+
+      <h4>Still Lifes</h4>
+      <p>Patterns that remain unchanged from one generation to the next:</p>
+      <pre><code>Block:    Beehive:    Loaf:       Boat:
+##        .##.        .##.        .#.
+##        #..#        #..#        #.#
+          .##.        .#.#        .##
+                      ..#.</code></pre>
+
+      <h4>Oscillators</h4>
+      <p>Patterns that cycle through a sequence of states and return to their initial configuration:</p>
+      <pre><code>Blinker (period 2):     Toad (period 2):
+Phase 1:  Phase 2:      Phase 1:    Phase 2:
+.#.       ...           .###        .##.
+.#.       ###           ###.        #..#
+.#.       ...                       .##.</code></pre>
+
+      <h4>Spaceships</h4>
+      <p>Patterns that translate across the grid. The simplest is the <strong>glider</strong>, which moves diagonally one cell every 4 generations:</p>
+      <pre><code>Glider (moves SE):
+.#.   ..#   ...   .#.   ..#
+..#   #.#   .##   ..#   #.#
+###   .##   #.#   ###   .##</code></pre>
+
+      <h4>Guns</h4>
+      <p>The <strong>Gosper Glider Gun</strong> (discovered in 1970 by Bill Gosper) is a pattern that periodically emits gliders. Its existence proved that Life populations could grow without bound, settling a question posed by Conway himself (who originally conjectured that no finite initial pattern could grow infinitely). The Gosper Gun has period 30 &mdash; it emits a new glider every 30 generations. It was the first known gun pattern and consists of 36 live cells.</p>
+
+      <h4>Other Noteworthy Patterns</h4>
+      <ul>
+        <li><strong>Garden of Eden:</strong> A pattern that cannot be reached from any predecessor &mdash; it can only exist as an initial state. Roger Banks proved such patterns exist for the Game of Life.</li>
+        <li><strong>Methuselahs:</strong> Small patterns that take a very long time to stabilize. The "R-pentomino" (5 cells) takes 1,103 generations to reach a stable state and produces 6 gliders along the way.</li>
+        <li><strong>Puffers:</strong> Moving patterns that leave a trail of debris behind them, like a spaceship with exhaust.</li>
+        <li><strong>Rakes:</strong> Puffers whose debris consists of spaceships &mdash; essentially mobile glider guns.</li>
+      </ul>
+
+      <p>None of these structures are encoded in the rules. The rules say nothing about "gliders" or "guns" &mdash; they only describe how a single cell updates based on its immediate neighbors. Yet these complex, named, interacting structures <em>emerge</em> from the collective behavior of millions of cells following those simple rules. This is the deepest lesson of the Game of Life: <strong>complexity is not designed; it emerges.</strong></p>
+
+      <p>To put the richness of Life in perspective: the LifeWiki (a community-maintained encyclopedia) catalogs thousands of named patterns, including over 50 known spaceships of various sizes and speeds, oscillators with periods ranging from 2 to hundreds of thousands of generations, and patterns that compute prime numbers, display digital clocks, and simulate other cellular automata &mdash; including simulating the Game of Life itself.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem</div>
+        <p><strong>Turing Completeness of Life.</strong> The Game of Life is Turing complete, meaning it can simulate any computation that a Turing machine can perform. This was demonstrated by constructing logic gates (AND, OR, NOT) from glider streams, which can then be combined into arbitrary circuits. The existence of glider guns (to produce signals) and collision reactions (to process signals) provides the necessary computational primitives. In principle, the Game of Life can simulate itself, run arbitrary programs, and even compute non-computable questions with the same limitations as any other Turing machine.</p>
+      </div>
+
+      <h3>6.7.3 Life-Like Automata</h3>
+
+      <p>The Game of Life (B3/S23) is just one member of a large family of <strong>"Life-like" automata</strong> that use the same 2D grid and Moore neighborhood but different birth/survival rules. These are specified in B/S notation:</p>
+
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Rule</th><th>Character</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Game of Life</td><td>B3/S23</td><td>The classic: gliders, oscillators, complexity</td></tr>
+          <tr><td>HighLife</td><td>B36/S23</td><td>Like Life but produces "replicators" &mdash; patterns that copy themselves</td></tr>
+          <tr><td>Seeds</td><td>B2/S</td><td>Explosive growth from any live cell; chaotic</td></tr>
+          <tr><td>Day &amp; Night</td><td>B3678/S34678</td><td>Symmetric: dead and alive cells behave equivalently</td></tr>
+          <tr><td>Diamoeba</td><td>B35678/S5678</td><td>Produces large, amoeba-like growing regions</td></tr>
+          <tr><td>Maze</td><td>B3/S12345</td><td>Grows to fill space with maze-like corridors</td></tr>
+        </tbody>
+      </table>
+
+      <p>Exploring different B/S rules is one of the most accessible forms of experimental mathematics: try random combinations and observe what emerges.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Symmetry in Life-like rules:</strong> The rule B3678/S34678 ("Day &amp; Night") has an unusual property: it is <strong>isotropic under state inversion</strong>. Flipping all cells (dead becomes alive, alive becomes dead) produces the same dynamics. This means that empty space and filled space behave identically &mdash; "negative space" patterns are just as valid as "positive space" patterns. Most Life-like rules, including the standard Game of Life, do NOT have this symmetry.</p>
+      </div>
+
+      <h3>6.7.4 Implementation</h3>
+
+      <!-- INTERACTIVE: Game of Life (p5.js) -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Game of Life &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let grid, next;
+let cols, rows;
+let res = 6;
+
+function setup() {
+  createCanvas(600, 400);
+  cols = floor(width / res);
+  rows = floor(height / res);
+  grid = make2D(cols, rows);
+  next = make2D(cols, rows);
+
+  // Random initial state
+  for (let x = 0; x < cols; x++)
+    for (let y = 0; y < rows; y++)
+      grid[x][y] = floor(random(2));
+
+  frameRate(12);
+}
+
+function draw() {
+  background(20);
+
+  // Draw current state
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      if (grid[x][y] === 1) {
+        fill(80, 200, 120);
+        noStroke();
+        rect(x * res, y * res, res - 1, res - 1);
+      }
+    }
+  }
+
+  // Compute next generation
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let n = countNeighbors(grid, x, y);
+      if (grid[x][y] === 1) {
+        next[x][y] = (n === 2 || n === 3) ? 1 : 0;
+      } else {
+        next[x][y] = (n === 3) ? 1 : 0;
+      }
+    }
+  }
+
+  // Swap buffers
+  let tmp = grid;
+  grid = next;
+  next = tmp;
+}
+
+function make2D(w, h) {
+  let a = new Array(w);
+  for (let i = 0; i < w; i++) a[i] = new Array(h).fill(0);
+  return a;
+}
+
+function countNeighbors(g, x, y) {
+  let sum = 0;
+  for (let dx = -1; dx <= 1; dx++)
+    for (let dy = -1; dy <= 1; dy++) {
+      if (dx === 0 && dy === 0) continue;
+      let nx = (x + dx + cols) % cols;
+      let ny = (y + dy + rows) % rows;
+      sum += g[nx][ny];
+    }
+  return sum;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Notice several important implementation details:</p>
+
+      <ul>
+        <li><strong>Double-buffering:</strong> We compute the next generation into a separate array (<code>next</code>), then swap the arrays. This ensures all cells are updated based on the <em>same</em> generation, which is the synchronous update requirement of CAs. Without this, cells computed early in the loop would already reflect the new generation when later cells read their neighbors.</li>
+        <li><strong>Toroidal wrapping:</strong> The modulo operations in <code>countNeighbors</code> make the grid "wrap around" &mdash; the top edge connects to the bottom edge, and the left connects to the right. This is called a <strong>toroidal</strong> boundary condition (the grid is topologically a torus/donut). It eliminates edge effects and ensures all cells have exactly 8 neighbors.</li>
+        <li><strong>Swap vs. copy:</strong> Instead of copying the <code>next</code> array into <code>grid</code>, we swap the references. This is an $O(1)$ operation instead of $O(n^2)$, and is a standard optimization for double-buffered simulations.</li>
+        <li><strong>Cell rendering:</strong> Drawing <code>res - 1</code> instead of <code>res</code> for the rectangle size creates a 1-pixel gap between cells, making the grid structure visible. This is an aesthetic choice; remove the <code>- 1</code> for a solid grid.</li>
+      </ul>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Toroidal Boundary Conditions</strong> &mdash; A boundary treatment where the grid "wraps around" in both dimensions, connecting the top edge to the bottom and the left edge to the right. Mathematically, this embeds the grid on the surface of a torus. It ensures that every cell, including corner and edge cells, has the same number of neighbors.</p>
+      </div>
+
+      <!-- ===============================================================
+           6.8 WOLFRAM'S CLASSIFICATION
+           =============================================================== -->
+      <h2 id="wolfram-classification">6.8 Wolfram's Classification</h2>
+
+      <p>After exhaustively exploring all 256 elementary CAs (and many more complex systems), Stephen Wolfram proposed a classification of CA behavior into four classes. This classification applies not just to 1D elementary CAs but to cellular automata of all types, including the Game of Life.</p>
+
+      <h3>6.8.1 Class I: Uniform (Fixed Point)</h3>
+
+      <p>From almost any initial condition, the system quickly evolves to a <strong>uniform, homogeneous state</strong>. All initial structure is destroyed &mdash; erased by the rule. The system reaches a fixed point where every cell has the same value, and nothing changes thereafter.</p>
+      <p><strong>Physical analog:</strong> A gas cooling to a uniform temperature. A drop of dye diffusing until the liquid is uniformly colored.</p>
+      <p><strong>Computational power:</strong> None. These systems cannot store, transmit, or process information.</p>
+      <p><strong>Examples:</strong> Rule 0 (all cells die), Rule 255 (all cells live), Rule 32, Rule 160.</p>
+
+      <h3>6.8.2 Class II: Periodic (Oscillating)</h3>
+
+      <p>The system evolves to a set of <strong>simple, stable, or periodic structures</strong>. Different regions of the grid may settle into different fixed points or oscillation cycles, but each region evolves independently. Changes remain localized &mdash; a perturbation at one location does not propagate to affect distant cells. There is no long-range communication or information transfer.</p>
+      <p><strong>Physical analog:</strong> A crystal lattice. A repeating wallpaper pattern. Pendulums that settle into fixed oscillation frequencies.</p>
+      <p><strong>Computational power:</strong> Limited to finite-state machines. Each cell is essentially an independent oscillator or fixed point. The system can "remember" its initial conditions (locally) but cannot compute anything non-trivial.</p>
+      <p><strong>Examples:</strong> Rule 90 (produces the Sierpinski triangle fractal &mdash; beautiful but predictable), Rule 184 (traffic model where particles move right), Rule 4.</p>
+      <p>Note that Rule 90 generates a fractal, which may seem "complex," but it is entirely predictable and can be computed in closed form: $\text{cell}(x, t) = \text{XOR}(L, R)$, which is equivalent to Pascal's triangle modulo 2.</p>
+
+      <h3>6.8.3 Class III: Chaotic (Random)</h3>
+
+      <p>The system produces <strong>aperiodic, seemingly random behavior</strong>. Structures appear and disappear unpredictably. The output looks like noise &mdash; statistical tests for randomness are often passed by the output. Crucially, small changes to the initial condition produce drastically different outcomes, a property known as <strong>sensitive dependence on initial conditions</strong> (the "butterfly effect").</p>
+      <p><strong>Physical analog:</strong> Turbulent fluid flow. Static on a television. Brownian motion.</p>
+      <p><strong>Computational power:</strong> These systems are effective pseudorandom number generators, but their apparent randomness makes them poor at organized computation. Information enters the system but is immediately scrambled and distributed.</p>
+      <p><strong>Examples:</strong> Rule 30 (used as a PRNG in Mathematica), Rule 45, Rule 73, Rule 150.</p>
+      <p>Wolfram famously used Rule 30 to generate "random" numbers in his software because, despite being completely deterministic, its center column passes statistical tests for randomness as well as most dedicated pseudorandom algorithms.</p>
+
+      <p>The apparent randomness of Class III systems raises a deep philosophical question: if a deterministic system can produce output indistinguishable from true randomness, what does "random" even mean? The answer, in the context of computational complexity theory, is that randomness is not an intrinsic property of a sequence but rather a measure of the <em>computational resources</em> needed to predict the next element. If no shortcut exists for prediction (short of running the actual computation), the output is effectively random, even though the underlying process is deterministic.</p>
+
+      <h3>6.8.4 Class IV: Complex (Edge of Chaos)</h3>
+
+      <p>The system produces <strong>complex, long-lived structures</strong> that interact in intricate ways. There is a mixture of order and chaos: stable regions coexist with moving structures, and their interactions are unpredictable in the general case. This class is often described as existing at the <strong>"edge of chaos"</strong> &mdash; balanced between the rigid predictability of Class II and the formless randomness of Class III.</p>
+      <p><strong>Physical analog:</strong> Living systems. Weather patterns. Economies. The brain.</p>
+      <p><strong>Computational power:</strong> These systems can perform <em>universal computation</em>. They can store information (in stable structures), transmit it (via moving structures), and process it (via collisions between structures). This makes the evolution of Class IV automata <strong>computationally irreducible</strong> &mdash; there is no shortcut to predicting their future state; you must simulate every step.</p>
+      <p><strong>Examples:</strong> Rule 110 (proven Turing complete by Matthew Cook, 2004), Conway's Game of Life, Rule 54.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The Edge of Chaos Hypothesis:</strong> Class IV systems are special because they balance order and randomness. This balance enables <em>computation</em> &mdash; the ability to store, transmit, and process information. Chris Langton proposed that this transition region between order and chaos is where the most complex and interesting behavior occurs, and where life itself may exist. Class IV automata can support universal computation precisely because they can maintain and manipulate structured information over time.</p>
+      </div>
+
+      <h3>6.8.5 How to Classify a Rule</h3>
+
+      <p>In practice, classifying a CA rule involves running it from various initial conditions and observing the long-term behavior:</p>
+
+      <ol>
+        <li><strong>Start from a single cell:</strong> Initialize with one "on" cell in an otherwise empty grid. Class I rules will quickly die; Class II will produce a small periodic or fixed pattern; Class III will produce an expanding, random-looking triangle; Class IV will produce a complex mixture.</li>
+        <li><strong>Start from random initial conditions:</strong> Fill the grid with 50% random on/off cells. Class I rules converge to uniform; Class II to periodic patches; Class III to persistent chaos; Class IV to a mixture of stable structures and moving patterns.</li>
+        <li><strong>Test sensitivity:</strong> Run the same rule twice with initial conditions that differ by one cell. Class I and II: the difference has no effect (or only local effect). Class III: the outputs diverge rapidly (sensitive dependence). Class IV: the difference may propagate in complex ways.</li>
+      </ol>
+
+      <p>The classification is not always clear-cut. Some rules are borderline between classes, and there is ongoing debate about the precise mathematical criteria for each class. In practice, visual inspection and statistical analysis of the output are the primary classification methods.</p>
+
+      <p>Wolfram proposed that the classification is universal &mdash; it applies not just to CAs but to <em>all</em> computational systems: differential equations, Turing machines, biological systems, and economic models. The claim is controversial but deeply thought-provoking: it suggests a <strong>unified framework</strong> for understanding complexity across all domains.</p>
+
+      <p>An interesting question for the artistically inclined: which class produces the most aesthetically interesting output? Many artists find Class IV systems the most compelling, because they combine structure (readable, identifiable forms) with surprise (unpredictable evolution). Class III systems can also be visually striking in their chaotic texture, while Class II systems produce the most "designed-looking" patterns. Class I is generally too simple to be interesting on its own, though it can serve as a dramatic contrast element when combined with other patterns.</p>
+
+      <p>The relationship between Wolfram's classification and aesthetic judgment is itself an open and fascinating question at the intersection of art, mathematics, and cognitive science. Why do humans find certain levels of complexity more beautiful than others? The "edge of chaos" hypothesis suggests a deep connection between computational complexity and perceptual interest.</p>
+
+      <h3>6.8.6 Summary Table</h3>
+
+      <table>
+        <thead>
+          <tr><th>Class</th><th>Behavior</th><th>Physical Analog</th><th>Computational Power</th><th>Examples</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>I</strong></td><td>Uniform</td><td>Cooled crystal</td><td>None</td><td>Rule 0, Rule 255</td></tr>
+          <tr><td><strong>II</strong></td><td>Periodic</td><td>Wallpaper</td><td>Finite memory</td><td>Rule 90, Rule 184</td></tr>
+          <tr><td><strong>III</strong></td><td>Chaotic</td><td>Turbulence</td><td>Random oracle</td><td>Rule 30, Rule 45</td></tr>
+          <tr><td><strong>IV</strong></td><td>Complex</td><td>Life</td><td>Turing complete</td><td>Rule 110, Life</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ===============================================================
+           6.9 CELLULAR AUTOMATA IN GLSL
+           =============================================================== -->
+      <h2 id="ca-in-glsl">6.9 Cellular Automata in GLSL</h2>
+
+      <h3>6.9.1 The Frame Feedback Technique</h3>
+
+      <p>The key challenge in implementing CAs on the GPU is that a cell needs to read its <em>neighbors' states from the previous frame</em>. In normal GLSL rendering, each pixel is independent and cannot read other pixels in the current frame. The solution is <strong>frame feedback</strong> (also called ping-pong buffering or double-buffered rendering):</p>
+
+      <ol>
+        <li><strong>Initialize:</strong> Create two textures (framebuffers) of the same size. Fill one with the initial CA state (each pixel represents one cell, with red channel = alive/dead).</li>
+        <li><strong>Read:</strong> In the fragment shader, bind the previous frame's texture as a uniform sampler. Use <code>texture2D()</code> to sample the neighbors from this texture.</li>
+        <li><strong>Compute:</strong> Apply the CA transition rule to compute the new state of each cell.</li>
+        <li><strong>Write:</strong> Output the result to the current framebuffer.</li>
+        <li><strong>Swap:</strong> Exchange the two framebuffers. The current output becomes the next frame's input.</li>
+      </ol>
+
+      <p>This "ping-pong" technique ensures that all cells read from the <em>same</em> previous state (synchronous update), while writing to a separate buffer. Without double-buffering, cells updated early in the frame would contaminate the reads of cells updated later.</p>
+
+      <p>On <strong>ShaderToy</strong>, this is achieved using the multi-pass buffer system: Buffer A can read its own previous output via the <code>iChannel0</code> sampler. The "Common" tab is used for shared code, and the "Image" tab renders the final visualization (often with colorization and scaling applied to the raw CA state from Buffer A).</p>
+
+      <p>The performance advantage is dramatic. A CPU-based Game of Life on a 1000x1000 grid must iterate over 1 million cells each frame. A GPU-based version processes all 1 million cells simultaneously, achieving frame rates 100-1000x faster on the same grid size. This is why GPU-based CAs can run at 4K resolution in real time.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Texture as State:</strong> In GPU-based CAs, the texture IS the grid. Each texel (texture pixel) represents one cell. The red channel stores the cell's state. Sampling a texel at an offset reads a neighbor's state. This is a fundamentally different use of textures: instead of storing images, we store computational state that evolves over time.</p>
+      </div>
+
+      <h3>6.9.2 Game of Life Shader</h3>
+
+      <p>Here is the core fragment shader for Game of Life on the GPU. The key technique is to sample the 8 neighbors from the previous frame's texture using <code>texture2D()</code>. Each neighbor is at a known offset from the current pixel:</p>
+
+      <pre><code>// In a real implementation with frame feedback:
+vec2 pixel = 1.0 / u_resolution;  // Size of one pixel in UV space
+
+// Sample the 8 neighbors
+float n = 0.0;
+n += texture2D(u_state, uv + vec2(-pixel.x, -pixel.y)).r;  // top-left
+n += texture2D(u_state, uv + vec2(      0.0, -pixel.y)).r;  // top
+n += texture2D(u_state, uv + vec2( pixel.x, -pixel.y)).r;  // top-right
+n += texture2D(u_state, uv + vec2(-pixel.x,       0.0)).r;  // left
+n += texture2D(u_state, uv + vec2( pixel.x,       0.0)).r;  // right
+n += texture2D(u_state, uv + vec2(-pixel.x,  pixel.y)).r;  // bottom-left
+n += texture2D(u_state, uv + vec2(      0.0,  pixel.y)).r;  // bottom
+n += texture2D(u_state, uv + vec2( pixel.x,  pixel.y)).r;  // bottom-right</code></pre>
+
+      <p>This sums the red channel values of the 8 surrounding pixels, giving us the neighbor count as a float. We then apply the Game of Life rules using float comparisons (not integer equality, to avoid precision issues). The following interactive demo shows the concept with a hash-based approach since our textbook engine does not support multi-pass rendering:</p>
+
+      <!-- INTERACTIVE: GLSL Game of Life -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Game of Life (Conceptual Shader) &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+// Pseudo-random hash for initial state
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec2 pixel = 1.0 / u_resolution;
+  float cellSize = 6.0;
+
+  // Quantize to grid cells
+  vec2 cell = floor(gl_FragCoord.xy / cellSize);
+
+  // In a real implementation, this would read from
+  // a framebuffer texture. Here we generate a static
+  // random pattern and show the neighbor-counting logic.
+
+  // Current cell state (random based on position)
+  float seed = floor(u_time * 0.5);
+  float current = step(0.55, hash(cell + seed));
+
+  // Count neighbors (same hash-based approach)
+  float n = 0.0;
+  for (int dx = -1; dx <= 1; dx++) {
+    for (int dy = -1; dy <= 1; dy++) {
+      if (dx == 0 && dy == 0) continue;
+      vec2 nc = cell + vec2(float(dx), float(dy));
+      n += step(0.55, hash(nc + seed));
+    }
+  }
+
+  // Game of Life rules
+  float alive = 0.0;
+  if (current > 0.5 && (n > 1.5 && n < 3.5)) alive = 1.0;
+  if (current < 0.5 && (n > 2.5 && n < 3.5)) alive = 1.0;
+
+  // Smooth cell rendering
+  vec2 cellUV = fract(gl_FragCoord.xy / cellSize);
+  float border = smoothstep(0.0, 0.08, cellUV.x) *
+                 smoothstep(0.0, 0.08, cellUV.y) *
+                 smoothstep(0.0, 0.08, 1.0 - cellUV.x) *
+                 smoothstep(0.0, 0.08, 1.0 - cellUV.y);
+
+  vec3 deadCol = vec3(0.05, 0.05, 0.1);
+  vec3 aliveCol = vec3(0.2, 0.8, 0.4);
+  vec3 color = mix(deadCol, aliveCol, alive * border);
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>In GLSL, you cannot use integer comparison for floating-point neighbor counts due to precision issues. Instead of <code>n == 2.0</code>, use range checks like <code>n &gt; 1.5 &amp;&amp; n &lt; 2.5</code>. This avoids subtle bugs where floating-point addition of texel values doesn't produce exact integers.</p>
+      </div>
+
+      <h3>6.9.3 Continuous Cellular Automata: SmoothLife</h3>
+
+      <p><strong>SmoothLife</strong> (Rafler, 2011) extends the Game of Life from a discrete grid with binary states to <strong>continuous space with continuous states</strong>:</p>
+
+      <ul>
+        <li><strong>Continuous states:</strong> Cell values can be any real number between 0.0 and 1.0, rather than just "dead" or "alive"</li>
+        <li><strong>Continuous neighborhoods:</strong> Instead of counting the 8 discrete Moore neighbors, SmoothLife uses circular regions with inner radius $r_i$ (the cell's own area) and outer radius $r_o$ (the neighborhood). The "neighbor count" becomes a <strong>weighted integral</strong> over the annular region.</li>
+        <li><strong>Smooth transition functions:</strong> Birth and survival thresholds use smooth <strong>sigmoid functions</strong> instead of hard integer cutoffs. This removes the discreteness artifacts and produces fluid, organic behavior.</li>
+      </ul>
+
+      <p>The transition function in SmoothLife uses a sigmoid of the form:</p>
+
+      <p>$$\sigma(x, a, \alpha) = \frac{1}{1 + e^{-\frac{4}{\alpha}(x - a)}}$$</p>
+
+      <p>where $a$ is the threshold and $\alpha$ controls the smoothness of the transition. As $\alpha \to 0$, the sigmoid approaches a step function, recovering the discrete Game of Life rules. For positive $\alpha$, the transition is smooth, allowing cells to be "partially alive" &mdash; a value of 0.7 means the cell is 70% alive.</p>
+
+      <p>The birth and death rules are composed from these sigmoids in a way that generalizes the B3/S23 rule to continuous values. The key parameters are:</p>
+
+      <ul>
+        <li>$b_1, b_2$: birth thresholds (the integral must be between these values for a dead cell to come alive)</li>
+        <li>$d_1, d_2$: death thresholds (the integral must be between these values for a live cell to survive)</li>
+        <li>$r_i, r_o$: inner and outer radii of the neighborhood annulus</li>
+        <li>$\alpha_n, \alpha_m$: smoothness parameters for the neighborhood and transition functions</li>
+      </ul>
+
+      <p>The result is mesmerizing: organic, blob-like patterns that resemble biological processes. You can observe:</p>
+      <ul>
+        <li><strong>Cell division:</strong> A blob pinches in the middle and separates into two independent blobs</li>
+        <li><strong>Growth:</strong> Blobs expand when conditions are favorable (surrounded by enough empty space)</li>
+        <li><strong>Movement:</strong> Blobs glide across the field, changing direction when they encounter obstacles</li>
+        <li><strong>Death:</strong> Blobs shrink and disappear when surrounded by too many or too few neighbors</li>
+        <li><strong>Interaction:</strong> Blobs can merge, bounce off each other, or annihilate on collision</li>
+      </ul>
+
+      <p>SmoothLife demonstrates that the principles of cellular automata extend naturally beyond discrete grids. The discreteness of the Game of Life is not essential &mdash; the essential ingredient is <em>local rules applied uniformly</em>.</p>
+
+      <p>SmoothLife runs beautifully on the GPU as a fragment shader because the integral over the circular neighborhood can be computed efficiently using texture sampling with mipmaps, or approximated with a finite sum over sampled points. Several implementations exist on ShaderToy (search for "SmoothLife" or "Lenia"), and they are among the most visually striking demos on the platform. Lenia, created by Bert Chan, extends SmoothLife with more flexible growth functions and kernel shapes, producing an even richer ecosystem of artificial life forms.</p>
+
+      <h3>6.9.4 Other GPU-Accelerated CAs</h3>
+
+      <p>The frame feedback technique is not limited to the Game of Life. Any CA can be ported to the GPU using the same approach:</p>
+
+      <ul>
+        <li><strong>Elementary CAs:</strong> Though 1D, they can be rendered as a 2D texture where each row is one generation. The shader reads the previous row to compute the next.</li>
+        <li><strong>Multi-state CAs:</strong> Use the RGBA channels to store states beyond binary. Red might encode the primary state, green the "age" of a cell for colorful visualization.</li>
+        <li><strong>Larger-than-Life:</strong> CAs with extended neighborhoods (radius > 1). On the GPU, sampling more neighbors is inexpensive since texture reads benefit from hardware caching.</li>
+        <li><strong>Continuous CAs (SmoothLife, Lenia):</strong> Naturally suited to GPU implementation because continuous states map directly to floating-point texel values.</li>
+        <li><strong>Multi-layered CAs:</strong> Use multiple texture channels or multiple render passes to simulate interacting layers (like the reaction-diffusion systems in Chapter 7).</li>
+      </ul>
+
+      <p>The common thread: if a system updates each cell based only on its local neighborhood, it maps naturally to a GPU fragment shader. The GPU does not care about the specific rules &mdash; it just needs to know which texels to read and what function to apply.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Generalization Path:</strong> Discrete grid + binary states (Game of Life) &rarr; Discrete grid + continuous states (multi-state CAs) &rarr; Continuous space + continuous states (SmoothLife) &rarr; Continuous space + continuous states + multiple chemicals (Reaction-Diffusion systems, Chapter 7). Each generalization preserves the core principle of local rules producing emergent global behavior.</p>
+      </div>
+
+      <!-- ===============================================================
+           6.10 CONNECTIONS: PATTERNS AND AUTOMATA
+           =============================================================== -->
+      <h2 id="connections">6.10 Connections: Patterns and Automata</h2>
+
+      <h3>6.10.1 Parallel Computation</h3>
+
+      <p>Both GLSL shaders and CAs are fundamentally parallel systems. Every pixel/cell computes independently based on local information. This parallelism is not an optimization trick &mdash; it is <em>inherent</em> to the model. The rules are defined locally, and the global pattern emerges from the collective behavior of all the local computations.</p>
+
+      <table>
+        <thead>
+          <tr><th>Property</th><th>GLSL Shader</th><th>Cellular Automaton</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Unit of computation</td><td>Pixel (fragment)</td><td>Cell</td></tr>
+          <tr><td>Input</td><td>Coordinates $(x, y)$ + time</td><td>Neighbor states from previous step</td></tr>
+          <tr><td>Output</td><td>Color (RGBA vec4)</td><td>Next state (integer or float)</td></tr>
+          <tr><td>Execution model</td><td>SIMD parallel (GPU)</td><td>Synchronous (logically parallel)</td></tr>
+          <tr><td>Time model</td><td>Continuous (<code>u_time</code> float)</td><td>Discrete (integer generations)</td></tr>
+          <tr><td>Memory</td><td>Stateless per frame*</td><td>Requires previous frame state</td></tr>
+          <tr><td>Space model</td><td>Continuous (float coordinates)</td><td>Discrete (integer grid)</td></tr>
+          <tr><td>Communication</td><td>None between pixels*</td><td>Local (neighbors only)</td></tr>
+          <tr><td>Deterministic?</td><td>Yes</td><td>Yes</td></tr>
+        </tbody>
+      </table>
+
+      <p>*With frame feedback, shaders gain both memory and inter-pixel communication (via texture reads), bridging the gap completely. A shader with frame feedback IS a cellular automaton running on the GPU.</p>
+
+      <p>This correspondence is not merely theoretical. In practice, running CAs on the GPU via fragment shaders achieves performance that is 2&ndash;3 orders of magnitude faster than CPU implementations for large grids. A Game of Life grid of 4096 x 4096 cells (16 million cells) can be updated at 60 frames per second on a modern GPU, while a JavaScript implementation on the CPU would struggle with a 500 x 500 grid at the same frame rate.</p>
+
+      <p>The key insight is that both GLSL shaders and CAs are instances of the same abstract computational model: <strong>data-parallel local computation</strong>. Each processing unit (pixel/cell) reads local data, applies a function, and writes the result. No global coordination is needed. This is why GPUs &mdash; designed for exactly this kind of computation &mdash; are the natural hardware for both tasks.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>SIMD (Single Instruction, Multiple Data)</strong> &mdash; A parallel computing model where the same operation is applied simultaneously to many data elements. GPUs are SIMD architectures: the same fragment shader (single instruction) runs on thousands of pixels (multiple data) at once. Cellular automata are naturally SIMD because the same rule applies to every cell simultaneously.</p>
+      </div>
+
+      <h3>6.10.2 From Rules to Patterns</h3>
+
+      <p>The deep connection between these two domains is the principle of <strong>emergent complexity from simple rules</strong>:</p>
+
+      <ul>
+        <li>In GLSL, the "rule" is a mathematical function. <code>sin(length(uv) * 40.0)</code> produces concentric rings. <code>mod(floor(uv.x * 8.0) + floor(uv.y * 8.0), 2.0)</code> produces a checkerboard. These patterns emerge from the uniform application of the function across all pixels.</li>
+        <li>In a CA, the rule is a lookup table or conditional. "If alive and 2-3 neighbors, survive" produces gliders, oscillators, and Turing-complete computation. These structures emerge from the uniform application of the rule across all cells, over many generations.</li>
+      </ul>
+
+      <p>Both systems are <em>deterministic</em> &mdash; the same input always produces the same output. Yet both can produce behavior that <em>appears</em> random (Rule 30, domain-warped shaders). The complexity is not in the rules but in the <em>interaction</em> between the rules and the spatial/temporal structure.</p>
+
+      <p>This has a practical implication for creative computing: <strong>you do not need complex code to create complex art.</strong> Some of the most visually stunning shader pieces on ShaderToy are under 50 lines of code. The most captivating CA patterns come from rules that fit in a single sentence. The art lies not in piling on more code, but in choosing the right simple operations and combining them thoughtfully.</p>
+
+      <p>This is also why these techniques are so appealing for artistic exploration. Because the rules are simple, you can modify them quickly and see the results instantly. A small change to a frequency, a warp amount, or a threshold can transform the entire visual character of a piece. This tight feedback loop between intention and result is the essence of creative coding.</p>
+
+      <p>As an exercise in this philosophy, try taking any of the interactive demos in this chapter and making the smallest possible change that produces the most dramatic visual difference. Change one number, one operator, or one function call. You will often be surprised by how much a single modification can transform the output &mdash; this is emergence in action, and it is what makes these simple systems so endlessly fascinating to explore.</p>
+
+      <h3>6.10.3 Patterns in Nature</h3>
+
+      <p>Many patterns in the natural world can be understood through the same principles we have studied in this chapter:</p>
+
+      <ul>
+        <li><strong>Animal coat patterns</strong> (zebra stripes, leopard spots, giraffe patches): Alan Turing proposed in 1952 that these arise from reaction-diffusion systems, which are continuous analogs of cellular automata. We will explore this connection in Chapter 7.</li>
+        <li><strong>Seashell patterns:</strong> The pigmentation patterns on certain cone snails (<em>Conus textile</em>) are almost identical to the output of 1D cellular automata like Rule 30. The shell grows at a constant rate, and the pigment-producing cells at the growing edge follow CA-like rules based on their neighbors.</li>
+        <li><strong>Crystal growth:</strong> Snowflakes form six-fold symmetric patterns because water molecules attach to the growing crystal based on local conditions (temperature, humidity) at each point on the surface. This is a continuous-space analog of a 2D CA.</li>
+        <li><strong>Moire and interference:</strong> Butterfly wing scales produce iridescent colors through interference of light waves at the nanoscale &mdash; the same principle as our GLSL Moire patterns, operating on electromagnetic waves instead of pixel values.</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The connection between cellular automata and natural patterns was one of Wolfram's central arguments in <em>A New Kind of Science</em> (2002). He proposed that many natural systems are best modeled not by differential equations (the traditional approach) but by simple computational programs &mdash; cellular automata, substitution systems, and similar discrete systems. Whether or not one accepts this strong claim, the visual correspondence between CA output and natural patterns is striking and suggestive.</p>
+      </div>
+
+      <h3>6.10.4 Computational Irreducibility</h3>
+
+      <p>One of Wolfram's most provocative ideas is <strong>computational irreducibility</strong>: for Class IV CAs (and many other systems), there is no shortcut to predicting the outcome. You cannot determine the state at time step $t$ without simulating all $t$ steps. The system is its own fastest simulator.</p>
+
+      <p>This has profound implications:</p>
+      <ul>
+        <li><strong>Science:</strong> Some systems may be inherently unpredictable not because we lack information, but because prediction requires as much computation as the system itself.</li>
+        <li><strong>Art:</strong> Computationally irreducible systems are inherently surprising. Even the programmer who wrote the rules cannot predict what patterns will emerge without running the simulation. This makes CAs a genuine tool for <em>discovery</em> in creative computing.</li>
+        <li><strong>Philosophy:</strong> Free will, creativity, and novelty in nature might be related to computational irreducibility. If the universe is performing a computation that cannot be shortcut, then the future is genuinely open and undetermined in a practical sense.</li>
+      </ul>
+
+      <h3>6.10.5 Combined Pattern Demo</h3>
+
+      <p>This final demo combines GLSL pattern techniques with CA-inspired logic. It creates a tiled pattern where each cell's color is determined by a combination of its position, distance from center, and a pattern-interaction rule:</p>
+
+      <!-- INTERACTIVE: Combined Pattern Demo -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Combined Pattern Demo &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+vec2 rotate2D(vec2 p, float a) {
+  float c = cos(a), s = sin(a);
+  return mat2(c, -s, s, c) * p;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+
+  // Domain warp
+  vec2 warp = vec2(
+    sin(uv.y * 6.0 + u_time * 0.5),
+    cos(uv.x * 6.0 + u_time * 0.3)
+  ) * 0.08;
+
+  vec2 p = uv + warp;
+
+  // Rotating coordinate system
+  vec2 rp = rotate2D(p, u_time * 0.2);
+
+  // Pattern 1: Checkerboard on warped coords
+  float freq = 10.0;
+  float checker = mod(floor(rp.x * freq) + floor(rp.y * freq), 2.0);
+
+  // Pattern 2: Concentric rings
+  float d = length(uv);
+  float rings = sin(d * 25.0 - u_time * 1.5) * 0.5 + 0.5;
+
+  // Pattern 3: Angular fans
+  float angle = atan(uv.y, uv.x);
+  float fan = sin(angle * 6.0 + u_time) * 0.5 + 0.5;
+
+  // Combine: use rings to blend between checker and fan
+  float combined = mix(checker, fan, rings);
+
+  // Color palette
+  vec3 col = 0.5 + 0.5 * cos(
+    combined * 3.14 + u_time * 0.5 + vec3(0.0, 0.8, 1.6)
+  );
+
+  // Vignette
+  col *= 1.0 - 0.5 * d;
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <!-- ===============================================================
+           6.11 LIVE GLSL EDITORS
+           =============================================================== -->
+      <h2 id="live-editors">6.11 Live GLSL Editors</h2>
+
+      <p>Several online tools let you write and run GLSL shaders in your browser without any local setup. These are invaluable for experimentation and learning:</p>
+
+      <h3>6.11.1 ShaderToy</h3>
+      <p><a href="https://www.shadertoy.com" target="_blank">shadertoy.com</a> &mdash; The most popular shader playground, created by <strong>Inigo Quilez</strong> and <strong>Pol Jeremias</strong>. The community has contributed thousands of shared shaders, ranging from simple experiments to full real-time ray-traced scenes. ShaderToy uses a slightly different function signature than standard GLSL: <code>mainImage(out vec4 fragColor, in vec2 fragCoord)</code> instead of <code>void main()</code> with <code>gl_FragColor</code>. The built-in uniforms also have different names: <code>iResolution</code> (instead of <code>u_resolution</code>), <code>iTime</code> (instead of <code>u_time</code>), <code>iMouse</code> (instead of <code>u_mouse</code>).</p>
+
+      <p>Critically, ShaderToy supports <strong>multi-pass rendering</strong> (Buffer A, B, C, D), which is exactly what you need for implementing CAs with frame feedback. Buffer A's output texture becomes Buffer A's input on the next frame, creating the ping-pong loop automatically.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>ShaderToy shaders cannot be directly pasted into a standard GLSL environment (or vice versa) because of the different function signatures and uniform names. To convert: replace <code>mainImage(out vec4 fragColor, in vec2 fragCoord)</code> with <code>void main()</code>, replace <code>fragColor</code> with <code>gl_FragColor</code>, replace <code>fragCoord</code> with <code>gl_FragCoord.xy</code>, and replace <code>iResolution</code>/<code>iTime</code>/<code>iMouse</code> with your environment's uniform names.</p>
+      </div>
+
+      <h3>6.11.2 The Book of Shaders Editor</h3>
+      <p><a href="https://editor.thebookofshaders.com" target="_blank">editor.thebookofshaders.com</a> &mdash; A simpler editor designed specifically for learning, accompanying Patricio Gonzalez Vivo's excellent free online book <em>The Book of Shaders</em>. Uses standard <code>void main()</code> with <code>gl_FragColor</code>. The book provides a gentle, visual introduction to shader programming and is one of the best resources for beginners. It covers all the topics in this chapter (patterns, distance fields, shapes) and more.</p>
+
+      <h3>6.11.3 GLSL Sandbox</h3>
+      <p><a href="https://glslsandbox.com" target="_blank">glslsandbox.com</a> &mdash; Another live editor with a gallery of community creations. The interface is minimal: just a code editor and a canvas. Good for quick experiments and sharing.</p>
+
+      <h3>6.11.4 KodeLife</h3>
+      <p>A desktop application for live shader coding with advanced features like MIDI input mapping, multi-pass rendering, texture inputs, webcam input, audio reactivity, and ISF (Interactive Shader Format) export. Ideal for live performance, VJ work, and gallery installations where you need more control than a browser can provide.</p>
+
+      <h3>6.11.5 Tips for Shader Development</h3>
+      <p>Regardless of which tool you use, these practices will accelerate your learning:</p>
+      <ul>
+        <li><strong>Start simple.</strong> Begin with a solid color, then add one operation at a time. Always understand each line before adding the next.</li>
+        <li><strong>Visualize intermediate values.</strong> Output any intermediate value as a color to see what it looks like: <code>gl_FragColor = vec4(vec3(d), 1.0);</code> where <code>d</code> is whatever variable you want to inspect.</li>
+        <li><strong>Use comments as toggles.</strong> Keep several variations of a line in your code, commented out. Uncomment one at a time to compare effects.</li>
+        <li><strong>Save frequently.</strong> Shader development is exploratory &mdash; you often want to go back to a version that looked interesting.</li>
+        <li><strong>Read other people's shaders.</strong> ShaderToy's gallery is an incredible learning resource. Find a shader you like, read the code, and try modifying it.</li>
+      </ul>
+
+      <!-- ===============================================================
+           6.12 SUMMARY
+           =============================================================== -->
+      <h2 id="summary">6.12 Summary</h2>
+
+      <p>This chapter covered two complementary approaches to generating complex visual patterns from simple rules:</p>
+
+      <p><strong>GLSL Shaders</strong> use mathematical functions to determine the color of each pixel based on its position. Key techniques include:</p>
+      <ul>
+        <li><strong>Distance functions</strong> for circles and rings (<code>length()</code>, <code>distance()</code>)</li>
+        <li><strong>Periodic functions</strong> for stripes and grids (<code>floor()</code>, <code>fract()</code>, <code>mod()</code>, <code>sin()</code>)</li>
+        <li><strong>Polar coordinates</strong> for angular patterns (<code>atan()</code>)</li>
+        <li><strong>Rotation matrices</strong> for transforming coordinate space</li>
+        <li><strong>Composition</strong> through arithmetic operations, masking, and domain warping</li>
+        <li><strong>Anti-aliasing</strong> with <code>smoothstep()</code></li>
+      </ul>
+
+      <p><strong>Cellular Automata</strong> use discrete grids where each cell updates based on its neighbors' states:</p>
+      <ul>
+        <li><strong>Elementary CAs</strong> (1D, 2-state, 3-neighbor) with Wolfram's 256 rules, each identified by a number 0&ndash;255 that directly encodes the lookup table</li>
+        <li><strong>Conway's Game of Life</strong> (2D, B3/S23) with emergent structures: still lifes, oscillators, spaceships, guns, and Methuselahs</li>
+        <li><strong>Life-like automata</strong> family: different B/S rules produce dramatically different behavior (HighLife, Seeds, Day &amp; Night)</li>
+        <li><strong>Wolfram's four classes:</strong> uniform (I), periodic (II), chaotic (III), complex (IV)</li>
+        <li><strong>Class IV</strong> systems at the "edge of chaos" support universal computation; their evolution is computationally irreducible</li>
+        <li><strong>GPU implementation</strong> via frame feedback (ping-pong buffering) in GLSL</li>
+        <li><strong>SmoothLife:</strong> Generalization to continuous space and states, producing organic behavior</li>
+      </ul>
+
+      <p>The unifying principle: <strong>complex, beautiful, and surprising behavior can emerge from simple rules applied uniformly across space.</strong></p>
+
+      <p>Looking ahead, Chapter 7 will explore <strong>reaction-diffusion systems</strong>, which can be understood as a further generalization of cellular automata to continuous chemical concentrations. The same principle &mdash; local rules, parallel application, emergent complexity &mdash; will produce patterns like animal coat markings, coral growth, and chemical oscillations. The ideas in this chapter form the foundation for that exploration.</p>
+
+      <h3>Glossary of Key Terms</h3>
+
+      <table>
+        <thead>
+          <tr><th>Term</th><th>Definition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Fragment Shader</strong></td><td>A GPU program that computes the color of each pixel in parallel</td></tr>
+          <tr><td><strong>UV Coordinates</strong></td><td>Normalized 2D coordinates for addressing pixel positions, typically in [0,1] or centered at origin</td></tr>
+          <tr><td><strong>Domain Warping</strong></td><td>Using one function to distort the input coordinates of another, creating organic deformations</td></tr>
+          <tr><td><strong>Cellular Automaton</strong></td><td>A discrete computational model: a grid of cells that update synchronously based on local rules</td></tr>
+          <tr><td><strong>Elementary CA</strong></td><td>A 1D, 2-state, 3-neighbor cellular automaton; 256 possible rules numbered 0&ndash;255</td></tr>
+          <tr><td><strong>Moore Neighborhood</strong></td><td>The 8 surrounding cells in a 2D grid (including diagonals)</td></tr>
+          <tr><td><strong>Wolfram Classification</strong></td><td>Four classes of CA behavior: I (uniform), II (periodic), III (chaotic), IV (complex)</td></tr>
+          <tr><td><strong>Edge of Chaos</strong></td><td>The boundary between ordered and chaotic behavior where complex computation occurs (Class IV)</td></tr>
+          <tr><td><strong>Frame Feedback</strong></td><td>Technique for reading the previous frame's output as input, enabling stateful GPU computation</td></tr>
+          <tr><td><strong>SmoothLife</strong></td><td>Continuous generalization of the Game of Life with real-valued states and circular neighborhoods</td></tr>
+          <tr><td><strong>Toroidal Boundary</strong></td><td>Grid wrapping where edges connect to opposite edges, forming a torus topology</td></tr>
+          <tr><td><strong>Computational Irreducibility</strong></td><td>Property of systems where no shortcut exists to predict future states; simulation is required</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Key Formulas to Remember</h3>
+
+      <table>
+        <thead>
+          <tr><th>Concept</th><th>Formula / Code</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Center-normalized UV</td><td><code>(gl_FragCoord.xy - 0.5*u_resolution.xy) / u_resolution.y</code></td></tr>
+          <tr><td>Checkerboard</td><td>$\text{mod}(\lfloor x \cdot f \rfloor + \lfloor y \cdot f \rfloor, 2)$</td></tr>
+          <tr><td>Concentric rings</td><td>$\sin(r \cdot f - t) \cdot 0.5 + 0.5$</td></tr>
+          <tr><td>Anti-aliased edge</td><td><code>smoothstep(radius, radius + epsilon, dist)</code></td></tr>
+          <tr><td>Domain warp</td><td>$f(\mathbf{uv} + g(\mathbf{uv}))$</td></tr>
+          <tr><td>Rotation matrix</td><td>$\begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}$</td></tr>
+          <tr><td>Wolfram rule index</td><td>$L \cdot 4 + C \cdot 2 + R$</td></tr>
+          <tr><td>Game of Life</td><td>B3/S23 (birth with 3, survive with 2 or 3 neighbors)</td></tr>
+          <tr><td>Cosine palette</td><td>$a + b \cdot \cos(2\pi(c \cdot t + d))$</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ===============================================================
+           KNOWLEDGE CHECK QUIZZES
+           =============================================================== -->
+      <h2 id="knowledge-checks">Knowledge Checks</h2>
+
+      <p>Answer the following questions to check your understanding of the material covered in this chapter. Each question has one correct answer. After selecting your answer, click "Check Answer" to see if you are correct and to reveal the explanation.</p>
+
+      <!-- Quiz 1: fract() behavior -->
+      <div class="quiz" data-id="ch06-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does <code>fract(3.7)</code> return in GLSL?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch06-q1" value="a"> 3.0</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q1" value="b"> 4.0</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q1" value="c" data-correct> 0.7</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q1" value="d"> 0.3</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>fract(x)</code> returns the fractional part of $x$, computed as $x - \lfloor x \rfloor$. For $x = 3.7$, we get $3.7 - 3.0 = 0.7$. This function is essential for creating tiled/repeating patterns: it wraps any coordinate back into the range $[0, 1)$.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- Quiz 2: smoothstep() range -->
+      <div class="quiz" data-id="ch06-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the output range of <code>smoothstep(a, b, x)</code> for any values of $a$, $b$, and $x$?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch06-q2" value="a"> $[-1, 1]$</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q2" value="b" data-correct> $[0, 1]$</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q2" value="c"> $[a, b]$</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q2" value="d"> It depends on $a$ and $b$</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>smoothstep(a, b, x)</code> always returns a value in the range $[0, 1]$. It returns 0.0 when $x \leq a$, returns 1.0 when $x \geq b$, and returns a smooth Hermite interpolation ($3t^2 - 2t^3$) for values between $a$ and $b$. The output is always clamped regardless of input values.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- Quiz 3: Rule 30 classification -->
+      <div class="quiz" data-id="ch06-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which Wolfram class does Rule 30 belong to?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch06-q3" value="a"> Class I (Uniform)</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q3" value="b"> Class II (Periodic)</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q3" value="c" data-correct> Class III (Chaotic)</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q3" value="d"> Class IV (Complex)</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Rule 30 is a Class III (chaotic) automaton. It produces aperiodic, seemingly random patterns from simple initial conditions. It is so effective at generating apparent randomness that it was used as a pseudorandom number generator in Wolfram's Mathematica software. Its chaotic output also appears in nature on the shells of the cone snail <em>Conus textile</em>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- Quiz 4: Game of Life neighbor count -->
+      <div class="quiz" data-id="ch06-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In Conway's Game of Life, a <strong>dead</strong> cell becomes alive if it has exactly how many live neighbors?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch06-q4" value="a"> 2</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q4" value="b" data-correct> 3</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q4" value="c"> 2 or 3</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q4" value="d"> 1, 2, or 3</label></li>
+        </ul>
+        <div class="explanation">
+          <p>In the Game of Life (B3/S23), a dead cell requires <em>exactly</em> 3 live neighbors to be "born." The rule "2 or 3" applies to <em>survival</em> of already-living cells. This asymmetry between birth and survival is part of what gives Life its rich behavior. With 2 neighbors a dead cell stays dead; with 3 it comes alive; with more than 3 it stays dead (or dies if alive).</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- Quiz 5: Wolfram class identification -->
+      <div class="quiz" data-id="ch06-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">A cellular automaton that produces a mixture of stable structures, moving patterns, and unpredictable interactions &mdash; and has been proven capable of universal computation &mdash; belongs to which Wolfram class?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch06-q5" value="a"> Class I</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q5" value="b"> Class II</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q5" value="c"> Class III</label></li>
+          <li class="option"><label><input type="radio" name="ch06-q5" value="d" data-correct> Class IV</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Class IV automata are characterized by complex, long-lived structures that interact in intricate ways. They exist at the "edge of chaos" between the rigidity of Class II and the disorder of Class III. This balance enables universal computation. Both Rule 110 and Conway's Game of Life are Class IV automata, and both have been proven Turing complete.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================================
+           CODE CHALLENGES
+           =============================================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <p>Complete the following coding challenges to test your understanding of the algorithms behind cellular automata. Each challenge includes automated test cases that will verify your solution. Think carefully about edge cases, especially boundary conditions and the distinction between the cell itself and its neighbors.</p>
+
+      <!-- Challenge 1: countNeighbors -->
+      <div class="code-challenge" data-id="ch06-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function <code>countNeighbors(grid, x, y)</code> that counts the number of live neighbors (value 1) for a cell at position $(x, y)$ in a 2D Game of Life grid. The grid is a 2D array <code>grid[x][y]</code> with dimensions accessible as <code>grid.length</code> (columns) and <code>grid[0].length</code> (rows). Use <strong>wrapping</strong> (toroidal) boundary conditions. Do NOT count the cell itself.</p>
+        <textarea class="cm-editor">function countNeighbors(grid, x, y) {
+  let cols = grid.length;
+  let rows = grid[0].length;
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "countNeighbors([[0,0,0],[0,1,0],[0,0,0]], 1, 1)", "expected": 0},
+          {"call": "countNeighbors([[1,0,0],[0,1,0],[0,0,1]], 1, 1)", "expected": 2},
+          {"call": "countNeighbors([[1,1,1],[1,0,1],[1,1,1]], 1, 1)", "expected": 8},
+          {"call": "countNeighbors([[1,0,0],[0,0,0],[0,0,0]], 0, 0)", "expected": 0},
+          {"call": "countNeighbors([[0,1,0],[1,0,0],[0,0,0]], 0, 0)", "expected": 2}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2: applyRule for elementary CA -->
+      <div class="code-challenge" data-id="ch06-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function <code>applyRule(ruleBits, left, center, right)</code> for an elementary cellular automaton. The <code>ruleBits</code> parameter is an array of 8 values (0 or 1) representing the rule table (index 0 = neighborhood 000, index 7 = neighborhood 111). The <code>left</code>, <code>center</code>, and <code>right</code> parameters are each 0 or 1. Return the next state (0 or 1) of the center cell.</p>
+        <textarea class="cm-editor">function applyRule(ruleBits, left, center, right) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "applyRule([0,1,1,1,1,0,0,0], 0, 0, 0)", "expected": 0},
+          {"call": "applyRule([0,1,1,1,1,0,0,0], 0, 0, 1)", "expected": 1},
+          {"call": "applyRule([0,1,1,1,1,0,0,0], 0, 1, 0)", "expected": 1},
+          {"call": "applyRule([0,1,1,1,1,0,0,0], 1, 1, 1)", "expected": 0},
+          {"call": "applyRule([0,1,0,1,1,0,1,0], 0, 1, 1)", "expected": 1},
+          {"call": "applyRule([0,1,0,1,1,0,1,0], 1, 0, 1)", "expected": 0}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3: stepGameOfLife -->
+      <div class="code-challenge" data-id="ch06-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function <code>stepGameOfLife(grid)</code> that takes a 2D grid (array of arrays, <code>grid[x][y]</code>, values 0 or 1) and returns a <strong>new</strong> 2D grid representing the next generation according to Conway's Game of Life rules (B3/S23). Use toroidal (wrapping) boundary conditions. Do not modify the original grid.</p>
+        <textarea class="cm-editor">function stepGameOfLife(grid) {
+  let cols = grid.length;
+  let rows = grid[0].length;
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "stepGameOfLife([[0,0,0],[0,0,0],[0,0,0]])", "expected": [[0,0,0],[0,0,0],[0,0,0]]},
+          {"call": "stepGameOfLife([[0,1,0],[0,1,0],[0,1,0]])", "expected": [[0,0,0],[1,1,1],[0,0,0]]},
+          {"call": "stepGameOfLife([[0,0,0],[1,1,1],[0,0,0]])", "expected": [[0,1,0],[0,1,0],[0,1,0]]},
+          {"call": "stepGameOfLife([[1,1,0],[1,1,0],[0,0,0]])", "expected": [[1,1,0],[1,1,0],[0,0,0]]}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 4: wolframRule -->
+      <div class="code-challenge" data-id="ch06-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function <code>wolframRule(ruleNumber, neighborhood)</code> that takes a rule number (0&ndash;255) and a 3-element array representing the neighborhood <code>[left, center, right]</code> (each 0 or 1). Return the next state of the center cell (0 or 1) according to Wolfram's elementary CA rule encoding. Remember: the neighborhood value $L \cdot 4 + C \cdot 2 + R$ is used as a bit index into the rule number.</p>
+        <textarea class="cm-editor">function wolframRule(ruleNumber, neighborhood) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "wolframRule(30, [0,0,0])", "expected": 0},
+          {"call": "wolframRule(30, [0,0,1])", "expected": 1},
+          {"call": "wolframRule(30, [0,1,0])", "expected": 1},
+          {"call": "wolframRule(30, [1,0,0])", "expected": 1},
+          {"call": "wolframRule(30, [1,1,1])", "expected": 0},
+          {"call": "wolframRule(90, [0,1,0])", "expected": 0},
+          {"call": "wolframRule(90, [1,0,1])", "expected": 0},
+          {"call": "wolframRule(90, [0,0,1])", "expected": 1},
+          {"call": "wolframRule(110, [1,1,0])", "expected": 1},
+          {"call": "wolframRule(110, [1,1,1])", "expected": 0}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- ===============================================================
+           OPEN-ENDED EXERCISES
+           =============================================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <p>The following open-ended exercises invite you to apply and combine the techniques from this chapter. Each exercise includes a starter template and a reference solution. Try to complete the exercise on your own before looking at the solution &mdash; the learning happens in the struggle, not in reading the answer.</p>
+
+      <p>These exercises are designed to be submitted as part of your coursework. Remember the MAT 200C code attribution policy: if you use LLM assistance or reference external code, you must document it explicitly in a comment at the top of your sketch.</p>
+
+      <p><strong>Tips for success:</strong></p>
+      <ul>
+        <li>Start with the simplest version of the exercise, then add complexity incrementally</li>
+        <li>Test frequently &mdash; run after every few lines of code, not after writing everything</li>
+        <li>Use <code>console.log()</code> (p5.js) or color-based debugging (GLSL) to inspect intermediate values</li>
+        <li>Read the error messages carefully &mdash; GLSL errors often indicate the exact line number</li>
+        <li>If stuck, revisit the relevant section of this chapter for the mathematical formulas and code patterns</li>
+      </ul>
+
+      <!-- Exercise 1: Custom GLSL pattern -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 6.1 &mdash; Custom GLSL Pattern</div>
+        <p class="prompt">Create a GLSL shader that combines at least <strong>three</strong> different pattern techniques from this chapter: stripes, circles/rings, fan patterns, checkerboard, domain warping, rotation, or tiling with <code>fract()</code>. Use animation (<code>u_time</code>) and color. Aim for a visually interesting result.</p>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+
+  // Your pattern here: combine 3+ techniques
+  // Hint: try rings + fan + domain warp
+
+  vec3 color = vec3(uv.x + 0.5, uv.y + 0.5, 0.5);
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" data-mode="glsl" readonly>precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+vec2 rotate2D(vec2 p, float a) {
+  float c = cos(a), s = sin(a);
+  return mat2(c, -s, s, c) * p;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+
+  // Technique 1: Domain warping
+  vec2 warp = vec2(
+    sin(uv.y * 5.0 + u_time * 0.8) * 0.12,
+    cos(uv.x * 5.0 + u_time * 0.6) * 0.12
+  );
+  vec2 p = uv + warp;
+
+  // Technique 2: Rotation
+  p = rotate2D(p, u_time * 0.3);
+
+  // Technique 3: Tiled circles with fract()
+  vec2 cell = fract(p * 6.0) - 0.5;
+  float dots = 1.0 - smoothstep(0.15, 0.16, length(cell));
+
+  // Technique 4: Concentric rings
+  float d = length(uv);
+  float rings = sin(d * 20.0 - u_time * 2.0) * 0.5 + 0.5;
+
+  // Technique 5: Angular fan
+  float angle = atan(uv.y, uv.x);
+  float fan = sin(angle * 5.0 + u_time) * 0.5 + 0.5;
+
+  // Combine: dots masked by rings, colored by fan
+  float pattern = dots * rings;
+  vec3 col1 = vec3(0.1, 0.2, 0.5);
+  vec3 col2 = vec3(1.0, 0.4, 0.2);
+  vec3 col3 = vec3(0.2, 0.9, 0.5);
+  vec3 color = mix(col1, mix(col2, col3, fan), pattern);
+
+  // Vignette
+  color *= 1.0 - 0.4 * d;
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: Elementary CA with color coding -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 6.2 &mdash; Elementary CA with Color Coding</div>
+        <p class="prompt">Modify the elementary CA sketch to run <strong>four different rules side by side</strong> (Rules 30, 90, 110, and 184), each taking one quarter of the canvas width. Color-code each quarter by Wolfram class: Class I = gray, Class II = blue, Class III = red, Class IV = green. This creates a visual comparison of the four behavior classes.</p>
+        <textarea class="cm-editor">// Modify to show 4 rules side by side with class colors
+let rules = [30, 90, 110, 184];
+let cellSize = 2;
+let cells, nextCells;
+let gen = 0;
+
+function setup() {
+  createCanvas(800, 400);
+  background(255);
+  // Your code here
+}
+
+function draw() {
+  // Your code here
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let rules = [30, 90, 110, 184];
+// Wolfram class colors: III=red, II=blue, IV=green, II=blue
+let classColors;
+let cellSize = 2;
+let sectionWidth;
+let allCells = [];
+let allNext = [];
+let allTables = [];
+let gen = 0;
+
+function setup() {
+  createCanvas(800, 400);
+  background(240);
+  sectionWidth = floor(width / rules.length);
+  let cols = floor(sectionWidth / cellSize);
+
+  classColors = [
+    color(200, 60, 60),   // Rule 30: Class III (chaotic) - red
+    color(60, 80, 200),   // Rule 90: Class II (periodic) - blue
+    color(40, 180, 80),   // Rule 110: Class IV (complex) - green
+    color(60, 80, 200)    // Rule 184: Class II (periodic) - blue
+  ];
+
+  for (let r = 0; r < rules.length; r++) {
+    let c = new Array(cols).fill(0);
+    c[floor(cols / 2)] = 1;
+    allCells.push(c);
+    allNext.push(new Array(cols).fill(0));
+    allTables.push(ruleToTable(rules[r]));
+  }
+
+  // Draw labels
+  textSize(12);
+  textAlign(CENTER);
+  for (let r = 0; r < rules.length; r++) {
+    fill(0);
+    noStroke();
+    text("Rule " + rules[r], r * sectionWidth + sectionWidth/2, 15);
+  }
+
+  // Draw first row
+  for (let r = 0; r < rules.length; r++) drawSection(r, 0);
+}
+
+function draw() {
+  if ((gen + 1) * cellSize + 20 >= height) { noLoop(); return; }
+
+  for (let r = 0; r < rules.length; r++) {
+    let cols = allCells[r].length;
+    for (let i = 0; i < cols; i++) {
+      let L = allCells[r][(i - 1 + cols) % cols];
+      let C = allCells[r][i];
+      let R = allCells[r][(i + 1) % cols];
+      let idx = L * 4 + C * 2 + R;
+      allNext[r][i] = allTables[r][idx];
+    }
+    let tmp = allCells[r];
+    allCells[r] = allNext[r];
+    allNext[r] = tmp;
+  }
+
+  gen++;
+  for (let r = 0; r < rules.length; r++) drawSection(r, gen);
+}
+
+function drawSection(rIdx, row) {
+  let offsetX = rIdx * sectionWidth;
+  let y = row * cellSize + 20;
+  let cols = allCells[rIdx].length;
+  for (let i = 0; i < cols; i++) {
+    if (allCells[rIdx][i] === 1) {
+      fill(classColors[rIdx]);
+    } else {
+      fill(240);
+    }
+    noStroke();
+    rect(offsetX + i * cellSize, y, cellSize, cellSize);
+  }
+}
+
+function ruleToTable(num) {
+  let t = new Array(8);
+  for (let i = 0; i < 8; i++) t[i] = (num >> i) & 1;
+  return t;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3: Interactive Game of Life with drawing -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 6.3 &mdash; Interactive Game of Life</div>
+        <p class="prompt">Create an interactive Game of Life where the user can: (1) <strong>click and drag</strong> to toggle cells on/off, (2) press <strong>SPACE</strong> to pause/resume the simulation, (3) press <strong>R</strong> to randomize the grid, and (4) press <strong>C</strong> to clear the grid. Display the generation count and whether the simulation is paused or running.</p>
+        <textarea class="cm-editor">let grid, next;
+let cols, rows;
+let res = 8;
+let paused = true;
+let generation = 0;
+
+function setup() {
+  createCanvas(600, 400);
+  cols = floor(width / res);
+  rows = floor(height / res);
+  grid = make2D(cols, rows);
+  next = make2D(cols, rows);
+  // Your code here: start paused so user can draw
+}
+
+function draw() {
+  // Your code here
+}
+
+function make2D(w, h) {
+  let a = new Array(w);
+  for (let i = 0; i < w; i++) a[i] = new Array(h).fill(0);
+  return a;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let grid, next;
+let cols, rows;
+let res = 8;
+let paused = true;
+let generation = 0;
+
+function setup() {
+  createCanvas(600, 400);
+  cols = floor(width / res);
+  rows = floor(height / res);
+  grid = make2D(cols, rows);
+  next = make2D(cols, rows);
+  frameRate(12);
+}
+
+function draw() {
+  background(20);
+
+  // Draw cells
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      if (grid[x][y] === 1) {
+        fill(80, 200, 120);
+        noStroke();
+        rect(x * res, y * res, res - 1, res - 1);
+      }
+    }
+  }
+
+  // Step simulation if not paused
+  if (!paused) {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        let n = countN(grid, x, y);
+        if (grid[x][y] === 1) {
+          next[x][y] = (n === 2 || n === 3) ? 1 : 0;
+        } else {
+          next[x][y] = (n === 3) ? 1 : 0;
+        }
+      }
+    }
+    let tmp = grid; grid = next; next = tmp;
+    generation++;
+  }
+
+  // HUD
+  fill(255);
+  noStroke();
+  textSize(14);
+  textAlign(LEFT);
+  text("Gen: " + generation + " | " +
+    (paused ? "PAUSED (click to draw)" : "RUNNING") +
+    " | SPACE: play/pause | R: random | C: clear", 10, height - 10);
+
+  // Draw cells on click/drag
+  if (mouseIsPressed && paused) {
+    let mx = floor(mouseX / res);
+    let my = floor(mouseY / res);
+    if (mx >= 0 && mx < cols && my >= 0 && my < rows) {
+      grid[mx][my] = 1;
+    }
+  }
+}
+
+function keyPressed() {
+  if (key === ' ') {
+    paused = !paused;
+    return false; // prevent page scroll
+  }
+  if (key === 'r' || key === 'R') {
+    for (let x = 0; x < cols; x++)
+      for (let y = 0; y < rows; y++)
+        grid[x][y] = floor(random(2));
+    generation = 0;
+  }
+  if (key === 'c' || key === 'C') {
+    for (let x = 0; x < cols; x++)
+      for (let y = 0; y < rows; y++)
+        grid[x][y] = 0;
+    generation = 0;
+  }
+}
+
+function make2D(w, h) {
+  let a = new Array(w);
+  for (let i = 0; i < w; i++) a[i] = new Array(h).fill(0);
+  return a;
+}
+
+function countN(g, x, y) {
+  let sum = 0;
+  for (let dx = -1; dx <= 1; dx++)
+    for (let dy = -1; dy <= 1; dy++) {
+      if (dx === 0 && dy === 0) continue;
+      sum += g[(x + dx + cols) % cols][(y + dy + rows) % rows];
+    }
+  return sum;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- ===============================================================
+           6.13 REFERENCES
+           =============================================================== -->
+      <h2 id="references">6.13 References</h2>
+
+      <ol>
+        <li>Wolfram, S. (2002). <em>A New Kind of Science</em>. Wolfram Media. &mdash; The comprehensive (1200-page) treatise on cellular automata, universality, and computational irreducibility.</li>
+        <li>Gardner, M. (1970). "The fantastic combinations of John Conway's new solitaire game 'life'." <em>Scientific American</em>, 223(4), 120&ndash;123. &mdash; The article that introduced the Game of Life to the world.</li>
+        <li>Cook, M. (2004). "Universality in Elementary Cellular Automata." <em>Complex Systems</em>, 15(1), 1&ndash;40. &mdash; The proof that Rule 110 is Turing complete.</li>
+        <li>Rafler, S. (2011). "Generalization of Conway's 'Game of Life' to a continuous domain &mdash; SmoothLife." arXiv:1111.1567. &mdash; The extension of Life to continuous space and states.</li>
+        <li>Gonzalez Vivo, P. &amp; Lowe, J. <em>The Book of Shaders</em>. <a href="https://thebookofshaders.com/" target="_blank">thebookofshaders.com</a> &mdash; The best free online resource for learning GLSL fragment shaders.</li>
+        <li>Quilez, I. "Articles." <a href="https://iquilezles.org/articles/" target="_blank">iquilezles.org/articles</a> &mdash; Definitive reference for domain warping, SDFs, and advanced shader techniques.</li>
+        <li>ShaderToy. <a href="https://www.shadertoy.com/" target="_blank">shadertoy.com</a> &mdash; The premier online shader playground with thousands of community examples.</li>
+        <li>Langton, C. G. (1990). "Computation at the edge of chaos: Phase transitions and emergent computation." <em>Physica D</em>, 42(1&ndash;3), 12&ndash;37. &mdash; The "edge of chaos" hypothesis for Class IV automata.</li>
+        <li>Berlekamp, E. R., Conway, J. H., &amp; Guy, R. K. (2001). <em>Winning Ways for your Mathematical Plays</em>, Vol. 4. A K Peters. &mdash; Contains extensive analysis of Game of Life patterns.</li>
+        <li>Von Neumann, J. (1966). <em>Theory of Self-Reproducing Automata</em>. University of Illinois Press. Edited and completed by A. W. Burks. &mdash; The foundational work on CAs and self-reproduction.</li>
+        <li>Rendell, P. (2016). <em>Turing Machine Universality of the Game of Life</em>. Springer. &mdash; Detailed construction of a Turing machine within the Game of Life.</li>
+        <li>Adamatzky, A. (2010). <em>Game of Life Cellular Automata</em>. Springer. &mdash; Comprehensive survey of Life research: engineering, art, music, and computation.</li>
+      </ol>
+
+      <h3>Further Exploration</h3>
+
+      <p>To deepen your understanding of the topics in this chapter, we recommend the following activities:</p>
+
+      <ul>
+        <li><strong>ShaderToy exploration:</strong> Search for "cellular automata," "game of life," "domain warp," and "pattern" on ShaderToy. Read the code of shaders that interest you and try to understand each line.</li>
+        <li><strong>The Book of Shaders:</strong> Work through chapters 5 (Shaping Functions), 6 (Colors), and 7 (Shapes) of <em>The Book of Shaders</em> for an in-depth treatment of GLSL pattern techniques.</li>
+        <li><strong>Wolfram Atlas:</strong> Visit <a href="https://www.wolframscience.com/nks/" target="_blank">wolframscience.com</a> for high-resolution images of all 256 elementary CA rules and extensive analysis.</li>
+        <li><strong>ConwayLife.com:</strong> The <a href="https://conwaylife.com/wiki/" target="_blank">LifeWiki</a> is a comprehensive encyclopedia of Game of Life patterns, including catalogs of still lifes, oscillators, spaceships, and guns.</li>
+        <li><strong>Golly:</strong> A free, high-performance Game of Life simulator that supports the HashLife algorithm for exponential speedup of large patterns. Excellent for exploring complex Life configurations.</li>
+        <li><strong>Lenia:</strong> Bert Chan's continuous CA system. Visit <a href="https://chakazul.github.io/lenia.html" target="_blank">the Lenia page</a> for interactive demos and videos of artificial life forms.</li>
+        <li><strong>Elementary CA Explorer:</strong> Many websites provide interactive elementary CA explorers where you can enter a rule number and see the result instantly. Search for "Wolfram elementary CA explorer" or use the one built into this chapter.</li>
+      </ul>
+
+      <p>As you explore these resources, keep the central question of this chapter in mind: <strong>how can such simple rules produce such complex behavior?</strong> The answer, we believe, lies in the parallel, iterative application of local rules across space and time &mdash; the same mechanism that drives pattern formation in nature, from snowflakes to galaxies. Whether you approach these systems as a mathematician seeking universal principles, an artist seeking new visual forms, or a programmer seeking elegant algorithms, the journey of exploration is endlessly rewarding. Every new combination of rules, every new parameter tweak, has the potential to reveal something genuinely new &mdash; a pattern that no one has ever seen before, emerging from rules simple enough to write on the back of a napkin.</p>
+
+      <!-- ===============================================================
+           CHAPTER END QUIZ
+           =============================================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 6 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of GLSL patterns and cellular automata.</p>
+
+        <!-- Final Q1 -->
+        <div class="quiz" data-id="ch06-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">In a GLSL fragment shader, which operation creates a tiled repeating pattern from continuous UV coordinates?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch06-fq1" value="a"> <code>clamp(uv, 0.0, 1.0)</code></label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq1" value="b" data-correct> <code>fract(uv * frequency)</code></label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq1" value="c"> <code>abs(uv)</code></label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq1" value="d"> <code>normalize(uv)</code></label></li>
+          </ul>
+          <div class="explanation">
+            <p><code>fract(uv * frequency)</code> is the standard technique for creating tiled patterns. Multiplying by a frequency controls how many tiles appear, and <code>fract()</code> wraps the coordinates back to $[0, 1)$ in each tile, creating seamless repetition. You can then define any pattern within a single cell and it will repeat across the entire canvas.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q2 -->
+        <div class="quiz" data-id="ch06-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">What is "domain warping" in the context of GLSL pattern creation?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch06-fq2" value="a"> Scaling the UV coordinates by a constant factor</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq2" value="b"> Converting from Cartesian to polar coordinates</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq2" value="c" data-correct> Using one pattern/function to distort the input coordinates of another pattern</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq2" value="d"> Multiplying two pattern outputs together</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Domain warping uses one function to distort the input coordinates of another: $f(\mathbf{uv} + g(\mathbf{uv}))$. Rather than combining pattern outputs (which is arithmetic composition), domain warping operates on the <em>input space</em>. This produces organic, fluid distortions that make patterns look melted, stirred, or alive. It is one of the most powerful techniques in shader art.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q3 -->
+        <div class="quiz" data-id="ch06-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">How many possible elementary cellular automata rules exist (1D, 2 states, 3-cell neighborhood)?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch06-fq3" value="a"> 8</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq3" value="b"> 64</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq3" value="c" data-correct> 256</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq3" value="d"> 512</label></li>
+          </ul>
+          <div class="explanation">
+            <p>With a 3-cell neighborhood and 2 states, there are $2^3 = 8$ possible neighborhood configurations. Each configuration maps to an output of 0 or 1, giving $2^8 = 256$ possible rules. This is why Wolfram numbered them 0 through 255 &mdash; each number corresponds to a unique rule table when written in 8-bit binary.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q4 -->
+        <div class="quiz" data-id="ch06-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">Which elementary CA rule has been proven Turing complete?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch06-fq4" value="a"> Rule 30</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq4" value="b"> Rule 90</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq4" value="c" data-correct> Rule 110</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq4" value="d"> Rule 184</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Rule 110 was proven Turing complete by Matthew Cook in 2004. This means that with the right initial conditions, Rule 110 can simulate any computation. It is a Class IV automaton, exhibiting the mixture of order and chaos that enables universal computation. Rule 30 is Class III (chaotic but not known to be Turing complete), Rule 90 is Class II (periodic), and Rule 184 is Class II (models traffic flow).</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- Final Q5 -->
+        <div class="quiz" data-id="ch06-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">In the Game of Life, what is a "glider"?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch06-fq5" value="a"> A pattern that remains unchanged over time (still life)</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq5" value="b"> A pattern that oscillates between two states in place</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq5" value="c" data-correct> A small pattern that translates across the grid over successive generations</label></li>
+            <li class="option"><label><input type="radio" name="ch06-fq5" value="d"> A pattern that periodically emits smaller patterns</label></li>
+          </ul>
+          <div class="explanation">
+            <p>A glider is a <strong>spaceship</strong> &mdash; a pattern that moves across the grid. The smallest glider consists of 5 cells and moves one cell diagonally every 4 generations. The existence of gliders (and glider guns that produce them) is what makes the Game of Life Turing complete: glider streams can be used as signals for logic gates. Option (d) describes a "gun" (like the Gosper Glider Gun), not a glider itself.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+      <!-- ===============================================================
+           CHAPTER NAVIGATION
+           =============================================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch05/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 5: Frame Feedback &amp; SDFs</span>
+        </a>
+        <a href="../ch07/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 7: Reaction-Diffusion &amp; Pattern Formation</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

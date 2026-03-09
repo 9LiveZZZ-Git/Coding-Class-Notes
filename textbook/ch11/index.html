@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 11: Project Workflow &amp; Code Review — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror (shader chapters) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch11">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 11: Project Workflow &amp; Code Review</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar: progress + theme toggle -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 11: Project Workflow &amp; Code Review</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Software engineering practices for creative coders: planning, organizing, debugging, reviewing, optimizing, and sharing your work.</p>
+
+      <!-- ===============================================
+           SECTION 11.1 — INTRODUCTION: WHY PROCESS MATTERS
+           =============================================== -->
+      <h2 id="introduction">11.1 Introduction: Why Process Matters</h2>
+
+      <p>Creative coding exists at the intersection of art and engineering. Unlike traditional software development, where requirements are specified in advance, creative coding projects evolve through experimentation. Unlike traditional art-making, where the medium is familiar, creative coding requires learning new tools and debugging technical problems alongside aesthetic exploration.</p>
+
+      <p>Many beginning creative coders focus exclusively on <em>output</em> &mdash; the visual or sonic result of their sketch. This is understandable: the output is what you see and share. But as projects grow in complexity, the <em>process</em> behind that output becomes equally important. How do you keep track of what you have tried? How do you find and fix bugs? How do you organize code so that you can return to it a month later and understand what it does?</p>
+
+      <p>Professional software engineers spend a great deal of time on process: planning sprints, reviewing code, writing tests, documenting APIs. Creative coders do not need all of that machinery, but they do need a lightweight version of it. The practices in this chapter will save you hours of frustration, help you produce better work, and prepare you for collaboration &mdash; whether with peers, clients, or future versions of yourself.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The creative coding workflow is a loop, not a line.</strong> You do not plan, then build, then finish. You plan a little, build a little, observe what happens, adjust your plan, and build again. The practices in this chapter support that iterative loop.</p>
+      </div>
+
+      <h3>11.1.1 The Iteration Cycle</h3>
+
+      <p>Every successful creative coding project follows some variation of this cycle:</p>
+
+      <pre><code>Conceive &rarr; Prototype &rarr; Observe &rarr; Evaluate &rarr; Adjust &rarr; (repeat)</code></pre>
+
+      <p>At each turn of the cycle, you make the project a little better, a little more interesting, a little closer to the vision forming in your mind &mdash; a vision that itself evolves as you work. This is not a flaw in the process; it <em>is</em> the process. Many of the most compelling creative coding works emerged from productive accidents: a bug that produced an interesting visual, a parameter value that created an unforeseen pattern.</p>
+
+      <p>The practices in this chapter &mdash; planning, organizing, debugging, reviewing, optimizing, documenting, and sharing &mdash; are all in service of making this iteration cycle faster and more productive. When your code is organized, you can change things quickly. When you save checkpoints, you can recover from mistakes. When you debug systematically, you spend less time stuck and more time creating.</p>
+
+      <h3>11.1.2 What This Chapter Covers</h3>
+
+      <p>This chapter is organized around the lifecycle of a creative coding project:</p>
+
+      <ol>
+        <li><strong>Planning</strong> &mdash; How to break a project into manageable pieces</li>
+        <li><strong>Organizing</strong> &mdash; How to structure your code so it stays readable</li>
+        <li><strong>Version control</strong> &mdash; How to save and manage iterations</li>
+        <li><strong>Debugging</strong> &mdash; How to find and fix problems efficiently</li>
+        <li><strong>Code review</strong> &mdash; How to give and receive feedback on code</li>
+        <li><strong>Performance</strong> &mdash; How to make sketches run smoothly</li>
+        <li><strong>Documentation</strong> &mdash; How to communicate your work to others</li>
+        <li><strong>Community</strong> &mdash; Where to connect with other creative coders</li>
+        <li><strong>Working with LLMs</strong> &mdash; How to use AI tools effectively and honestly</li>
+      </ol>
+
+
+      <!-- ===============================================
+           SECTION 11.2 — PROJECT PLANNING
+           =============================================== -->
+      <h2 id="project-planning">11.2 Project Planning</h2>
+
+      <p>You might think that planning is antithetical to creative exploration. In fact, the opposite is true. A lightweight plan gives you a foundation to explore <em>from</em>. Without a plan, you wander aimlessly. With a plan, you have a direction &mdash; and you can decide intentionally when to deviate from it.</p>
+
+      <h3>11.2.1 The Minimum Viable Sketch</h3>
+
+      <p>In software engineering, a <em>Minimum Viable Product</em> (MVP) is the simplest version of a product that delivers value. In creative coding, we can think in terms of a <strong>Minimum Viable Sketch</strong> (MVS): the simplest version of your idea that you can run and evaluate.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Minimum Viable Sketch (MVS)</strong> &mdash; The simplest runnable version of a creative coding idea that demonstrates its core concept. It should take no more than one work session to build.</p>
+      </div>
+
+      <p>For example, if your project idea is "an interactive particle system that responds to music," your MVS might be "ten circles that move randomly on screen." That is enough to test your basic architecture (a particle array, an update loop, a render step) without worrying about audio input, visual polish, or performance.</p>
+
+      <h3>11.2.2 Breaking Down a Project</h3>
+
+      <p>Once you have an idea, decompose it into layers of increasing complexity:</p>
+
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Example (Audio-Reactive Particles)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1. Static geometry</td><td>Draw 100 circles at random positions</td></tr>
+          <tr><td>2. Animation</td><td>Make circles move with velocity vectors</td></tr>
+          <tr><td>3. Interaction</td><td>Particles respond to mouse position</td></tr>
+          <tr><td>4. Data input</td><td>Add FFT audio analysis, map bass to size</td></tr>
+          <tr><td>5. Visual polish</td><td>Add color gradients, trails, blending modes</td></tr>
+          <tr><td>6. Performance</td><td>Optimize for 1000+ particles at 60fps</td></tr>
+        </tbody>
+      </table>
+
+      <p>Each layer builds on the previous one. If you complete layers 1 through 3, you have a working interactive sketch. Layers 4 through 6 add richness, but the project is viable without them.</p>
+
+      <h3>11.2.3 Milestones and Scope Management</h3>
+
+      <p>For a multi-week project, define explicit milestones with dates:</p>
+
+      <table>
+        <thead>
+          <tr><th>Phase</th><th>Duration</th><th>Activity</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Exploration</td><td>1&ndash;2 weeks</td><td>Make many small sketches. Try different techniques.</td></tr>
+          <tr><td>Selection</td><td>1 session</td><td>Review sketches. Identify 2&ndash;3 candidates.</td></tr>
+          <tr><td>Development</td><td>2&ndash;3 weeks</td><td>Develop chosen direction. Add interaction, polish aesthetics.</td></tr>
+          <tr><td>Finalization</td><td>1 week</td><td>Bug fixes, documentation, presentation preparation.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Scope creep.</strong> The biggest risk in creative coding projects is trying to do too much. It is far better to have a polished, simple sketch than a broken, complex one. If you find yourself constantly adding features without finishing any of them, stop and ask: "What is the one thing that makes this sketch interesting?" Focus on that.</p>
+      </div>
+
+      <h3>11.2.4 The Work Log</h3>
+
+      <p>A work log is the single most important documentation practice for a creative coding project. It is a chronological journal of your development process.</p>
+
+      <p>Each entry should include:</p>
+
+      <ol>
+        <li><strong>Date and approximate time spent</strong></li>
+        <li><strong>Session goal</strong> &mdash; What were you setting out to accomplish?</li>
+        <li><strong>Actions taken</strong> &mdash; What did you actually do? Be specific about code changes, parameter values, and approaches tried.</li>
+        <li><strong>Results</strong> &mdash; What happened? Include screenshots for visual results.</li>
+        <li><strong>Failures and dead ends</strong> &mdash; What did you try that did not work? Why do you think it failed?</li>
+        <li><strong>Tools and resources</strong> &mdash; What documentation, tutorials, or references did you consult?</li>
+        <li><strong>AI tool usage</strong> &mdash; If you used an LLM, what did you ask and how did you use the response?</li>
+        <li><strong>Next steps</strong> &mdash; What will you do in the next session?</li>
+      </ol>
+
+      <p>The work log serves as a memory aid (you <em>will</em> forget what you tried), a debugging tool ("it worked on Feb 8 with a noise scale of 0.003"), a reflection surface, and evidence of your engagement with the project.</p>
+
+
+      <!-- ===============================================
+           SECTION 11.3 — CODE ORGANIZATION
+           =============================================== -->
+      <h2 id="code-organization">11.3 Code Organization</h2>
+
+      <p>When a sketch is 20 lines long, organization does not matter much. When it grows to 200 or 2000 lines, organization is the difference between a project you can continue developing and one you have to abandon because you cannot understand your own code.</p>
+
+      <h3>11.3.1 Naming Conventions</h3>
+
+      <p>Names are the most important form of documentation. A well-named variable explains itself:</p>
+
+      <pre><code>// Bad: What do these mean?
+let n = 100;
+let s = 0.003;
+let d = 2;
+let c;
+
+// Good: Self-documenting names
+let particleCount = 100;
+let noiseScale = 0.003;
+let damping = 2;
+let canvas;</code></pre>
+
+      <p>Follow consistent conventions:</p>
+      <ul>
+        <li><strong>Variables and functions:</strong> <code>camelCase</code> &mdash; <code>particleCount</code>, <code>updatePosition()</code></li>
+        <li><strong>Constants:</strong> <code>UPPER_SNAKE_CASE</code> &mdash; <code>MAX_PARTICLES</code>, <code>NOISE_SCALE</code></li>
+        <li><strong>Classes:</strong> <code>PascalCase</code> &mdash; <code>Particle</code>, <code>FlowField</code></li>
+        <li><strong>Boolean variables:</strong> prefix with <code>is</code>, <code>has</code>, or <code>should</code> &mdash; <code>isRunning</code>, <code>hasCollided</code></li>
+      </ul>
+
+      <h3>11.3.2 Constants vs. Magic Numbers</h3>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Magic number</strong> &mdash; A numeric literal in code whose meaning is not obvious from context. Magic numbers make code hard to read and hard to modify.</p>
+      </div>
+
+      <p>Extract magic numbers into named constants at the top of your sketch:</p>
+
+      <pre><code>// Bad: magic numbers scattered throughout
+function setup() {
+  createCanvas(800, 600);
+  for (let i = 0; i &lt; 200; i++) {
+    particles.push(new Particle(random(800), random(600)));
+  }
+}
+
+function draw() {
+  background(0, 25);
+  for (let p of particles) {
+    p.applyForce(0, 0.1);
+    p.update(0.98);
+  }
+}
+
+// Good: constants at the top
+const CANVAS_W = 800;
+const CANVAS_H = 600;
+const NUM_PARTICLES = 200;
+const TRAIL_ALPHA = 25;
+const GRAVITY = 0.1;
+const DAMPING = 0.98;
+
+function setup() {
+  createCanvas(CANVAS_W, CANVAS_H);
+  for (let i = 0; i &lt; NUM_PARTICLES; i++) {
+    particles.push(new Particle(random(CANVAS_W), random(CANVAS_H)));
+  }
+}
+
+function draw() {
+  background(0, TRAIL_ALPHA);
+  for (let p of particles) {
+    p.applyForce(0, GRAVITY);
+    p.update(DAMPING);
+  }
+}</code></pre>
+
+      <p>This approach has two major benefits: you can see all tunable parameters at a glance, and changing a value in one place updates it everywhere.</p>
+
+      <h3>11.3.3 Separating Concerns</h3>
+
+      <p>A common pattern in creative coding is to separate your sketch into logical sections:</p>
+
+      <pre><code>// ========== CONFIGURATION ==========
+const CANVAS_W = 800;
+const CANVAS_H = 600;
+const NUM_PARTICLES = 500;
+
+// ========== STATE ==========
+let particles = [];
+let flowField;
+
+// ========== SETUP ==========
+function setup() {
+  createCanvas(CANVAS_W, CANVAS_H);
+  initParticles();
+  flowField = new FlowField();
+}
+
+// ========== DRAW LOOP ==========
+function draw() {
+  background(0, 20);
+  flowField.update();
+  updateParticles();
+  renderParticles();
+  drawUI();
+}
+
+// ========== PARTICLE FUNCTIONS ==========
+function initParticles() { /* ... */ }
+function updateParticles() { /* ... */ }
+function renderParticles() { /* ... */ }
+
+// ========== UI FUNCTIONS ==========
+function drawUI() { /* ... */ }
+
+// ========== INPUT HANDLERS ==========
+function mousePressed() { /* ... */ }
+function keyPressed() { /* ... */ }</code></pre>
+
+      <h3>11.3.4 Comments: When and How</h3>
+
+      <p>Good comments explain <em>why</em>, not <em>what</em>. The code already says what it does; comments should explain the reasoning behind non-obvious decisions:</p>
+
+      <pre><code>// Bad: restates the code
+i++; // increment i
+
+// Good: explains the reasoning
+// Wrap particles at edges instead of bouncing, so the
+// flow field appears infinite rather than contained
+if (this.pos.x &gt; width) this.pos.x = 0;</code></pre>
+
+      <h3>11.3.5 Refactoring</h3>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Refactoring</strong> &mdash; Changing the structure of code without changing its behavior. The goal is to make code more readable, maintainable, or efficient.</p>
+      </div>
+
+      <p>Common refactoring moves in creative coding:</p>
+      <ul>
+        <li><strong>Extract function:</strong> Take a block of code that does one thing and turn it into a named function</li>
+        <li><strong>Extract constant:</strong> Replace a magic number with a named constant</li>
+        <li><strong>Rename:</strong> Give variables and functions more descriptive names</li>
+        <li><strong>Extract class:</strong> Group related data and functions into a class (e.g., a <code>Particle</code> class)</li>
+        <li><strong>Simplify conditionals:</strong> Replace complex <code>if/else</code> chains with clearer logic</li>
+      </ul>
+
+      <p>Here is an interactive example. The sketch below works, but the code is disorganized. Run it first to see what it does, then read through and identify what could be improved:</p>
+
+      <!-- INTERACTIVE: Code Organization Example -->
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Code Organization Example (Before)</span>
+        </div>
+        <textarea class="cm-editor">// MESSY VERSION - this works but is hard to read
+let things = [];
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 50; i++) {
+    things.push({
+      x: random(400), y: random(400),
+      vx: random(-2, 2), vy: random(-2, 2),
+      s: random(5, 20), c: color(random(255), random(255), random(255), 150)
+    });
+  }
+}
+function draw() {
+  background(0, 30);
+  for (let i = 0; i < things.length; i++) {
+    things[i].x += things[i].vx;
+    things[i].y += things[i].vy;
+    if (things[i].x > 400) things[i].x = 0;
+    if (things[i].x < 0) things[i].x = 400;
+    if (things[i].y > 400) things[i].y = 0;
+    if (things[i].y < 0) things[i].y = 400;
+    fill(things[i].c);
+    noStroke();
+    ellipse(things[i].x, things[i].y, things[i].s, things[i].s);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Now compare it with the refactored version below. The behavior is identical, but the code is far easier to read and modify:</p>
+
+      <!-- INTERACTIVE: Refactored Code -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Code Organization Example (After Refactoring)</span>
+        </div>
+        <textarea class="cm-editor">// ========== CONFIGURATION ==========
+const CANVAS_SIZE = 400;
+const NUM_PARTICLES = 50;
+const MIN_SIZE = 5;
+const MAX_SIZE = 20;
+const MAX_SPEED = 2;
+const TRAIL_ALPHA = 30;
+
+// ========== STATE ==========
+let particles = [];
+
+// ========== PARTICLE CLASS ==========
+class Particle {
+  constructor() {
+    this.pos = createVector(random(CANVAS_SIZE), random(CANVAS_SIZE));
+    this.vel = createVector(random(-MAX_SPEED, MAX_SPEED), random(-MAX_SPEED, MAX_SPEED));
+    this.size = random(MIN_SIZE, MAX_SIZE);
+    this.col = color(random(255), random(255), random(255), 150);
+  }
+
+  update() {
+    this.pos.add(this.vel);
+    this.wrap();
+  }
+
+  wrap() {
+    if (this.pos.x > CANVAS_SIZE) this.pos.x = 0;
+    if (this.pos.x < 0) this.pos.x = CANVAS_SIZE;
+    if (this.pos.y > CANVAS_SIZE) this.pos.y = 0;
+    if (this.pos.y < 0) this.pos.y = CANVAS_SIZE;
+  }
+
+  display() {
+    fill(this.col);
+    noStroke();
+    ellipse(this.pos.x, this.pos.y, this.size);
+  }
+}
+
+// ========== SETUP ==========
+function setup() {
+  createCanvas(CANVAS_SIZE, CANVAS_SIZE);
+  for (let i = 0; i < NUM_PARTICLES; i++) {
+    particles.push(new Particle());
+  }
+}
+
+// ========== DRAW ==========
+function draw() {
+  background(0, TRAIL_ALPHA);
+  for (let p of particles) {
+    p.update();
+    p.display();
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 1: Code Organization -->
+      <div class="quiz" data-id="ch11-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which of the following is the <strong>best</strong> practice for organizing a p5.js sketch?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch11-q1" value="a"> Put all code inside the <code>draw()</code> function to keep everything together</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q1" value="b"> Use single-letter variable names to keep code short and fast</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q1" value="c" data-correct> Extract configurable values into named constants at the top and separate logic into focused functions</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q1" value="d"> Avoid comments entirely because the code should speak for itself</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Named constants make your sketch easier to tune and understand. Separating logic into focused functions (update, render, input handling) keeps each part manageable. Comments that explain <em>why</em> (not <em>what</em>) add valuable context. Single-letter names make code cryptic, and stuffing everything into <code>draw()</code> creates an unreadable monolith.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 11.4 — VERSION CONTROL CONCEPTS
+           =============================================== -->
+      <h2 id="version-control">11.4 Version Control Concepts</h2>
+
+      <p>Have you ever had a sketch working perfectly, made some changes, and then wished you could go back to the working version? Have you ever named files <code>sketch_final.js</code>, <code>sketch_final_v2.js</code>, <code>sketch_ACTUALLY_final.js</code>? Version control solves these problems.</p>
+
+      <h3>11.4.1 What Is Version Control?</h3>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Version control</strong> &mdash; A system that records changes to files over time so that you can recall specific versions later. It is like an unlimited undo history for your entire project.</p>
+      </div>
+
+      <p>The most widely used version control system is <strong>Git</strong>, created by Linus Torvalds in 2005. Git tracks every change you make, who made it, and when. It lets you create <em>branches</em> to experiment without affecting your main code, and <em>merge</em> successful experiments back in.</p>
+
+      <h3>11.4.2 Core Git Concepts</h3>
+
+      <p>You do not need to master Git for this course, but understanding the core concepts will serve you well:</p>
+
+      <table>
+        <thead>
+          <tr><th>Concept</th><th>What It Means</th><th>Analogy</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Repository</strong></td><td>A project folder tracked by Git</td><td>A filing cabinet for all versions of your project</td></tr>
+          <tr><td><strong>Commit</strong></td><td>A snapshot of your project at a point in time</td><td>Taking a photo of your desk</td></tr>
+          <tr><td><strong>Branch</strong></td><td>An independent line of development</td><td>A parallel universe where you try something different</td></tr>
+          <tr><td><strong>Merge</strong></td><td>Combining changes from two branches</td><td>Bringing successful experiments from the parallel universe back to the main timeline</td></tr>
+          <tr><td><strong>History</strong></td><td>The chronological list of all commits</td><td>A photo album showing every version of your project</td></tr>
+        </tbody>
+      </table>
+
+      <h3>11.4.3 Git for Creative Coders: A Minimal Workflow</h3>
+
+      <p>If you are using Git from the command line, here is a minimal workflow:</p>
+
+      <pre><code>// Initialize a new Git repository
+git init
+
+// Check what has changed
+git status
+
+// Stage changes for commit
+git add sketch.js
+
+// Save a snapshot with a descriptive message
+git commit -m "Working flow field with color trails"
+
+// Create a branch for an experiment
+git branch experiment-audio
+git checkout experiment-audio
+
+// ... make changes, test them ...
+
+// If the experiment works, merge it back
+git checkout main
+git merge experiment-audio
+
+// If the experiment fails, just switch back
+git checkout main</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Commit messages matter.</strong> A good commit message describes <em>what changed and why</em>. "Added audio" is vague. "Add FFT analysis with bass-driven particle size" tells you exactly what that snapshot contains. When you need to find a specific version later, good messages are invaluable.</p>
+      </div>
+
+      <h3>11.4.4 Saving Iterations Without Git</h3>
+
+      <p>If you are not ready to use Git, you can still practice version control manually:</p>
+
+      <ul>
+        <li><strong>p5.js Web Editor:</strong> Use <em>File &gt; Duplicate</em> before making major changes. Name copies descriptively: "Particles v3 - before audio input"</li>
+        <li><strong>Local files:</strong> Copy your project folder and add a date: <code>my-sketch-2026-02-12</code></li>
+        <li><strong>Cloud storage:</strong> Use Google Drive or Dropbox, which keep file version history</li>
+      </ul>
+
+      <p>Whatever method you use, the key habit is: <strong>save a checkpoint before making a significant change</strong>. When your experiment does not work, you can always go back.</p>
+
+      <h3>11.4.5 Platforms for Hosting Code</h3>
+
+      <p>If you decide to use Git, you will likely want a remote host for your repository. The most popular platforms are:</p>
+
+      <ul>
+        <li><strong>GitHub</strong> &mdash; The largest code hosting platform. Free for public and private repositories. Has a strong creative coding community. GitHub Pages lets you host sketches as live websites for free.</li>
+        <li><strong>GitLab</strong> &mdash; Similar to GitHub with built-in CI/CD features. Also free for individuals.</li>
+        <li><strong>Bitbucket</strong> &mdash; Another alternative, popular in some professional settings.</li>
+      </ul>
+
+      <p>For creative coding, GitHub is the most common choice because of its community features (starring projects, forking sketches, GitHub Pages hosting) and because many creative coding libraries (p5.js, three.js, openFrameworks) are hosted there.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Your GitHub profile is a portfolio.</strong> Each repository you create is visible to potential collaborators, employers, and fellow artists. Keeping your creative coding projects on GitHub builds a body of work over time. Add descriptions and screenshots to your repositories to make them discoverable.</p>
+      </div>
+
+      <!-- Quiz 2: Version Control -->
+      <div class="quiz" data-id="ch11-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In Git, what is a <strong>commit</strong>?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch11-q2" value="a"> A way to upload your code to the internet</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q2" value="b" data-correct> A snapshot of your project at a specific point in time, with a descriptive message</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q2" value="c"> A comment in your code</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q2" value="d"> A way to delete old versions of files</label></li>
+        </ul>
+        <div class="explanation">
+          <p>A commit is a saved snapshot of your entire project at a moment in time. It includes a message describing what changed and why. You can return to any commit in your history, making it safe to experiment freely.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 11.5 — DEBUGGING STRATEGIES
+           =============================================== -->
+      <h2 id="debugging">11.5 Debugging Strategies</h2>
+
+      <p>Debugging is the art of finding and fixing errors in your code. It is one of the most important skills a programmer can develop, and it is a skill that improves with practice. Experienced programmers are not people who write bug-free code &mdash; they are people who find and fix bugs efficiently.</p>
+
+      <h3>11.5.1 Reading Error Messages</h3>
+
+      <p>When your sketch crashes, the browser console displays an error message. These messages look intimidating but follow a consistent pattern:</p>
+
+      <pre><code>Uncaught TypeError: Cannot read properties of undefined (reading 'x')
+    at Particle.update (sketch.js:42)
+    at draw (sketch.js:18)</code></pre>
+
+      <p>Breaking this down:</p>
+      <ul>
+        <li><strong>Error type:</strong> <code>TypeError</code> &mdash; you tried to use a value in a way that does not match its type</li>
+        <li><strong>Description:</strong> <code>Cannot read properties of undefined</code> &mdash; you tried to access <code>.x</code> on something that is <code>undefined</code></li>
+        <li><strong>Location:</strong> <code>sketch.js:42</code> in the <code>Particle.update</code> function, called from <code>draw</code> at line 18</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Read the error message carefully.</strong> Most beginners glance at the red text and panic. Instead, read it like a sentence. The browser is telling you exactly what went wrong and where. The <em>stack trace</em> (the indented lines) shows you the chain of function calls that led to the error.</p>
+      </div>
+
+      <h3>11.5.2 Common p5.js Errors</h3>
+
+      <p>Here are the errors you will encounter most frequently in p5.js, along with their causes and fixes. Run this sketch to see common errors in action:</p>
+
+      <!-- INTERACTIVE: Common Errors Showcase -->
+      <div class="code-runner" data-height="300">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Common Errors - Uncomment one at a time</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 300);
+  background(220);
+  textSize(14);
+  fill(0);
+  text("Open the console (F12) to see error messages.", 20, 30);
+  text("Uncomment one error below and click Run.", 20, 55);
+}
+
+function draw() {
+  // ERROR 1: Calling p5 functions before setup
+  // (Move this line ABOVE setup to trigger)
+  // let c = color(255, 0, 0);
+
+  // ERROR 2: Undefined variable
+  // ellipse(xPos, yPos, 50, 50);
+
+  // ERROR 3: Wrong number of arguments
+  // rect(100, 100, 50); // missing height
+
+  // ERROR 4: Typo in function name
+  // elipse(200, 200, 50, 50);
+
+  // ERROR 5: Array index out of bounds
+  // let arr = [1, 2, 3];
+  // console.log(arr[5].toString());
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Error</th><th>Likely Cause</th><th>Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>X is not defined</code></td>
+            <td>Typo in variable/function name, or variable declared in wrong scope</td>
+            <td>Check spelling. Check that the variable is declared in an accessible scope.</td>
+          </tr>
+          <tr>
+            <td><code>Cannot read properties of undefined</code></td>
+            <td>Accessing a property on a variable that has no value</td>
+            <td>Check that the object is properly initialized before you access its properties.</td>
+          </tr>
+          <tr>
+            <td><code>X is not a function</code></td>
+            <td>Typo in function name (<code>elipse</code> instead of <code>ellipse</code>), or calling a non-function value</td>
+            <td>Check spelling against the p5.js reference.</td>
+          </tr>
+          <tr>
+            <td>Canvas is blank/white</td>
+            <td>Not calling <code>background()</code>, drawing off-screen, fill/stroke set to background color</td>
+            <td>Add <code>console.log()</code> to verify coordinates and colors.</td>
+          </tr>
+          <tr>
+            <td>Sketch freezes / infinite loop</td>
+            <td><code>while</code> loop that never exits, or recursive function without base case</td>
+            <td>Check loop conditions. Add a counter safeguard: <code>if (count++ &gt; 10000) break;</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>11.5.3 Console.log Debugging</h3>
+
+      <p>The <code>console.log()</code> function is your primary debugging tool. Use it to inspect values at specific points in your code:</p>
+
+      <pre><code>function draw() {
+  // Check if variables have expected values
+  console.log("mouseX:", mouseX, "mouseY:", mouseY);
+
+  // Check if a condition is being reached
+  if (dist(mouseX, mouseY, targetX, targetY) &lt; 20) {
+    console.log("HIT! Target reached");
+  }
+
+  // Check array contents
+  console.log("particles:", particles.length, "first:", particles[0]);
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Logging inside <code>draw()</code> without throttling.</strong> Since <code>draw()</code> runs 60 times per second, a <code>console.log()</code> inside it will flood the console with thousands of messages. Use <code>frameCount % 60 === 0</code> to log once per second, or log only when a condition changes.</p>
+      </div>
+
+      <pre><code>// Log once per second instead of 60 times per second
+if (frameCount % 60 === 0) {
+  console.log("FPS:", frameRate().toFixed(1), "Particles:", particles.length);
+}</code></pre>
+
+      <h3>11.5.4 Isolating the Problem</h3>
+
+      <p>When something goes wrong in a complex sketch, <strong>isolate the problem</strong>. This means systematically removing parts of your code until you find the part that causes the error:</p>
+
+      <ol>
+        <li><strong>Comment out sections.</strong> If you have particles, a flow field, and audio input, comment out two of them. Does the remaining one work? Add the others back one at a time.</li>
+        <li><strong>Simplify values.</strong> Replace complex expressions with hardcoded values. Instead of <code>let angle = noise(x * 0.01, y * 0.01) * TWO_PI;</code>, try <code>let angle = PI / 4;</code>. If that works, the problem is in the noise calculation.</li>
+        <li><strong>Create a minimal example.</strong> Start a new sketch with just the problematic code. If the bug disappears, the problem is an interaction between parts.</li>
+      </ol>
+
+      <h3>11.5.5 Binary Search Debugging</h3>
+
+      <p>When you have a long stretch of code and do not know where the bug is, use binary search debugging:</p>
+
+      <ol>
+        <li>Add a <code>return</code> or comment block at the midpoint of your <code>draw()</code> function</li>
+        <li>If the bug disappears, it is in the second half. If it persists, it is in the first half.</li>
+        <li>Move the divider to the midpoint of the remaining suspect region</li>
+        <li>Repeat until you have narrowed it down to a few lines</li>
+      </ol>
+
+      <p>This is much faster than reading through hundreds of lines trying to spot the problem. For $n$ lines of code, binary search finds the bug in at most $\lceil \log_2 n \rceil$ steps.</p>
+
+      <h3>11.5.6 The Rubber Duck Method</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The <strong>rubber duck debugging</strong> method comes from the book <em>The Pragmatic Programmer</em> (Hunt and Thomas, 1999). The idea is simple: explain your code, line by line, to a rubber duck (or any inanimate object). The act of articulating what each line does often reveals the bug, because you are forced to think about what the code <em>actually does</em> rather than what you <em>think</em> it does.</p>
+      </div>
+
+      <p>This method works because bugs often arise from a mismatch between your mental model and the code's actual behavior. When you explain the code out loud, you confront every assumption.</p>
+
+      <p>You can also use this method with an LLM: paste your code and ask the AI to explain what each line does. Then compare the AI's explanation with your intention. Where they diverge, you have likely found the bug.</p>
+
+      <h3>11.5.7 Debugging Checklist</h3>
+
+      <p>When you encounter a bug, work through this checklist in order:</p>
+
+      <ol>
+        <li><strong>Read the error message.</strong> What type of error is it? What line does it point to?</li>
+        <li><strong>Check the obvious.</strong> Typos? Missing semicolons? Mismatched brackets? Wrong variable name?</li>
+        <li><strong>Add <code>console.log()</code>.</strong> Log the values of variables near the error. Are they what you expect?</li>
+        <li><strong>Isolate the problem.</strong> Comment out sections until the error disappears. The last section you uncommented contains the bug.</li>
+        <li><strong>Check your assumptions.</strong> Is <code>width</code> what you think it is? Is the array actually populated? Is the function being called?</li>
+        <li><strong>Simplify.</strong> Replace complex expressions with hardcoded values. If <code>noise(x * 0.01)</code> is suspicious, try <code>0.5</code> instead.</li>
+        <li><strong>Explain it aloud.</strong> Walk through the code line by line and say what each line does. The rubber duck method catches assumptions.</li>
+        <li><strong>Take a break.</strong> Sometimes stepping away for 10 minutes reveals what hours of staring cannot. Your subconscious keeps working.</li>
+        <li><strong>Ask for help.</strong> Share the specific error, what you have tried, and the relevant code. An LLM, a peer, or a teaching assistant can offer fresh perspective.</li>
+      </ol>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Debugging is a learnable skill.</strong> It feels random at first, but with practice you develop intuition for where bugs hide. Keep a mental catalog of bugs you have encountered &mdash; the same types recur across projects. Off-by-one errors, uninitialized variables, scope confusion, and timing issues account for the vast majority of creative coding bugs.</p>
+      </div>
+
+      <!-- INTERACTIVE: Debugging Exercise -->
+      <h3>11.5.7 Debugging Exercise</h3>
+
+      <p>The sketch below has several bugs. It is supposed to draw bouncing circles that change color when they hit the edges. Try to find and fix all the bugs:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Debugging Exercise: Fix the Bugs!</span>
+        </div>
+        <textarea class="cm-editor">// This sketch should show 5 circles bouncing
+// and changing color when they hit edges.
+// It has several bugs — can you fix them all?
+
+let balls = [];
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 5; i++) {
+    balls.push({
+      x: random(50, 350),
+      y: random(50, 350),
+      vx: random(2, 4),
+      vy: random(2, 4),
+      r: 20,
+      col: color(random(255), random(255), random(255))
+    });
+  }
+}
+
+function draw() {
+  background(30);
+
+  for (let i = 0; i <= balls.length; i++) {
+    let b = balls[i];
+
+    // Update position
+    b.x += b.vx;
+    b.y += b.vy;
+
+    // Bounce off edges (BUG: something wrong here)
+    if (b.x > width - b.r || b.x < b.r) {
+      b.vx = b.vx;
+      b.col = color(random(255), random(255), random(255));
+    }
+    if (b.y > height - b.r || b.y < b.r) {
+      b.vy *= -1;
+      b.col = color(random(255), random(255), random(255));
+    }
+
+    // Draw the ball
+    fill(b.col);
+    noStroke();
+    ellipse(b.x, b.y, b.r, b.r);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <details>
+        <summary><strong>Hints &amp; Solutions</strong></summary>
+        <p>There are three bugs in the code above:</p>
+        <ol>
+          <li><strong>Bug 1 (line 24):</strong> The loop condition is <code>i &lt;= balls.length</code>. This should be <code>i &lt; balls.length</code>. Using <code>&lt;=</code> causes an off-by-one error &mdash; on the last iteration, <code>balls[5]</code> is <code>undefined</code>, crashing the sketch.</li>
+          <li><strong>Bug 2 (line 31):</strong> The horizontal bounce uses <code>b.vx = b.vx</code> instead of <code>b.vx *= -1</code>. The velocity never reverses, so balls fly off the right/left edges.</li>
+          <li><strong>Bug 3 (line 40):</strong> The <code>ellipse()</code> call uses <code>b.r</code> for both width and height, but <code>b.r</code> is the radius (20). <code>ellipse()</code> takes <em>diameter</em> by default, so the circles appear half the intended size. Change to <code>b.r * 2</code> for both, or to <code>ellipse(b.x, b.y, b.r * 2)</code>.</li>
+        </ol>
+      </details>
+
+      <!-- Quiz 3: Debugging -->
+      <div class="quiz" data-id="ch11-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">You have a 200-line <code>draw()</code> function and the sketch is producing incorrect output, but no error messages appear. What is the most efficient debugging strategy?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch11-q3" value="a"> Read through all 200 lines carefully from top to bottom</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q3" value="b"> Rewrite the entire function from scratch</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q3" value="c" data-correct> Use binary search: add a <code>return</code> at line 100 to determine which half contains the bug, then narrow down</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q3" value="d"> Add <code>console.log()</code> after every single line</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Binary search debugging is the most efficient approach. By adding a <code>return</code> at the midpoint, you immediately cut the search space in half. If the output is correct up to line 100, the bug is in lines 101&ndash;200. Repeat to narrow down to the exact problematic lines in just 7&ndash;8 steps ($\lceil\log_2 200\rceil = 8$).</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 11.6 — CODE REVIEW PRACTICES
+           =============================================== -->
+      <h2 id="code-review">11.6 Code Review Practices</h2>
+
+      <p>Code review is the practice of having someone else (or yourself, deliberately) read through code to find problems, suggest improvements, and verify correctness. In professional software development, code review is considered essential. In creative coding, it is equally valuable but often overlooked.</p>
+
+      <h3>11.6.1 What Code Review Catches</h3>
+
+      <p>A fresh pair of eyes can spot things the original author misses:</p>
+
+      <ul>
+        <li><strong>Bugs</strong> &mdash; Logic errors, off-by-one mistakes, unhandled edge cases</li>
+        <li><strong>Readability issues</strong> &mdash; Unclear variable names, missing comments, overly complex logic</li>
+        <li><strong>Performance problems</strong> &mdash; Unnecessary computations inside loops, redundant draw calls</li>
+        <li><strong>Missing features</strong> &mdash; Edge cases not considered (what happens on window resize? when there are zero particles?)</li>
+        <li><strong>Stylistic inconsistencies</strong> &mdash; Mixed naming conventions, inconsistent formatting</li>
+      </ul>
+
+      <h3>11.6.2 Giving Constructive Feedback</h3>
+
+      <p>When reviewing a peer's creative code, follow these guidelines:</p>
+
+      <ol>
+        <li><strong>Start with what works well.</strong> "The color palette is beautiful" or "The particle physics feels really natural" builds trust before criticism.</li>
+        <li><strong>Be specific.</strong> "This is confusing" is not helpful. "The variable <code>d</code> on line 42 could be renamed to <code>distToCenter</code> for clarity" is helpful.</li>
+        <li><strong>Suggest, do not dictate.</strong> "Have you considered using a class here?" is better than "You need to use a class here."</li>
+        <li><strong>Distinguish between bugs and style.</strong> "This will crash when the array is empty" is a bug report. "I prefer <code>for...of</code> over index-based loops" is a style preference.</li>
+        <li><strong>Respect the artist's intent.</strong> Creative code is expressive. Do not review it the way you would review banking software.</li>
+      </ol>
+
+      <h3>11.6.3 Self-Review Checklist</h3>
+
+      <p>Before sharing your code or submitting a project, review it yourself using this checklist:</p>
+
+      <table>
+        <thead>
+          <tr><th>Category</th><th>Check</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Runs</td><td>Does the sketch run without errors in the console?</td></tr>
+          <tr><td>Names</td><td>Are variables and functions named descriptively?</td></tr>
+          <tr><td>Constants</td><td>Are magic numbers extracted into named constants?</td></tr>
+          <tr><td>Comments</td><td>Is non-obvious code commented with <em>why</em>, not <em>what</em>?</td></tr>
+          <tr><td>Structure</td><td>Is code organized into logical sections or functions?</td></tr>
+          <tr><td>Edge cases</td><td>What happens at canvas edges? With zero items? On window resize?</td></tr>
+          <tr><td>Performance</td><td>Is the frame rate acceptable? Are there unnecessary computations?</td></tr>
+          <tr><td>Attribution</td><td>Is external code and AI usage properly credited?</td></tr>
+        </tbody>
+      </table>
+
+      <h3>11.6.4 Reviewing Creative Code</h3>
+
+      <p>Creative code has dimensions that traditional code review does not consider:</p>
+
+      <ul>
+        <li><strong>Aesthetic quality:</strong> Does the visual/sonic output achieve what the artist intended?</li>
+        <li><strong>Interactivity:</strong> Is the interaction intuitive? Does it feel responsive?</li>
+        <li><strong>Surprise and delight:</strong> Does the piece offer moments of discovery?</li>
+        <li><strong>Conceptual depth:</strong> Does the code embody an interesting idea?</li>
+      </ul>
+
+      <p>These are harder to evaluate than correctness, but they are what make creative coding an art form.</p>
+
+
+      <!-- ===============================================
+           SECTION 11.7 — PERFORMANCE OPTIMIZATION
+           =============================================== -->
+      <h2 id="performance">11.7 Performance Optimization</h2>
+
+      <p>A sketch that runs at 5 frames per second is painful to interact with. Performance matters in creative coding because smoothness is an aesthetic quality &mdash; jerky animation looks and feels wrong, regardless of how beautiful each individual frame might be.</p>
+
+      <h3>11.7.1 Measuring Performance</h3>
+
+      <p>Before optimizing, <strong>measure</strong>. p5.js provides <code>frameRate()</code> which returns the current frames per second:</p>
+
+      <pre><code>function draw() {
+  // Display frame rate in the corner
+  if (frameCount % 30 === 0) {
+    console.log("FPS:", frameRate().toFixed(1));
+  }
+  // ... rest of sketch
+}</code></pre>
+
+      <p>Target 60 fps for smooth interaction. If you are below 30 fps, optimization is needed. If you are at 60 fps, further optimization will not produce visible improvement &mdash; do not optimize code that is already fast enough.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Premature optimization is the root of all evil.</strong> This famous quote (attributed to Donald Knuth) means: do not spend time optimizing code until you have measured and confirmed that it is actually slow. Write clear, correct code first. Optimize only the parts that are measurably too slow.</p>
+      </div>
+
+      <h3>11.7.2 Common Performance Bottlenecks</h3>
+
+      <p>In p5.js, the most common causes of slow performance are:</p>
+
+      <ol>
+        <li><strong>Too many draw calls.</strong> Every <code>ellipse()</code>, <code>rect()</code>, <code>line()</code>, and <code>text()</code> call has overhead. Drawing 10,000 individual shapes per frame is slow.</li>
+        <li><strong>Expensive math in loops.</strong> Functions like <code>sin()</code>, <code>cos()</code>, <code>sqrt()</code>, <code>dist()</code>, and <code>noise()</code> are relatively expensive. Calling them thousands of times per frame adds up.</li>
+        <li><strong>Creating objects every frame.</strong> Allocating new <code>p5.Vector</code> objects, arrays, or colors inside <code>draw()</code> creates garbage collection pressure.</li>
+        <li><strong>Pixel manipulation without <code>loadPixels()</code>.</strong> Using <code>get()</code> and <code>set()</code> is much slower than direct pixel array access.</li>
+        <li><strong>Unnecessary <code>background()</code> calls with complex rendering.</strong> Sometimes you can use layering to avoid redrawing everything.</li>
+      </ol>
+
+      <h3>11.7.3 Optimization Techniques</h3>
+
+      <p><strong>Pre-compute values.</strong> If a value does not change each frame, compute it once in <code>setup()</code>:</p>
+
+      <pre><code>// Slow: computing every frame
+function draw() {
+  for (let i = 0; i &lt; 360; i++) {
+    let x = centerX + cos(radians(i)) * radius;
+    let y = centerY + sin(radians(i)) * radius;
+    point(x, y);
+  }
+}
+
+// Fast: pre-compute the circle points
+let circlePoints = [];
+function setup() {
+  // ...
+  for (let i = 0; i &lt; 360; i++) {
+    circlePoints.push({
+      x: cos(radians(i)) * radius,
+      y: sin(radians(i)) * radius
+    });
+  }
+}
+
+function draw() {
+  for (let pt of circlePoints) {
+    point(centerX + pt.x, centerY + pt.y);
+  }
+}</code></pre>
+
+      <p><strong>Avoid <code>sqrt()</code> for distance comparisons.</strong> If you only need to compare distances (not compute the actual distance), compare squared distances instead:</p>
+
+      <pre><code>// Slow: uses sqrt via dist()
+if (dist(x1, y1, x2, y2) &lt; threshold) { ... }
+
+// Fast: compare squared distances
+let dx = x2 - x1;
+let dy = y2 - y1;
+if (dx * dx + dy * dy &lt; threshold * threshold) { ... }</code></pre>
+
+      <p>This avoids the expensive square root operation entirely. For $n$ particles checking distance to each other, this saves $O(n^2)$ square root calls per frame.</p>
+
+      <p><strong>Use pixel arrays directly.</strong> For pixel manipulation, use the <code>pixels[]</code> array instead of <code>get()</code> and <code>set()</code>:</p>
+
+      <pre><code>// Slow: get() and set()
+for (let x = 0; x &lt; width; x++) {
+  for (let y = 0; y &lt; height; y++) {
+    let c = get(x, y);
+    set(x, y, color(red(c) * 0.5, green(c), blue(c)));
+  }
+}
+updatePixels();
+
+// Fast: direct pixel array access
+loadPixels();
+for (let i = 0; i &lt; pixels.length; i += 4) {
+  pixels[i] *= 0.5;     // red
+  // pixels[i+1]         // green (unchanged)
+  // pixels[i+2]         // blue (unchanged)
+  // pixels[i+3]         // alpha (unchanged)
+}
+updatePixels();</code></pre>
+
+      <h3>11.7.4 When to Use Shaders</h3>
+
+      <p>If your sketch involves per-pixel computation (color effects, Mandelbrot sets, reaction-diffusion, blur effects), consider moving that computation to a GLSL shader. The GPU can process millions of pixels in parallel, making it orders of magnitude faster than CPU-based pixel loops. Chapters on GLSL cover this in detail.</p>
+
+      <p>As a rule of thumb: if you are iterating over every pixel on a 400x400 canvas, that is 160,000 iterations per frame. The GPU handles this effortlessly; JavaScript will struggle.</p>
+
+      <!-- INTERACTIVE: Performance Comparison -->
+      <h3>11.7.5 Performance Comparison Demo</h3>
+
+      <p>This sketch demonstrates the difference between naive and optimized distance checking. It computes all pairwise distances between particles. Toggle the optimization to see the frame rate difference:</p>
+
+      <div class="code-runner" data-height="430">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Performance: Naive vs. Optimized Distance</span>
+        </div>
+        <textarea class="cm-editor">const NUM = 200;
+let particles = [];
+let useOptimized = false;
+const CONNECT_DIST = 80;
+const CONNECT_DIST_SQ = CONNECT_DIST * CONNECT_DIST;
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < NUM; i++) {
+    particles.push({
+      x: random(width), y: random(height),
+      vx: random(-1, 1), vy: random(-1, 1)
+    });
+  }
+}
+
+function draw() {
+  background(20);
+  stroke(100, 200, 255, 60);
+  strokeWeight(0.5);
+
+  // Update particles
+  for (let p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > width) p.vx *= -1;
+    if (p.y < 0 || p.y > height) p.vy *= -1;
+  }
+
+  // Draw connections between nearby particles
+  let comparisons = 0;
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      comparisons++;
+      let a = particles[i], b = particles[j];
+
+      if (useOptimized) {
+        // OPTIMIZED: no sqrt
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        if (dx * dx + dy * dy < CONNECT_DIST_SQ) {
+          line(a.x, a.y, b.x, b.y);
+        }
+      } else {
+        // NAIVE: uses dist() which calls sqrt
+        if (dist(a.x, a.y, b.x, b.y) < CONNECT_DIST) {
+          line(a.x, a.y, b.x, b.y);
+        }
+      }
+    }
+  }
+
+  // Show stats
+  noStroke();
+  fill(255);
+  textSize(13);
+  textAlign(LEFT);
+  text("FPS: " + frameRate().toFixed(1), 10, 20);
+  text("Mode: " + (useOptimized ? "OPTIMIZED (no sqrt)" : "NAIVE (with sqrt)"), 10, 38);
+  text("Comparisons/frame: " + comparisons, 10, 56);
+  text("Click to toggle mode", 10, height - 12);
+
+  // Draw particles
+  fill(100, 200, 255);
+  noStroke();
+  for (let p of particles) {
+    ellipse(p.x, p.y, 3, 3);
+  }
+}
+
+function mousePressed() {
+  useOptimized = !useOptimized;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- INTERACTIVE: Before/After Optimization Demo -->
+      <h3>11.7.6 Before/After Optimization</h3>
+
+      <p>This sketch shows a "before" version with several performance antipatterns. Run it and note the FPS, then compare with the optimized version below:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>SLOW Version (Multiple Antipatterns)</span>
+        </div>
+        <textarea class="cm-editor">// SLOW: multiple performance problems
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(0);
+
+  // Problem 1: creating color objects every frame
+  // Problem 2: trig functions computed every iteration
+  // Problem 3: text() called in inner loop
+  for (let i = 0; i < 2000; i++) {
+    let angle = radians(frameCount + i * 0.5);
+    let r = 50 + sin(angle * 0.1) * 150;
+    let x = width/2 + cos(angle) * r;
+    let y = height/2 + sin(angle) * r;
+
+    let c = color(
+      map(sin(angle), -1, 1, 50, 255),
+      map(cos(angle * 0.5), -1, 1, 50, 200),
+      200
+    );
+    fill(c);
+    noStroke();
+    ellipse(x, y, 4, 4);
+  }
+
+  fill(255);
+  textSize(14);
+  text("FPS: " + frameRate().toFixed(1), 10, 20);
+  text("Points: 2000 (SLOW version)", 10, 38);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>FAST Version (Optimized)</span>
+        </div>
+        <textarea class="cm-editor">// FAST: same visual output, better performance
+const NUM_POINTS = 2000;
+const HALF_STEP = 0.5;
+
+// Pre-computed lookup tables
+let sinTable, cosTable;
+let preColors = [];
+
+function setup() {
+  createCanvas(400, 400);
+  colorMode(RGB);
+
+  // Pre-compute sin/cos lookup table
+  sinTable = new Float32Array(NUM_POINTS);
+  cosTable = new Float32Array(NUM_POINTS);
+
+  // Pre-compute base colors (updated each frame shift)
+  noStroke();
+}
+
+function draw() {
+  background(0);
+
+  let fc = frameCount;
+  let cx = width / 2;
+  let cy = height / 2;
+
+  noStroke();
+  for (let i = 0; i < NUM_POINTS; i++) {
+    let angle = (fc + i * HALF_STEP) * 0.01745329; // radians
+    let sinA = Math.sin(angle);
+    let cosA = Math.cos(angle);
+    let r = 50 + sinA * 0.1 * 150;  // simplified
+    let x = cx + cosA * (50 + Math.sin(angle * 0.1) * 150);
+    let y = cy + sinA * (50 + Math.sin(angle * 0.1) * 150);
+
+    // Use direct RGB values instead of color()
+    let red = 152 + sinA * 102;
+    let green = 125 + Math.cos(angle * 0.5) * 75;
+    fill(red, green, 200);
+    ellipse(x, y, 4, 4);
+  }
+
+  fill(255);
+  textSize(14);
+  text("FPS: " + frameRate().toFixed(1), 10, 20);
+  text("Points: 2000 (FAST version)", 10, 38);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 4: Performance -->
+      <div class="quiz" data-id="ch11-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which optimization technique avoids the expensive <code>sqrt()</code> operation when comparing distances?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch11-q4" value="a"> Use <code>abs(x2 - x1) + abs(y2 - y1)</code> (Manhattan distance)</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q4" value="b" data-correct> Compare squared distances: <code>dx*dx + dy*dy &lt; threshold*threshold</code></label></li>
+          <li class="option"><label><input type="radio" name="ch11-q4" value="c"> Use <code>Math.round(dist(x1, y1, x2, y2))</code></label></li>
+          <li class="option"><label><input type="radio" name="ch11-q4" value="d"> Divide the distance by 2 to make it smaller</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Since $\sqrt{a} &lt; \sqrt{b}$ if and only if $a &lt; b$ (for non-negative values), you can compare $dx^2 + dy^2$ directly against $threshold^2$ without ever computing the square root. This is a standard optimization in game development and computational geometry, saving significant time when performed thousands of times per frame.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 11.8 — DOCUMENTATION AND SHARING
+           =============================================== -->
+      <h2 id="documentation">11.8 Documentation and Sharing</h2>
+
+      <p>Creative code that only lives on your hard drive is invisible. Documentation and sharing are how your work reaches an audience, builds your portfolio, and contributes to the creative coding community.</p>
+
+      <h3>11.8.1 Commenting Your Work</h3>
+
+      <p>Beyond the inline comments discussed in section 11.3, every sketch should have a header comment:</p>
+
+      <pre><code>/**
+ * Emergent Flocking Behavior
+ *
+ * A simulation of Boids (Reynolds, 1987) with added
+ * attraction to audio frequencies. Bass drives cohesion,
+ * treble drives separation.
+ *
+ * Controls:
+ *   Mouse click - add 50 boids at cursor
+ *   'r' - reset simulation
+ *   's' - save frame as PNG
+ *
+ * Author: Your Name
+ * Date: February 2026
+ * Course: MAT 200C, UCSB
+ *
+ * Audio analysis uses p5.sound FFT.
+ * Boids algorithm adapted from Shiffman, Nature of Code Ch. 6
+ */</code></pre>
+
+      <h3>11.8.2 README Files</h3>
+
+      <p>If you share a project on GitHub or submit it for a class, include a README file that covers:</p>
+
+      <ul>
+        <li><strong>Title and description</strong> &mdash; What is the project? What does it do?</li>
+        <li><strong>Screenshot or GIF</strong> &mdash; A visual preview is essential for creative work</li>
+        <li><strong>How to run it</strong> &mdash; "Open index.html in a browser" or "Visit [p5 editor link]"</li>
+        <li><strong>Controls</strong> &mdash; How does the user interact with it?</li>
+        <li><strong>Technical notes</strong> &mdash; What technologies/libraries does it use?</li>
+        <li><strong>Credits</strong> &mdash; Attribution for external code, tutorials, AI assistance</li>
+      </ul>
+
+      <h3>11.8.3 Sharing on the p5.js Editor</h3>
+
+      <p>The p5.js web editor (<a href="https://editor.p5js.org">editor.p5js.org</a>) makes sharing easy:</p>
+
+      <ol>
+        <li>Sign in to save your work</li>
+        <li>Use <em>File &gt; Share</em> to get a link</li>
+        <li>Choose between "Edit" mode (others can see and fork your code) and "Fullscreen" mode (just the output)</li>
+        <li>Add a description in the sketch settings for discoverability</li>
+      </ol>
+
+      <h3>11.8.4 Artist Statements</h3>
+
+      <p>For exhibitions, portfolios, or class presentations, write an artist statement that contextualizes your work:</p>
+
+      <ul>
+        <li><strong>What:</strong> A brief description of the piece</li>
+        <li><strong>Why:</strong> What concept, question, or aesthetic interest motivated it</li>
+        <li><strong>How:</strong> Technical approach (in accessible language)</li>
+        <li><strong>Context:</strong> What artistic or intellectual tradition does it relate to?</li>
+      </ul>
+
+      <p>Keep it concise (150&ndash;300 words). Avoid jargon. Remember that your audience may not be programmers.</p>
+
+      <h3>11.8.5 Capturing Your Work</h3>
+
+      <p>Static screenshots rarely do justice to interactive or animated work. Consider these approaches:</p>
+
+      <ul>
+        <li><strong>Screen recording:</strong> Use OBS Studio (free) or your OS's built-in screen recorder to capture 15&ndash;30 second clips</li>
+        <li><strong>GIF capture:</strong> Tools like ScreenToGif or LICEcap create animated GIFs that play automatically on websites</li>
+        <li><strong>Frame export:</strong> Use <code>saveCanvas()</code> or <code>saveFrames()</code> in p5.js to export high-resolution images</li>
+        <li><strong>Embedding:</strong> Use an iframe to embed your sketch in a website or portfolio</li>
+      </ul>
+
+      <pre><code>&lt;!-- Embed a p5.js sketch in a webpage --&gt;
+&lt;iframe
+  src="https://editor.p5js.org/yourname/full/sketchID"
+  width="400"
+  height="400"
+  style="border: none;"
+&gt;&lt;/iframe&gt;</code></pre>
+
+      <h3>11.8.6 Licensing Your Work</h3>
+
+      <p>When you share code publicly, consider adding a license. Without a license, others cannot legally reuse your code (even if it is public). Common choices for creative coding:</p>
+
+      <ul>
+        <li><strong>MIT License</strong> &mdash; Very permissive. Others can use, modify, and distribute your code for any purpose, as long as they include your copyright notice.</li>
+        <li><strong>Creative Commons (CC BY 4.0)</strong> &mdash; Common for artistic works. Allows reuse with attribution.</li>
+        <li><strong>GPL</strong> &mdash; Requires that derivative works also be open source. Good if you want to ensure your work stays open.</li>
+        <li><strong>CC BY-NC</strong> &mdash; Allows reuse with attribution, but not for commercial purposes.</li>
+      </ul>
+
+      <p>For course projects, you do not need to add a license unless you plan to share publicly. But it is good to be aware of licensing as you engage with the creative coding community &mdash; always check the license of code you borrow or adapt.</p>
+
+
+      <!-- ===============================================
+           SECTION 11.9 — CREATIVE CODING COMMUNITIES
+           =============================================== -->
+      <h2 id="communities">11.9 Creative Coding Communities</h2>
+
+      <p>Creative coding is practiced by a global community of artists, designers, musicians, and engineers. Connecting with this community provides inspiration, feedback, collaboration opportunities, and a sense of belonging.</p>
+
+      <h3>11.9.1 Key Communities and Platforms</h3>
+
+      <table>
+        <thead>
+          <tr><th>Community</th><th>What It Is</th><th>Best For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Processing Foundation</strong></td><td>The nonprofit behind Processing, p5.js, and Processing.py</td><td>Official tutorials, discourse forums, contributing to open source</td></tr>
+          <tr><td><strong>OpenProcessing</strong></td><td>A platform for sharing and discovering Processing/p5.js sketches</td><td>Sharing work, studying others' code, competitions</td></tr>
+          <tr><td><strong>The Coding Train</strong></td><td>Daniel Shiffman's YouTube channel</td><td>Learning by example, community challenges</td></tr>
+          <tr><td><strong>r/creativecoding</strong></td><td>Reddit community</td><td>Sharing work, getting feedback, finding resources</td></tr>
+          <tr><td><strong>Creative Coding Discord servers</strong></td><td>Real-time chat communities</td><td>Getting quick help, live coding events</td></tr>
+          <tr><td><strong>Are.na</strong></td><td>Visual bookmarking and research platform</td><td>Collecting inspiration, connecting ideas across disciplines</td></tr>
+        </tbody>
+      </table>
+
+      <h3>11.9.2 Exhibitions and Festivals</h3>
+
+      <p>Creative coding work is exhibited worldwide. Knowing about these venues can inspire you and give you goals to work toward:</p>
+
+      <ul>
+        <li><strong>Ars Electronica</strong> (Linz, Austria) &mdash; One of the world's largest media art festivals</li>
+        <li><strong>SIGGRAPH Art Gallery</strong> &mdash; Art exhibition at the premier computer graphics conference</li>
+        <li><strong>Mutek</strong> (Montreal and other cities) &mdash; Digital creativity and electronic music festival</li>
+        <li><strong>ISEA</strong> (International Symposium on Electronic Art) &mdash; Academic conference with artist presentations</li>
+        <li><strong>Eyeo Festival</strong> (Minneapolis) &mdash; Conference bridging data, art, and technology</li>
+        <li><strong>NIME</strong> (New Interfaces for Musical Expression) &mdash; Conference on music technology and performance</li>
+      </ul>
+
+      <h3>11.9.3 Notable Artists to Study</h3>
+
+      <p>Studying the work of established creative coders can deepen your practice:</p>
+
+      <ul>
+        <li><strong>Vera Molnar</strong> (1924&ndash;2023) &mdash; Pioneer of computer art, systematic geometric abstraction</li>
+        <li><strong>Manfred Mohr</strong> (1938&ndash;) &mdash; Algorithmic art based on hypercube geometry</li>
+        <li><strong>Casey Reas</strong> &mdash; Co-creator of Processing, explores emergence and systems</li>
+        <li><strong>Zach Lieberman</strong> &mdash; Co-founder of openFrameworks, playful interactive installations</li>
+        <li><strong>Memo Akten</strong> &mdash; AI art, machine learning, computational perception</li>
+        <li><strong>Refik Anadol</strong> &mdash; Large-scale data sculptures and immersive installations</li>
+        <li><strong>Lauren Lee McCarthy</strong> &mdash; Creator of p5.js, social and surveillance-based performances</li>
+        <li><strong>Golan Levin</strong> &mdash; Interactive art, computational design, art pedagogy</li>
+      </ul>
+
+
+      <!-- ===============================================
+           SECTION 11.10 — WORKING WITH LLMs
+           =============================================== -->
+      <h2 id="working-with-llms">11.10 Working with LLMs</h2>
+
+      <p>Large Language Models (ChatGPT, Claude, Copilot, Gemini, etc.) have become powerful tools for creative coding. They can explain concepts, debug errors, suggest approaches, and generate code. Using them is permitted and even encouraged in this course &mdash; but their use must be documented, and you should use them wisely.</p>
+
+      <h3>11.10.1 What LLMs Are Good At</h3>
+
+      <ul>
+        <li><strong>Explaining concepts:</strong> "What is Perlin noise and how does it differ from random()?"</li>
+        <li><strong>Debugging:</strong> Paste an error message and your code, and the LLM can often identify the problem</li>
+        <li><strong>API reference:</strong> "What arguments does p5.js <code>noise()</code> take?"</li>
+        <li><strong>Code translation:</strong> "Convert this Processing Java code to p5.js"</li>
+        <li><strong>Boilerplate:</strong> "Create a basic p5.js sketch with a Particle class that has position, velocity, and update/display methods"</li>
+        <li><strong>Exploring approaches:</strong> "What are three different ways to create a trail effect in p5.js?"</li>
+      </ul>
+
+      <h3>11.10.2 What LLMs Are Bad At</h3>
+
+      <ul>
+        <li><strong>Aesthetic judgment:</strong> An LLM cannot tell you if your sketch is beautiful or interesting</li>
+        <li><strong>Artistic vision:</strong> It cannot decide what your project <em>should be</em></li>
+        <li><strong>Cutting-edge APIs:</strong> LLMs may not know the latest p5.js features or may confuse versions</li>
+        <li><strong>Complex debugging:</strong> Subtle timing bugs, shader issues, and performance problems are hard for LLMs to diagnose without seeing the running sketch</li>
+        <li><strong>Guaranteed correctness:</strong> LLMs can produce plausible-looking code that contains subtle errors</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Copy-paste without understanding.</strong> If you paste LLM-generated code into your sketch without understanding it, you create a fragile foundation. When something goes wrong (and it will), you will not know how to fix it because you do not understand how it works. Always read through AI-generated code line by line and make sure you can explain what each part does.</p>
+      </div>
+
+      <h3>11.10.3 Prompt Engineering for Creative Code</h3>
+
+      <p>The quality of an LLM's response depends heavily on your prompt. Here are strategies for getting better results:</p>
+
+      <ol>
+        <li><strong>Provide context:</strong> "I am using p5.js (not Processing Java)" is essential. Include your existing code.</li>
+        <li><strong>Be specific about what you want:</strong> "Write a function" is better than "help me with my project"</li>
+        <li><strong>Specify constraints:</strong> "The function should not use any p5.js functions, only plain JavaScript" or "Keep it under 20 lines"</li>
+        <li><strong>Ask for explanation:</strong> "Explain each line" or "Why did you use <code>atan2</code> instead of <code>atan</code>?"</li>
+        <li><strong>Iterate:</strong> If the first response is not right, refine your prompt: "That is close, but I need it to work with an array of particles, not just one"</li>
+      </ol>
+
+      <h3>11.10.4 Documenting AI Usage</h3>
+
+      <p>For each significant AI interaction in your project, record:</p>
+
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Date</strong></td><td>Feb 10, 2026</td></tr>
+          <tr><td><strong>Tool</strong></td><td>Claude</td></tr>
+          <tr><td><strong>Prompt</strong> (summarized)</td><td>"How do I make particles wrap around the canvas edges in p5.js?"</td></tr>
+          <tr><td><strong>Response</strong> (summarized)</td><td>Suggested checking if position exceeds width/height and resetting to 0, with a note about also resetting prevPos to avoid trail artifacts.</td></tr>
+          <tr><td><strong>Your action</strong></td><td>Used the approach. Added the prevPos reset which I had not thought of.</td></tr>
+          <tr><td><strong>Understanding</strong></td><td>I understand the logic. The prevPos reset prevents a line being drawn across the entire canvas when the particle wraps.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>11.10.5 Levels of AI Involvement</h3>
+
+      <p>It helps to categorize how you used AI:</p>
+
+      <ol>
+        <li><strong>Conceptual:</strong> Asked the AI to explain a concept ("What is Hooke's Law?"). You wrote all the code yourself.</li>
+        <li><strong>Debugging:</strong> Showed the AI an error message and asked for help. You had already written the code.</li>
+        <li><strong>Code suggestion:</strong> Asked the AI to write a specific function. You integrated it into your project.</li>
+        <li><strong>Substantial generation:</strong> Asked the AI to write a large portion of your sketch. You modified the output.</li>
+      </ol>
+
+      <p>None of these levels is inherently wrong, but they represent increasing reliance on the AI. Your documentation should accurately reflect which level applies. Level 1 and 2 usage demonstrates strong independent engagement; level 4 usage requires particularly thoughtful documentation to demonstrate that learning occurred.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The goal of using AI in this course is to learn faster, not to avoid learning.</strong> If you use an LLM to generate code, your responsibility is to understand that code well enough to explain it, modify it, and debug it. The AI is a tutor, not a ghostwriter.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 11.11 — SUMMARY
+           =============================================== -->
+      <h2 id="summary">11.11 Summary</h2>
+
+      <p>This chapter covered the practices that support the creative coding workflow &mdash; the meta-skills that make the difference between a frustrating experience and a productive one.</p>
+
+      <p>Key takeaways:</p>
+
+      <ol>
+        <li><strong>Plan lightly but deliberately.</strong> Define a Minimum Viable Sketch, break your project into layers, and maintain a work log documenting every session.</li>
+        <li><strong>Organize your code.</strong> Use descriptive names, extract constants, separate concerns into functions, and comment the <em>why</em>, not the <em>what</em>.</li>
+        <li><strong>Save your iterations.</strong> Whether through Git commits or duplicated sketches, always have a way to return to a working version before experimenting.</li>
+        <li><strong>Debug systematically.</strong> Read error messages carefully, use <code>console.log()</code> strategically, isolate problems, and try binary search debugging for large codebases.</li>
+        <li><strong>Review your code.</strong> Use the self-review checklist before submitting. When reviewing others' code, be specific, constructive, and respectful of artistic intent.</li>
+        <li><strong>Optimize only when needed.</strong> Measure with <code>frameRate()</code> first. Focus on reducing draw calls, avoiding expensive math in tight loops, and pre-computing static values.</li>
+        <li><strong>Document and share.</strong> Write header comments, create README files, capture your work in video, and connect with the creative coding community.</li>
+        <li><strong>Use AI tools honestly and effectively.</strong> Document your usage, understand the code you incorporate, and remember that the AI is a tutor, not a substitute for learning.</li>
+      </ol>
+
+      <p>These practices are not bureaucratic overhead. They are the infrastructure that allows you to spend more time creating and less time fighting your tools, your code, and your own memory.</p>
+
+
+      <!-- ===============================================
+           CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <!-- Challenge 1: Fix a broken sketch -->
+      <div class="code-challenge" data-id="ch11-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1: Fix the Broken Sketch</div>
+        <p class="prompt">The function <code>bouncingBall(x, y, vx, vy, r, w, h)</code> should return a new object <code>{x, y, vx, vy}</code> representing the ball's next position after one frame. The ball should bounce off all four edges of a canvas of size <code>w</code> x <code>h</code>. The radius <code>r</code> defines the ball's size. Fix the buggy implementation below so all tests pass.</p>
+        <textarea class="cm-editor">function bouncingBall(x, y, vx, vy, r, w, h) {
+  // Update position
+  x += vx;
+  y += vy;
+
+  // Bounce off right/left edges
+  if (x + r > w || x - r < 0) {
+    vx = vx; // BUG: velocity is not reversed!
+  }
+
+  // Bounce off bottom/top edges
+  if (y + r > h || y - r < 0) {
+    vy = vy; // BUG: velocity is not reversed!
+  }
+
+  return { x: x, y: y, vx: vx, vy: vy };
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "bouncingBall(390, 200, 5, 3, 20, 400, 400)", "expected": {"x": 395, "y": 203, "vx": -5, "vy": 3}},
+          {"call": "bouncingBall(10, 200, -5, 0, 20, 400, 400)", "expected": {"x": 5, "y": 200, "vx": 5, "vy": 0}},
+          {"call": "bouncingBall(200, 385, 0, 5, 20, 400, 400)", "expected": {"x": 200, "y": 390, "vx": 0, "vy": -5}},
+          {"call": "bouncingBall(200, 200, 3, -2, 20, 400, 400)", "expected": {"x": 203, "y": 198, "vx": 3, "vy": -2}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2: optimizedDist -->
+      <div class="code-challenge" data-id="ch11-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2: Optimized Distance Comparison</div>
+        <p class="prompt">Write a function <code>optimizedDist(x1, y1, x2, y2)</code> that returns the <strong>squared</strong> Euclidean distance between two points. By returning the squared distance (avoiding <code>sqrt()</code>), callers can compare distances efficiently: <code>optimizedDist(a, b, c, d) &lt; threshold * threshold</code>. The formula is: $(x_2-x_1)^2 + (y_2-y_1)^2$.</p>
+        <textarea class="cm-editor">function optimizedDist(x1, y1, x2, y2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "optimizedDist(0, 0, 3, 4)", "expected": 25},
+          {"call": "optimizedDist(0, 0, 0, 0)", "expected": 0},
+          {"call": "optimizedDist(1, 1, 4, 5)", "expected": 25},
+          {"call": "optimizedDist(-3, -4, 0, 0)", "expected": 25},
+          {"call": "optimizedDist(10, 10, 13, 14)", "expected": 25}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3: memoize -->
+      <div class="code-challenge" data-id="ch11-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3: Memoization</div>
+        <p class="prompt">Write a function <code>memoize(fn)</code> that takes a function <code>fn</code> and returns a new function that caches results. If the memoized function is called with the same arguments, it should return the cached result instead of recomputing. Use <code>JSON.stringify</code> on the arguments array to create cache keys. This is a powerful optimization technique for expensive computations.</p>
+        <textarea class="cm-editor">function memoize(fn) {
+  // Your code here
+  // Return a new function that:
+  // 1. Checks if result is cached for these arguments
+  // 2. If cached, return cached result
+  // 3. If not, call fn, cache the result, then return it
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "(function() { let count = 0; let fn = memoize(function(x) { count++; return x * 2; }); fn(5); fn(5); fn(5); return count; })()", "expected": 1},
+          {"call": "(function() { let fn = memoize(function(x) { return x * x; }); return fn(4); })()", "expected": 16},
+          {"call": "(function() { let fn = memoize(function(a, b) { return a + b; }); return fn(3, 7); })()", "expected": 10},
+          {"call": "(function() { let fn = memoize(function(a, b) { return a + b; }); fn(1,2); return fn(1,2); })()", "expected": 3}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===============================================
+           OPEN-ENDED EXERCISES
+           =============================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <!-- Exercise 1: Refactoring -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 11.1: Refactor Messy Code</div>
+        <p class="prompt">The sketch below works but is poorly organized: magic numbers everywhere, single-letter variable names, no structure. Refactor it into clean, well-organized code. Your refactored version should produce the <strong>same visual output</strong> but be much easier to read, understand, and modify. Consider: named constants, descriptive variable names, a class for the moving objects, and separated update/render logic.</p>
+        <textarea class="cm-editor">let a = [];
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 30; i++) {
+    a.push([random(400), random(400), random(-3, 3), random(-3, 3),
+            random(10, 30), random(100, 255), random(100, 255), random(100, 255)]);
+  }
+}
+function draw() {
+  background(0, 40);
+  for (let i = 0; i < a.length; i++) {
+    a[i][0] += a[i][2]; a[i][1] += a[i][3];
+    if (a[i][0] < 0 || a[i][0] > 400) a[i][2] *= -1;
+    if (a[i][1] < 0 || a[i][1] > 400) a[i][3] *= -1;
+    for (let j = i + 1; j < a.length; j++) {
+      let d = dist(a[i][0], a[i][1], a[j][0], a[j][1]);
+      if (d < 100) {
+        stroke(255, map(d, 0, 100, 255, 0));
+        line(a[i][0], a[i][1], a[j][0], a[j][1]);
+      }
+    }
+    noStroke(); fill(a[i][5], a[i][6], a[i][7]);
+    ellipse(a[i][0], a[i][1], a[i][4], a[i][4]);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>// ========== CONFIGURATION ==========
+const CANVAS_SIZE = 400;
+const NUM_NODES = 30;
+const MAX_SPEED = 3;
+const MIN_SIZE = 10;
+const MAX_SIZE = 30;
+const CONNECT_DIST = 100;
+const TRAIL_ALPHA = 40;
+
+// ========== STATE ==========
+let nodes = [];
+
+// ========== NODE CLASS ==========
+class Node {
+  constructor() {
+    this.pos = createVector(random(CANVAS_SIZE), random(CANVAS_SIZE));
+    this.vel = createVector(random(-MAX_SPEED, MAX_SPEED), random(-MAX_SPEED, MAX_SPEED));
+    this.size = random(MIN_SIZE, MAX_SIZE);
+    this.col = color(random(100, 255), random(100, 255), random(100, 255));
+  }
+
+  update() {
+    this.pos.add(this.vel);
+    // Bounce off edges
+    if (this.pos.x < 0 || this.pos.x > CANVAS_SIZE) this.vel.x *= -1;
+    if (this.pos.y < 0 || this.pos.y > CANVAS_SIZE) this.vel.y *= -1;
+  }
+
+  display() {
+    noStroke();
+    fill(this.col);
+    ellipse(this.pos.x, this.pos.y, this.size);
+  }
+}
+
+// ========== CONNECTION DRAWING ==========
+function drawConnections() {
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      let d = p5.Vector.dist(nodes[i].pos, nodes[j].pos);
+      if (d < CONNECT_DIST) {
+        stroke(255, map(d, 0, CONNECT_DIST, 255, 0));
+        line(nodes[i].pos.x, nodes[i].pos.y,
+             nodes[j].pos.x, nodes[j].pos.y);
+      }
+    }
+  }
+}
+
+// ========== SETUP ==========
+function setup() {
+  createCanvas(CANVAS_SIZE, CANVAS_SIZE);
+  for (let i = 0; i < NUM_NODES; i++) {
+    nodes.push(new Node());
+  }
+}
+
+// ========== DRAW ==========
+function draw() {
+  background(0, TRAIL_ALPHA);
+
+  for (let node of nodes) {
+    node.update();
+  }
+
+  drawConnections();
+
+  for (let node of nodes) {
+    node.display();
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: Profile and Optimize -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 11.2: Profile and Optimize a Slow Particle System</div>
+        <p class="prompt">The sketch below runs a particle system, but it gets slower as more particles are added (click to add particles). Your task: identify the performance bottlenecks and optimize the code so that it can handle 500+ particles at a reasonable frame rate. Think about: unnecessary object creation, expensive computations in the loop, redundant draw calls. Modify the code to improve performance while keeping the same visual appearance.</p>
+        <textarea class="cm-editor">// SLOW particle system - optimize me!
+let particles = [];
+
+function setup() {
+  createCanvas(400, 400);
+  // Start with 100 particles
+  for (let i = 0; i < 100; i++) {
+    addParticle(random(width), random(height));
+  }
+}
+
+function addParticle(x, y) {
+  particles.push({
+    x: x, y: y,
+    vx: random(-2, 2), vy: random(-2, 2),
+    size: random(3, 8),
+    life: 255,
+    r: random(255), g: random(255), b: random(255)
+  });
+}
+
+function draw() {
+  background(0, 30);
+
+  // BOTTLENECK 1: creating new color object for every particle every frame
+  // BOTTLENECK 2: calling text() for every particle
+  // BOTTLENECK 3: using dist() for boundary check
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.5;
+
+    // Remove dead particles
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+      continue;
+    }
+
+    // Expensive: creating a new color object every frame
+    let c = color(p.r, p.g, p.b, p.life);
+    fill(c);
+    stroke(color(255, p.life));
+    strokeWeight(1);
+    ellipse(p.x, p.y, p.size, p.size);
+
+    // Expensive: checking distance from center (uses sqrt)
+    let d = dist(p.x, p.y, width/2, height/2);
+    if (d > 200) {
+      // Attract toward center
+      p.vx += (width/2 - p.x) * 0.001;
+      p.vy += (height/2 - p.y) * 0.001;
+    }
+  }
+
+  // UI
+  fill(255);
+  noStroke();
+  textSize(13);
+  text("FPS: " + frameRate().toFixed(1), 10, 20);
+  text("Particles: " + particles.length, 10, 38);
+  text("Click to add 50 particles", 10, height - 12);
+}
+
+function mousePressed() {
+  for (let i = 0; i < 50; i++) {
+    addParticle(mouseX + random(-20, 20), mouseY + random(-20, 20));
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>// OPTIMIZED particle system
+let particles = [];
+const ATTRACT_THRESHOLD_SQ = 200 * 200; // pre-compute squared
+const ATTRACT_STRENGTH = 0.001;
+const LIFE_DECAY = 0.5;
+let halfW, halfH;
+
+function setup() {
+  createCanvas(400, 400);
+  halfW = width / 2;
+  halfH = height / 2;
+  for (let i = 0; i < 100; i++) {
+    addParticle(random(width), random(height));
+  }
+}
+
+function addParticle(x, y) {
+  particles.push({
+    x: x, y: y,
+    vx: random(-2, 2), vy: random(-2, 2),
+    size: random(3, 8),
+    life: 255,
+    r: random(255) | 0,  // use integers
+    g: random(255) | 0,
+    b: random(255) | 0
+  });
+}
+
+function draw() {
+  background(0, 30);
+  noStroke(); // set once, not per particle
+
+  // Use a swap-remove pattern instead of splice
+  let writeIdx = 0;
+  for (let i = 0; i < particles.length; i++) {
+    let p = particles[i];
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= LIFE_DECAY;
+
+    if (p.life <= 0) continue; // skip dead, do not write
+
+    // Use fill with RGBA directly (no color() object)
+    fill(p.r, p.g, p.b, p.life);
+    ellipse(p.x, p.y, p.size, p.size);
+
+    // Squared distance check (no sqrt)
+    let dx = halfW - p.x;
+    let dy = halfH - p.y;
+    if (dx * dx + dy * dy > ATTRACT_THRESHOLD_SQ) {
+      p.vx += dx * ATTRACT_STRENGTH;
+      p.vy += dy * ATTRACT_STRENGTH;
+    }
+
+    // Compact the array
+    particles[writeIdx++] = p;
+  }
+  particles.length = writeIdx; // trim dead particles
+
+  // UI drawn once
+  fill(255);
+  textSize(13);
+  text("FPS: " + frameRate().toFixed(1), 10, 20);
+  text("Particles: " + particles.length, 10, 38);
+  text("Click to add 50 particles", 10, height - 12);
+}
+
+function mousePressed() {
+  for (let i = 0; i < 50; i++) {
+    addParticle(mouseX + random(-20, 20), mouseY + random(-20, 20));
+  }
+}</textarea>
+            <p><strong>Optimizations applied:</strong></p>
+            <ol>
+              <li><strong>Removed <code>color()</code> object creation</strong> &mdash; Using <code>fill(r, g, b, a)</code> directly avoids creating a new object per particle per frame.</li>
+              <li><strong>Removed <code>stroke()</code> per particle</strong> &mdash; Set <code>noStroke()</code> once before the loop.</li>
+              <li><strong>Replaced <code>dist()</code> with squared distance</strong> &mdash; Avoids <code>sqrt()</code> computation. Pre-computed the squared threshold.</li>
+              <li><strong>Replaced <code>splice()</code> with swap-remove</strong> &mdash; <code>Array.splice()</code> is $O(n)$ because it shifts all subsequent elements. The compact-in-place pattern is $O(1)$ per removal.</li>
+              <li><strong>Pre-computed <code>width/2</code> and <code>height/2</code></strong> &mdash; Minor savings but avoids repeated division.</li>
+            </ol>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER END QUIZ
+           =============================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 11 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of project workflow and code review concepts.</p>
+
+        <div class="quiz" data-id="ch11-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">What is a "Minimum Viable Sketch" (MVS)?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch11-fq1" value="a"> The final, polished version of your creative coding project</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq1" value="b" data-correct> The simplest runnable version of your idea that demonstrates its core concept</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq1" value="c"> A sketch that uses the minimum number of lines of code possible</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq1" value="d"> A sketch that runs at the minimum acceptable frame rate</label></li>
+          </ul>
+          <div class="explanation">
+            <p>An MVS is the simplest runnable version of your creative coding idea that demonstrates its core concept. It should take no more than one work session to build. The purpose is to test your basic architecture and evaluate the core idea before investing time in complexity, polish, or additional features.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch11-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">Why is <code>Array.splice()</code> a performance concern when removing particles from an array inside a loop?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch11-fq2" value="a"> It deletes the entire array</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq2" value="b"> It causes a memory leak</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq2" value="c" data-correct> It shifts all subsequent elements, making each removal O(n) and the total O(n&sup2;) in the worst case</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq2" value="d"> It only works with numbers, not objects</label></li>
+          </ul>
+          <div class="explanation">
+            <p>When you call <code>splice(i, 1)</code> to remove an element, JavaScript must shift every element after index <code>i</code> down by one position. If the array has $n$ elements and you remove $k$ elements, the total work is $O(n \cdot k)$, which in the worst case is $O(n^2)$. The swap-remove or compact-in-place pattern avoids this by overwriting dead elements and truncating the array at the end.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch11-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">When reviewing a peer's creative code, which approach is most constructive?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch11-fq3" value="a"> Point out every issue you can find, starting with the worst problems</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq3" value="b"> Only say positive things to avoid hurting their feelings</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq3" value="c" data-correct> Start with what works well, then give specific, actionable suggestions while respecting artistic intent</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq3" value="d"> Rewrite their code entirely and send them the improved version</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Constructive code review starts with acknowledging what works, then provides specific and actionable feedback. Saying "the variable <code>d</code> on line 42 could be renamed to <code>distToCenter</code>" is far more helpful than "your naming is bad." In creative coding, it is also important to respect the artist's aesthetic intent &mdash; the goal is to help them achieve their vision, not impose yours.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch11-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">You are using an LLM to help with your creative coding project. Which of the following represents the <strong>best practice</strong> for AI usage in this course?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch11-fq4" value="a"> Use the AI to generate the entire project, then submit it without mentioning AI</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq4" value="b"> Never use AI tools because they count as plagiarism</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq4" value="c" data-correct> Use AI as needed, document each significant interaction, and ensure you understand all code you incorporate</label></li>
+            <li class="option"><label><input type="radio" name="ch11-fq4" value="d"> Only use AI for concepts, never for actual code</label></li>
+          </ul>
+          <div class="explanation">
+            <p>AI tools are permitted and even encouraged in this course, but their use must be documented honestly. The key requirements are: (1) document what you asked and what the AI provided, (2) assess and record your level of understanding, and (3) ensure you can explain and modify any AI-generated code in your project. The goal is to use AI to learn faster, not to avoid learning.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch10/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 10</span>
+        </a>
+        <a href="../ch12/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 12: Sound &amp; Audio-Reactive Art</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

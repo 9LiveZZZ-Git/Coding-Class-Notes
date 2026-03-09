@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 12: Sound &amp; Audio-Reactive Art — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- p5-sound -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/addons/p5.sound.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch12">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 12: Sound &amp; Audio-Reactive Art</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 12: Sound &amp; Audio-Reactive Art</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Programming with sound: digital audio fundamentals, synthesis, spectral analysis, and building visuals that respond to music</p>
+
+      <!-- ===============================================
+           12.1 Digital Audio Fundamentals
+           =============================================== -->
+      <h2 id="digital-audio-fundamentals">12.1 Digital Audio Fundamentals</h2>
+
+      <p>Sound is one of the most immediate and visceral forms of sensory experience. Before we can manipulate sound with code, we need to understand what sound actually <em>is</em> and how computers represent it.</p>
+
+      <h3>Sound as Pressure Waves</h3>
+
+      <p>Sound is a mechanical vibration that travels through a medium &mdash; usually air. When an object vibrates (a guitar string, a speaker cone, your vocal cords), it pushes and pulls on the air molecules around it, creating regions of high pressure (<strong>compressions</strong>) and low pressure (<strong>rarefactions</strong>) that propagate outward like ripples in a pond.</p>
+
+      <p>These pressure variations are incredibly small. Normal conversation creates pressure fluctuations of about 0.02 Pascals &mdash; roughly one five-millionth of atmospheric pressure. Yet our ears are sensitive enough to detect these tiny variations and interpret them as speech, music, or noise.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Sound wave</strong> &mdash; A longitudinal pressure wave that propagates through a medium. Unlike transverse waves (like waves on a string), the displacement of particles is parallel to the direction of propagation.</p>
+      </div>
+
+      <h3>Frequency, Amplitude, and Waveform</h3>
+
+      <p>Every sound wave can be described by three fundamental properties:</p>
+
+      <ul>
+        <li><strong>Frequency</strong> ($f$) &mdash; The number of complete oscillation cycles per second, measured in Hertz (Hz). Frequency determines <strong>pitch</strong>: higher frequency = higher pitch. Human hearing ranges from approximately 20 Hz to 20,000 Hz (20 kHz). Middle C on a piano is 261.63 Hz. Concert A (the tuning standard) is 440 Hz.</li>
+        <li><strong>Amplitude</strong> ($A$) &mdash; The maximum displacement from equilibrium pressure. Amplitude determines <strong>loudness</strong>. In digital audio, amplitude is typically normalized to a range of $-1.0$ to $1.0$.</li>
+        <li><strong>Waveform</strong> &mdash; The shape of the pressure variation over time. Waveform determines <strong>timbre</strong> (the quality or color of sound). A sine wave sounds pure and smooth; a square wave sounds hollow and buzzy; a sawtooth wave sounds bright and harsh.</li>
+      </ul>
+
+      <p>The relationship between frequency and the physical wavelength of a sound wave is:</p>
+
+      <p>$$\lambda = \frac{v}{f}$$</p>
+
+      <p>where $\lambda$ is the wavelength in meters, $v$ is the speed of sound (~343 m/s in air at room temperature), and $f$ is the frequency in Hz. A 440 Hz tone has a wavelength of about 0.78 meters.</p>
+
+      <h3>The Sampling Theorem and Nyquist Frequency</h3>
+
+      <p>Continuous sound waves exist in analog form &mdash; as smooth, infinitely-detailed pressure variations. To store and process audio on a computer, we must convert this continuous signal into a sequence of discrete numbers. This process is called <strong>sampling</strong>.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Nyquist-Shannon Sampling Theorem</div>
+        <p>A continuous signal can be perfectly reconstructed from its samples if the sampling rate is at least twice the highest frequency present in the signal:</p>
+        <p>$$f_s \geq 2 \cdot f_{max}$$</p>
+        <p>The frequency $f_N = \frac{f_s}{2}$ is called the <strong>Nyquist frequency</strong>. Any frequency component above the Nyquist frequency will be incorrectly represented as a lower frequency &mdash; an artifact called <strong>aliasing</strong>.</p>
+      </div>
+
+      <p>This is why the standard CD sample rate is 44,100 Hz: it is just over twice the upper limit of human hearing (20,000 Hz), satisfying the Nyquist criterion with a small safety margin. The Nyquist frequency at 44,100 Hz sampling is 22,050 Hz.</p>
+
+      <h3>Sample Rate and Bit Depth</h3>
+
+      <p>Two parameters define the quality of digital audio:</p>
+
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Description</th><th>Common Values</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Sample rate</strong></td><td>Number of amplitude measurements per second</td><td>44,100 Hz (CD), 48,000 Hz (video), 96,000 Hz (studio)</td></tr>
+          <tr><td><strong>Bit depth</strong></td><td>Number of bits per sample; determines dynamic range</td><td>16-bit (CD: 96 dB range), 24-bit (studio: 144 dB range), 32-bit float</td></tr>
+        </tbody>
+      </table>
+
+      <p>The dynamic range in decibels for a given bit depth is approximately:</p>
+
+      <p>$$\text{Dynamic Range (dB)} \approx 6.02 \times n$$</p>
+
+      <p>where $n$ is the number of bits. A 16-bit signal therefore has about 96 dB of dynamic range, which is the difference between the quietest and loudest sounds it can represent.</p>
+
+      <h3>Digital-to-Analog Conversion</h3>
+
+      <p>When you play back digital audio through speakers or headphones, a <strong>Digital-to-Analog Converter (DAC)</strong> reverses the sampling process. It reads the sequence of sample values and reconstructs a smooth, continuous electrical signal by:</p>
+
+      <ol>
+        <li>Converting each digital sample value into a proportional voltage</li>
+        <li>Applying a <strong>reconstruction filter</strong> (a low-pass filter at the Nyquist frequency) to smooth the staircase-like output into a continuous waveform</li>
+        <li>Amplifying the signal and sending it to speakers, which convert the electrical signal back into physical vibrations</li>
+      </ol>
+
+      <p>At 44,100 samples per second, the staircase steps are so small and so fast that the reconstruction filter can produce a signal essentially indistinguishable from the original analog waveform (within the frequency range below the Nyquist frequency).</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Digital audio is not an approximation of analog audio &mdash; it is a mathematically <em>exact</em> representation, as long as the Nyquist criterion is met. The Shannon sampling theorem guarantees perfect reconstruction. The "warmth" sometimes attributed to analog recordings comes from the harmonic distortion of analog electronics, not from any inherent superiority of continuous signals.</p>
+      </div>
+
+      <h3>Data Rate and Storage</h3>
+
+      <p>The data rate of uncompressed digital audio can be calculated as:</p>
+
+      <p>$$\text{Data rate (bits/s)} = \text{sample rate} \times \text{bit depth} \times \text{channels}$$</p>
+
+      <p>For CD-quality stereo audio: $44{,}100 \times 16 \times 2 = 1{,}411{,}200$ bits/s $\approx 176$ KB/s, or about 10.6 MB per minute. This is why audio compression formats like MP3, AAC, and OGG Vorbis are important &mdash; they reduce file sizes by 5-12x using perceptual coding that discards information humans cannot hear.</p>
+
+      <h3>The Perception of Sound</h3>
+
+      <p>Human auditory perception is surprisingly complex and non-linear:</p>
+
+      <ul>
+        <li><strong>Frequency perception</strong> &mdash; We perceive pitch logarithmically. The distance from 100 Hz to 200 Hz sounds like the same interval as 1000 Hz to 2000 Hz (both are one octave). This is why musical scales are based on frequency <em>ratios</em>, not differences.</li>
+        <li><strong>Loudness perception</strong> &mdash; We perceive loudness roughly logarithmically, which is why we use decibels. A 10 dB increase (10x power) sounds approximately "twice as loud."</li>
+        <li><strong>Frequency sensitivity</strong> &mdash; Our hearing is most sensitive between 2-5 kHz (the frequency range of human speech). We are much less sensitive to very low and very high frequencies at quiet volumes. This is described by the <strong>Fletcher-Munson curves</strong> (equal-loudness contours).</li>
+        <li><strong>Temporal resolution</strong> &mdash; We can detect timing differences as small as 10-20 microseconds between our two ears, which is how we localize sounds in space.</li>
+      </ul>
+
+      <!-- ===============================================
+           12.2 The WebAudio API
+           =============================================== -->
+      <h2 id="webaudio-api">12.2 The WebAudio API</h2>
+
+      <p>The <strong>Web Audio API</strong> is the browser-native system for generating, processing, and analyzing audio in real time. It provides a powerful, low-level interface for audio programming directly in JavaScript.</p>
+
+      <h3>Audio Context</h3>
+
+      <p>Everything in the Web Audio API starts with an <code>AudioContext</code>. This is the central object that manages all audio operations:</p>
+
+      <pre><code>// Create an audio context
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// The context has a sample rate (usually 44100 or 48000)
+console.log(audioCtx.sampleRate); // e.g. 48000
+
+// And a current time (in seconds)
+console.log(audioCtx.currentTime); // e.g. 0.5234</code></pre>
+
+      <h3>Audio Nodes and Routing</h3>
+
+      <p>The Web Audio API uses a <strong>modular routing</strong> architecture. Audio flows through a graph of interconnected <strong>nodes</strong>, each performing a specific operation:</p>
+
+      <ul>
+        <li><strong>Source nodes</strong> &mdash; Generate or provide audio: <code>OscillatorNode</code>, <code>AudioBufferSourceNode</code>, <code>MediaStreamAudioSourceNode</code> (microphone)</li>
+        <li><strong>Processing nodes</strong> &mdash; Transform audio: <code>GainNode</code> (volume), <code>BiquadFilterNode</code> (EQ/filter), <code>DelayNode</code>, <code>ConvolverNode</code> (reverb)</li>
+        <li><strong>Analysis nodes</strong> &mdash; Inspect audio without modifying it: <code>AnalyserNode</code> (FFT/waveform)</li>
+        <li><strong>Destination node</strong> &mdash; The final output (speakers): <code>audioCtx.destination</code></li>
+      </ul>
+
+      <p>Nodes are connected with the <code>connect()</code> method to form a signal chain:</p>
+
+      <pre><code>// Oscillator -> Gain -> Speakers
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+
+gain.gain.value = 0.3; // 30% volume
+osc.frequency.value = 440; // A4
+osc.start();</code></pre>
+
+      <h3>AudioParam and Scheduling</h3>
+
+      <p>Many properties in the Web Audio API are <code>AudioParam</code> objects rather than simple numbers. This allows for precise, sample-accurate parameter changes scheduled against the audio clock:</p>
+
+      <pre><code>// Set gain immediately
+gain.gain.value = 0.5;
+
+// Ramp to a value over time (smooth transition)
+gain.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 2.0);
+
+// Exponential ramp (more natural for volume)
+gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+
+// Set at a specific time in the future
+osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.5);</code></pre>
+
+      <p>This scheduling system is critical for musical applications because it operates at the audio thread level, independent of JavaScript's main thread. Even if the main thread is busy rendering visuals, scheduled audio events will execute with sample-level accuracy.</p>
+
+      <h3>Latency Considerations</h3>
+
+      <p>Web Audio typically has 10-50 ms of latency between when you trigger a sound and when it reaches the speakers. This latency comes from several sources:</p>
+
+      <ul>
+        <li><strong>Buffer size</strong> &mdash; Audio is processed in chunks (buffers). Larger buffers increase latency but reduce the chance of audio glitches. Typical buffer sizes are 256-2048 samples.</li>
+        <li><strong>JavaScript event loop</strong> &mdash; The main thread may be busy with rendering or other tasks. Audio events triggered from JavaScript incur the delay of the event loop.</li>
+        <li><strong>Operating system audio stack</strong> &mdash; The OS adds its own buffering and mixing latency.</li>
+        <li><strong>Hardware DAC</strong> &mdash; The digital-to-analog converter adds a small, fixed delay.</li>
+      </ul>
+
+      <p>For most visual-first applications and interactive art, 10-50 ms latency is imperceptible. For timing-critical applications, use <code>audioCtx.currentTime</code> to schedule events precisely rather than relying on JavaScript <code>setTimeout</code>.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Modern browsers require a <strong>user gesture</strong> (click, tap, or keypress) before audio can play. You cannot start audio automatically on page load. This is the browser's <strong>autoplay policy</strong>. If you try to create sounds in <code>setup()</code> without user interaction, they will be silent. Always start audio in response to a <code>mousePressed()</code> or similar event, or use <code>userStartAudio()</code> in p5.js.</p>
+      </div>
+
+      <!-- ===============================================
+           12.3 p5-sound Library
+           =============================================== -->
+      <h2 id="p5-sound-library">12.3 p5-sound Library</h2>
+
+      <p>The <strong>p5-sound</strong> library wraps the Web Audio API in a friendlier interface that matches p5.js conventions. It is included as an add-on library and provides classes for loading sounds, synthesis, analysis, and recording.</p>
+
+      <h3>Loading and Playing Sounds</h3>
+
+      <p>The <code>p5.SoundFile</code> class handles audio file playback. Files should be loaded in <code>preload()</code> to ensure they are ready before <code>setup()</code> runs:</p>
+
+      <pre><code>let song;
+
+function preload() {
+  song = loadSound('music.mp3');
+}
+
+function setup() {
+  createCanvas(400, 200);
+}
+
+function mousePressed() {
+  if (song.isPlaying()) {
+    song.pause();
+  } else {
+    song.play();
+  }
+}</code></pre>
+
+      <h3>Volume, Loop, Pan, and Playback Rate</h3>
+
+      <p>Once a sound is loaded, you can control various playback parameters:</p>
+
+      <pre><code>// Volume: 0.0 (silent) to 1.0 (full)
+song.setVolume(0.5);
+
+// Loop continuously
+song.loop();
+
+// Pan: -1.0 (left) to 1.0 (right), 0.0 (center)
+song.pan(-0.5); // slightly left
+
+// Playback rate: 1.0 = normal, 2.0 = double speed, 0.5 = half speed
+song.rate(1.5); // 50% faster (also raises pitch)
+
+// Jump to a specific time (in seconds)
+song.jump(30); // jump to 30 seconds
+
+// Get duration
+let dur = song.duration(); // in seconds</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>In p5-sound, changing the playback rate also changes the pitch proportionally. Doubling the rate raises the pitch by one octave. This is identical to how a vinyl record sounds when played at the wrong speed. To change speed without changing pitch (time-stretching), you would need more advanced DSP techniques not built into p5-sound.</p>
+      </div>
+
+      <h3>Supported Audio Formats</h3>
+
+      <p>Not all browsers support all audio formats. For maximum compatibility, provide multiple formats:</p>
+
+      <table>
+        <thead>
+          <tr><th>Format</th><th>Extension</th><th>Browser Support</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MP3</td><td>.mp3</td><td>All modern browsers</td><td>Lossy compression, widely supported</td></tr>
+          <tr><td>OGG Vorbis</td><td>.ogg</td><td>Firefox, Chrome, Edge (not Safari)</td><td>Open format, good quality/size ratio</td></tr>
+          <tr><td>WAV</td><td>.wav</td><td>All modern browsers</td><td>Uncompressed, large files, no quality loss</td></tr>
+          <tr><td>AAC</td><td>.m4a</td><td>Safari, Chrome, Edge</td><td>Apple's preferred format</td></tr>
+          <tr><td>WebM</td><td>.webm</td><td>Chrome, Firefox, Edge</td><td>Google's container format</td></tr>
+        </tbody>
+      </table>
+
+      <p>p5.js <code>loadSound()</code> can accept an array of paths for fallback:</p>
+
+      <pre><code>// Provide multiple formats for cross-browser compatibility
+song = loadSound(['music.mp3', 'music.ogg']);</code></pre>
+
+      <h3>Sound Events and Callbacks</h3>
+
+      <p>p5.SoundFile provides callbacks for handling playback events:</p>
+
+      <pre><code>// Called when the sound finishes loading
+function preload() {
+  song = loadSound('music.mp3', loadSuccess, loadError);
+}
+
+function loadSuccess() {
+  console.log('Sound loaded, duration: ' + song.duration() + 's');
+}
+
+function loadError(err) {
+  console.log('Error loading sound: ' + err);
+}
+
+// Detect when playback ends
+song.onended(function() {
+  console.log('Playback finished');
+});</code></pre>
+
+      <!-- ===============================================
+           12.4 Oscillators and Synthesis
+           =============================================== -->
+      <h2 id="oscillators-and-synthesis">12.4 Oscillators and Synthesis</h2>
+
+      <p>Rather than playing back recorded sounds, we can <em>generate</em> sounds from scratch using <strong>oscillators</strong> &mdash; mathematical functions that produce repeating waveforms.</p>
+
+      <h3>The Four Basic Waveforms</h3>
+
+      <p>Every oscillator produces one of four fundamental waveform shapes, each with a distinctive sonic character:</p>
+
+      <table>
+        <thead>
+          <tr><th>Waveform</th><th>Shape</th><th>Sound Character</th><th>Harmonics</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Sine</strong></td><td>Smooth curve</td><td>Pure, clean, flute-like</td><td>Fundamental only (no harmonics)</td></tr>
+          <tr><td><strong>Square</strong></td><td>Flat top/bottom</td><td>Hollow, clarinet-like, retro/8-bit</td><td>Odd harmonics (1, 3, 5, 7...)</td></tr>
+          <tr><td><strong>Sawtooth</strong></td><td>Ramp up, drop</td><td>Bright, buzzy, string-like</td><td>All harmonics (1, 2, 3, 4...)</td></tr>
+          <tr><td><strong>Triangle</strong></td><td>Zigzag</td><td>Soft, mellow, between sine and square</td><td>Odd harmonics, falling off quickly</td></tr>
+        </tbody>
+      </table>
+
+      <p>A <strong>sine wave</strong> is defined mathematically as:</p>
+
+      <p>$$y(t) = A \sin(2\pi f t + \phi)$$</p>
+
+      <p>where $A$ is the amplitude, $f$ is the frequency in Hz, $t$ is time in seconds, and $\phi$ is the phase offset.</p>
+
+      <p>Here is an interactive demonstration of the four waveform types. Click and drag to hear and see the waveform change:</p>
+
+      <div class="code-runner" data-height="350">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Waveform Visualizer &mdash; Click to hear</span>
+        </div>
+        <textarea class="cm-editor">// Waveform Visualizer: click to hear, drag to change frequency
+let osc, fft;
+let waveType = 'sine';
+let types = ['sine', 'square', 'sawtooth', 'triangle'];
+let typeIndex = 0;
+let isPlaying = false;
+
+function setup() {
+  createCanvas(400, 300);
+  osc = new p5.Oscillator('sine');
+  osc.amp(0);
+  osc.start();
+  fft = new p5.FFT(0.8, 256);
+  textFont('monospace');
+  textSize(13);
+}
+
+function draw() {
+  background(25, 25, 50);
+  let waveform = fft.waveform();
+
+  // Draw waveform
+  stroke(100, 220, 255);
+  strokeWeight(2);
+  noFill();
+  beginShape();
+  for (let i = 0; i < waveform.length; i++) {
+    let x = map(i, 0, waveform.length, 0, width);
+    let y = map(waveform[i], -1, 1, height - 40, 40);
+    vertex(x, y);
+  }
+  endShape();
+
+  // Draw center line
+  stroke(100, 100, 150, 80);
+  strokeWeight(1);
+  line(0, height / 2, width, height / 2);
+
+  // Labels
+  noStroke();
+  fill(200);
+  text('Type: ' + waveType.toUpperCase(), 10, 25);
+  text('Click canvas to play/stop', 10, height - 15);
+  text('Press 1-4 to change waveform', 10, height - 35);
+
+  if (isPlaying) {
+    let freq = map(mouseX, 0, width, 100, 1000);
+    osc.freq(freq);
+    fill(100, 255, 150);
+    text('Freq: ' + int(freq) + ' Hz', width - 150, 25);
+  }
+}
+
+function mousePressed() {
+  if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+    userStartAudio();
+    isPlaying = !isPlaying;
+    if (isPlaying) {
+      osc.amp(0.3, 0.05);
+    } else {
+      osc.amp(0, 0.1);
+    }
+  }
+}
+
+function keyPressed() {
+  if (key === '1') { waveType = 'sine'; osc.setType('sine'); }
+  if (key === '2') { waveType = 'square'; osc.setType('square'); }
+  if (key === '3') { waveType = 'sawtooth'; osc.setType('sawtooth'); }
+  if (key === '4') { waveType = 'triangle'; osc.setType('triangle'); }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Frequency and Pitch: Equal Temperament</h3>
+
+      <p>Western music divides each octave into 12 equal steps called <strong>semitones</strong>. This system, called <strong>equal temperament</strong>, ensures that the frequency ratio between any two adjacent semitones is constant:</p>
+
+      <p>$$r = 2^{1/12} \approx 1.05946$$</p>
+
+      <p>Given a reference pitch (A4 = 440 Hz), the frequency of any note can be calculated by its distance in semitones:</p>
+
+      <p>$$f = 440 \times 2^{(n - 69) / 12}$$</p>
+
+      <p>where $n$ is the MIDI note number (A4 = 69, middle C = 60). This formula is the foundation of the <code>midiToFreq()</code> function in p5.js.</p>
+
+      <h3>Creating Tones with p5.Oscillator</h3>
+
+      <p>The following interactive example lets you control an oscillator's frequency and amplitude with mouse position:</p>
+
+      <div class="code-runner" data-height="350">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Oscillator with Mouse Control</span>
+        </div>
+        <textarea class="cm-editor">// Mouse-controlled oscillator
+// X = frequency (100-1000 Hz), Y = amplitude
+let osc;
+
+function setup() {
+  createCanvas(400, 300);
+  osc = new p5.Oscillator('sine');
+  osc.amp(0);
+  osc.start();
+  textFont('monospace');
+}
+
+function draw() {
+  background(20, 20, 40);
+
+  // Draw frequency/amplitude grid
+  stroke(50, 50, 80);
+  strokeWeight(1);
+  for (let x = 0; x < width; x += 50) line(x, 0, x, height);
+  for (let y = 0; y < height; y += 50) line(0, y, width, y);
+
+  if (mouseIsPressed && mouseX > 0 && mouseX < width) {
+    let freq = map(mouseX, 0, width, 100, 1000);
+    let amp = map(mouseY, height, 0, 0.0, 0.5);
+    amp = constrain(amp, 0, 0.5);
+    osc.freq(freq, 0.05);
+    osc.amp(amp, 0.05);
+
+    // Visualize
+    let hue = map(freq, 100, 1000, 0, 255);
+    fill(hue, 100, 200, 180);
+    noStroke();
+    ellipse(mouseX, mouseY, amp * 300, amp * 300);
+
+    fill(220);
+    noStroke();
+    textSize(13);
+    text('Freq: ' + int(freq) + ' Hz', 10, 25);
+    text('Amp: ' + nf(amp, 1, 2), 10, 45);
+  } else {
+    osc.amp(0, 0.1);
+    fill(150);
+    noStroke();
+    textSize(14);
+    textAlign(CENTER);
+    text('Click and drag to play', width/2, height/2);
+    text('X = frequency, Y = amplitude', width/2, height/2 + 22);
+    textAlign(LEFT);
+  }
+}
+
+function mousePressed() {
+  userStartAudio();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>ADSR Envelopes</h3>
+
+      <p>In real musical instruments, sounds do not start and stop abruptly. They have a characteristic shape over time called an <strong>envelope</strong>. The ADSR model breaks this into four stages:</p>
+
+      <ul>
+        <li><strong>Attack</strong> &mdash; Time to rise from silence to peak amplitude (e.g. 0.01s for percussion, 0.5s for strings)</li>
+        <li><strong>Decay</strong> &mdash; Time to fall from peak to sustain level</li>
+        <li><strong>Sustain</strong> &mdash; Amplitude level while the note is held (a ratio, not a time)</li>
+        <li><strong>Release</strong> &mdash; Time to fade from sustain to silence after the note is released</li>
+      </ul>
+
+      <p>In p5.js, envelopes are created with <code>p5.Envelope</code>:</p>
+
+      <pre><code>let env = new p5.Envelope();
+env.setADSR(0.01, 0.2, 0.3, 0.5);
+// Attack: 0.01s, Decay: 0.2s, Sustain: 0.3, Release: 0.5s
+
+env.setRange(1.0, 0.0); // peak amplitude, release amplitude
+
+// Trigger the envelope on an oscillator
+env.play(osc);</code></pre>
+
+      <p>Different instruments have characteristic envelope shapes:</p>
+
+      <table>
+        <thead>
+          <tr><th>Instrument</th><th>Attack</th><th>Decay</th><th>Sustain</th><th>Release</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Piano</td><td>Very fast (5 ms)</td><td>Long (1-2 s)</td><td>Low (0.1-0.3)</td><td>Medium (0.5 s)</td></tr>
+          <tr><td>Organ</td><td>Fast (10 ms)</td><td>None</td><td>Full (1.0)</td><td>Fast (50 ms)</td></tr>
+          <tr><td>Violin (bowed)</td><td>Slow (100-300 ms)</td><td>Short</td><td>High (0.7-0.9)</td><td>Medium (200 ms)</td></tr>
+          <tr><td>Percussion</td><td>Instant (1 ms)</td><td>Fast (50-200 ms)</td><td>None (0)</td><td>Very short (10 ms)</td></tr>
+          <tr><td>Pad/Strings</td><td>Very slow (0.5-2 s)</td><td>Medium</td><td>High (0.6-0.8)</td><td>Long (1-3 s)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Envelope</strong> &mdash; A time-varying function that shapes the amplitude (or other parameter) of a sound over its lifetime. The ADSR model is the most common, but envelopes can have arbitrary shapes. Envelopes are what make a synthesized tone sound like a plucked string rather than a continuously humming organ &mdash; the <em>shape</em> of the volume over time is as important to timbre perception as the frequency content.</p>
+      </div>
+
+      <h3>Decibels: The Logarithmic Scale</h3>
+
+      <p>Human hearing perceives loudness logarithmically &mdash; doubling the physical sound pressure does not sound "twice as loud." The <strong>decibel (dB)</strong> scale matches this perception:</p>
+
+      <p>$$\text{dB} = 20 \log_{10}\!\left(\frac{A}{A_{\text{ref}}}\right)$$</p>
+
+      <p>where $A$ is the amplitude and $A_{\text{ref}}$ is a reference amplitude. In digital audio, full scale (the maximum representable amplitude) is defined as 0 dBFS. Key reference points:</p>
+
+      <ul>
+        <li>0 dBFS = maximum digital level (amplitude = 1.0)</li>
+        <li>-6 dBFS = half amplitude (0.5) &mdash; this sounds only slightly quieter</li>
+        <li>-20 dBFS = one-tenth amplitude (0.1)</li>
+        <li>-60 dBFS = one-thousandth amplitude (0.001) &mdash; barely audible</li>
+        <li>-infinity dBFS = silence (amplitude = 0)</li>
+      </ul>
+
+      <!-- ===============================================
+           12.5 FFT Analysis
+           =============================================== -->
+      <h2 id="fft-analysis">12.5 FFT Analysis</h2>
+
+      <p>The <strong>Fast Fourier Transform (FFT)</strong> is the single most important tool for audio-reactive art. It allows us to decompose a complex sound into its constituent frequencies, revealing the hidden spectral structure of any audio signal.</p>
+
+      <h3>The Fourier Transform: An Intuitive Explanation</h3>
+
+      <p>Imagine you are standing in front of a grand piano, and someone plays a chord. Your ear hears a single, blended sound. But the Fourier transform can tell you exactly which individual notes make up that chord and how loud each one is.</p>
+
+      <p>Mathematically, the Fourier transform of a continuous signal $x(t)$ is:</p>
+
+      <p>$$X(f) = \int_{-\infty}^{\infty} x(t) \, e^{-i 2\pi f t} \, dt$$</p>
+
+      <p>For discrete (digital) signals, we use the <strong>Discrete Fourier Transform (DFT)</strong>:</p>
+
+      <p>$$X[k] = \sum_{n=0}^{N-1} x[n] \, e^{-i 2\pi k n / N}$$</p>
+
+      <p>where $N$ is the number of samples in the analysis window, $x[n]$ is the $n$-th sample, and $X[k]$ is the amplitude at the $k$-th frequency bin. The <strong>FFT</strong> is simply an algorithm that computes the DFT efficiently, reducing the complexity from $O(N^2)$ to $O(N \log N)$.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Joseph Fourier (1768-1830) first proposed that any periodic function could be decomposed into a sum of sines and cosines in his 1807 work on heat conduction. The Fast Fourier Transform algorithm was popularized by Cooley and Tukey in 1965, though Gauss had discovered a similar method as early as 1805. The FFT is often cited as one of the most important algorithms of the 20th century.</p>
+      </div>
+
+      <h3>Frequency Domain vs. Time Domain</h3>
+
+      <p>Audio data can be viewed in two complementary ways:</p>
+
+      <ul>
+        <li><strong>Time domain</strong> (waveform) &mdash; Shows amplitude over time. This is what you see on an oscilloscope. Useful for seeing the raw shape and volume of a signal.</li>
+        <li><strong>Frequency domain</strong> (spectrum) &mdash; Shows amplitude at each frequency. This is the output of the FFT. Useful for seeing which pitches and tones are present in a sound.</li>
+      </ul>
+
+      <p>These two representations contain the same information &mdash; the Fourier transform is a reversible mapping between them.</p>
+
+      <h3>p5.FFT in Practice</h3>
+
+      <p>In p5.js, the <code>p5.FFT</code> class provides both spectrum and waveform analysis:</p>
+
+      <pre><code>let fft = new p5.FFT(smoothing, bins);
+// smoothing: 0-1 (0.8 is good default, higher = smoother)
+// bins: power of 2 (1024 gives 512 usable frequency bins)
+
+// In draw():
+let spectrum = fft.analyze();   // array of 0-255 values (frequency domain)
+let waveform = fft.waveform();  // array of -1 to 1 values (time domain)
+
+// Query specific frequency bands:
+let bass    = fft.getEnergy("bass");     // 20-140 Hz
+let lowMid  = fft.getEnergy("lowMid");   // 140-400 Hz
+let mid     = fft.getEnergy("mid");      // 400-2600 Hz
+let highMid = fft.getEnergy("highMid");  // 2600-5200 Hz
+let treble  = fft.getEnergy("treble");   // 5200-14000 Hz</code></pre>
+
+      <p>Here is a full FFT spectrum analyzer you can run. It uses the microphone &mdash; click "Run" and speak or play music near your device:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>FFT Spectrum Analyzer (Microphone)</span>
+        </div>
+        <textarea class="cm-editor">// FFT Spectrum Analyzer - uses microphone input
+// Click the canvas to enable audio
+let mic, fft;
+let audioStarted = false;
+
+function setup() {
+  createCanvas(500, 350);
+  colorMode(HSB, 360, 100, 100, 100);
+  textFont('monospace');
+  textSize(11);
+}
+
+function draw() {
+  background(220, 15, 12);
+
+  if (!audioStarted) {
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(16);
+    text('Click to enable microphone', width/2, height/2);
+    textSize(12);
+    text('Then speak or play music', width/2, height/2 + 25);
+    return;
+  }
+
+  let spectrum = fft.analyze();
+  let waveform = fft.waveform();
+
+  // Draw spectrum bars
+  let barW = width / spectrum.length * 2;
+  noStroke();
+  for (let i = 0; i < spectrum.length / 2; i++) {
+    let amp = spectrum[i];
+    let h = map(amp, 0, 255, 0, height - 60);
+    let hue = map(i, 0, spectrum.length / 2, 200, 360);
+    fill(hue % 360, 80, map(amp, 0, 255, 30, 100), 90);
+    rect(i * barW, height - 30 - h, barW - 1, h);
+  }
+
+  // Draw waveform overlay
+  stroke(180, 60, 100, 50);
+  strokeWeight(1.5);
+  noFill();
+  beginShape();
+  for (let i = 0; i < waveform.length; i++) {
+    let x = map(i, 0, waveform.length, 0, width);
+    let y = map(waveform[i], -1, 1, height * 0.2, height * 0.6);
+    vertex(x, y);
+  }
+  endShape();
+
+  // Labels
+  noStroke();
+  fill(0, 0, 70);
+  textAlign(LEFT);
+  textSize(10);
+  text('Low freq', 5, height - 10);
+  textAlign(RIGHT);
+  text('High freq', width - 5, height - 10);
+  textAlign(LEFT);
+
+  // Show energy bands
+  let bass = fft.getEnergy("bass");
+  let mid = fft.getEnergy("mid");
+  let treble = fft.getEnergy("treble");
+  fill(0, 0, 80);
+  textSize(11);
+  text('Bass: ' + bass, 10, 20);
+  text('Mid: ' + mid, 10, 35);
+  text('Treble: ' + treble, 10, 50);
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT(0.85, 512);
+    fft.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Frequency Bins and Resolution</h3>
+
+      <p>The number of FFT bins determines the frequency resolution. With $N$ bins and a sample rate of $f_s$:</p>
+
+      <p>$$\text{Frequency resolution} = \frac{f_s}{N}$$</p>
+
+      <p>With 1024 bins at 44,100 Hz, each bin represents about 43 Hz. This means we can distinguish frequencies that are 43 Hz apart. More bins give finer resolution but require more computation and respond more slowly to changes.</p>
+
+      <table>
+        <thead>
+          <tr><th>FFT Size (bins)</th><th>Freq Resolution (at 44.1 kHz)</th><th>Time Window</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>256</td><td>172 Hz</td><td>5.8 ms</td><td>Fast response, rough frequency detail</td></tr>
+          <tr><td>512</td><td>86 Hz</td><td>11.6 ms</td><td>Good for real-time visuals</td></tr>
+          <tr><td>1024</td><td>43 Hz</td><td>23.2 ms</td><td>Standard choice, balanced</td></tr>
+          <tr><td>2048</td><td>21.5 Hz</td><td>46.4 ms</td><td>Fine frequency detail, slower response</td></tr>
+          <tr><td>4096</td><td>10.8 Hz</td><td>92.9 ms</td><td>High-precision analysis, noticeable lag</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Windowing Functions</h3>
+
+      <p>The FFT assumes the input signal is periodic over the analysis window. Since real audio rarely lines up perfectly with window boundaries, this assumption creates artifacts called <strong>spectral leakage</strong> &mdash; energy smears across adjacent frequency bins.</p>
+
+      <p>A <strong>window function</strong> (Hann, Hamming, Blackman, etc.) is applied to the samples before the FFT to taper them smoothly to zero at the edges, reducing leakage. p5.FFT applies a Hann window by default. The trade-off is that windowing slightly broadens frequency peaks while reducing side-lobe artifacts.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>There is a fundamental trade-off between <strong>time resolution</strong> and <strong>frequency resolution</strong> in the FFT. More bins give better frequency detail but slower response to changes. Fewer bins respond quickly but blur nearby frequencies together. This is a manifestation of the <strong>uncertainty principle</strong>, which states you cannot simultaneously know both the exact frequency and exact time of a signal component.</p>
+      </div>
+
+      <!-- ===============================================
+           QUIZ 1
+           =============================================== -->
+      <div class="quiz" data-id="ch12-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">The standard CD audio sample rate is 44,100 Hz. What is the highest frequency that can be accurately represented at this sample rate?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch12-q1" value="a"> 44,100 Hz</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q1" value="b"> 88,200 Hz</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q1" value="c" data-correct> 22,050 Hz</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q1" value="d"> 11,025 Hz</label></li>
+        </ul>
+        <div class="explanation">
+          <p>By the Nyquist-Shannon sampling theorem, the highest frequency that can be accurately represented is half the sample rate, known as the Nyquist frequency: $f_N = f_s / 2 = 44{,}100 / 2 = 22{,}050$ Hz. This is just above the upper limit of human hearing.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           12.6 Audio-Reactive Visuals
+           =============================================== -->
+      <h2 id="audio-reactive-visuals">12.6 Audio-Reactive Visuals</h2>
+
+      <p>Audio-reactive art is the practice of creating visual outputs that respond in real time to properties of sound. The FFT and amplitude analysis provide the data; creative mapping decisions determine how that data becomes visual form.</p>
+
+      <h3>Mapping Amplitude to Size</h3>
+
+      <p>The simplest audio-reactive technique: make something bigger when the sound is louder. The following sketch draws a circle whose diameter tracks the overall volume level:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Audio-Reactive Circle (Amplitude to Size)</span>
+        </div>
+        <textarea class="cm-editor">// Audio-reactive circle: amplitude controls size
+// Click to enable microphone
+let mic, amp;
+let audioStarted = false;
+let smoothSize = 50;
+
+function setup() {
+  createCanvas(400, 350);
+  colorMode(HSB, 360, 100, 100, 100);
+  textFont('monospace');
+}
+
+function draw() {
+  background(250, 20, 15, 40);
+
+  if (!audioStarted) {
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(15);
+    text('Click to enable microphone', width/2, height/2);
+    return;
+  }
+
+  let level = amp.getLevel();
+  let targetSize = map(level, 0, 0.5, 30, 350);
+  smoothSize = lerp(smoothSize, targetSize, 0.2);
+
+  // Pulsing circle
+  let hue = map(level, 0, 0.3, 200, 360) % 360;
+  noStroke();
+  fill(hue, 70, 90, 70);
+  ellipse(width/2, height/2, smoothSize, smoothSize);
+
+  // Inner glow
+  fill(hue, 40, 100, 40);
+  ellipse(width/2, height/2, smoothSize * 0.6, smoothSize * 0.6);
+
+  // Level text
+  fill(0, 0, 80);
+  textAlign(LEFT);
+  textSize(12);
+  text('Level: ' + nf(level, 1, 4), 10, 25);
+  text('Size: ' + int(smoothSize), 10, 42);
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    amp = new p5.Amplitude();
+    amp.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Mapping Frequency Spectrum to Color</h3>
+
+      <p>A more sophisticated approach uses different frequency ranges to control different visual properties. Low frequencies (bass) might control background color, mid frequencies control shape size, and high frequencies (treble) control detail or sparkle effects.</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Frequency-Mapped Color Bars</span>
+        </div>
+        <textarea class="cm-editor">// Frequency spectrum mapped to colored bars
+// Click to enable microphone
+let mic, fft;
+let audioStarted = false;
+
+function setup() {
+  createCanvas(500, 350);
+  colorMode(HSB, 360, 100, 100);
+  textFont('monospace');
+}
+
+function draw() {
+  background(0, 0, 8);
+
+  if (!audioStarted) {
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(15);
+    text('Click to enable microphone', width/2, height/2);
+    return;
+  }
+
+  let spectrum = fft.analyze();
+  let numBars = 64;
+
+  for (let i = 0; i < numBars; i++) {
+    let idx = floor(map(i, 0, numBars, 0, spectrum.length / 2));
+    let amp = spectrum[idx];
+    let barW = width / numBars;
+    let barH = map(amp, 0, 255, 2, height - 40);
+
+    // Map frequency to color: low=red, mid=green, high=blue
+    let hue = map(i, 0, numBars, 0, 270);
+    let sat = map(amp, 0, 255, 40, 100);
+    let bri = map(amp, 0, 255, 20, 100);
+
+    noStroke();
+    fill(hue, sat, bri);
+    rect(i * barW, height - 20 - barH, barW - 1, barH);
+
+    // Glow at peak
+    if (amp > 180) {
+      fill(hue, 30, 100, 0.3);
+      rect(i * barW - 1, height - 20 - barH - 5, barW + 1, 10);
+    }
+  }
+
+  // Frequency axis label
+  noStroke();
+  fill(0, 0, 50);
+  textSize(10);
+  textAlign(LEFT);
+  text('20 Hz', 5, height - 5);
+  textAlign(RIGHT);
+  text('~20 kHz', width - 5, height - 5);
+  textAlign(CENTER);
+  text('FREQUENCY SPECTRUM', width/2, height - 5);
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT(0.85, 256);
+    fft.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Beat Detection Concepts</h3>
+
+      <p>Beat detection identifies rhythmic pulses in audio &mdash; the kick drum hits, snare cracks, or bass notes that define the groove of a song. The most common approach is <strong>spectral flux</strong>:</p>
+
+      <ol>
+        <li>Compute the FFT spectrum for the current frame</li>
+        <li>Compare it to the previous frame's spectrum</li>
+        <li>Sum all the <em>positive</em> differences (only increases in energy count)</li>
+        <li>If this sum exceeds a threshold, declare a beat</li>
+      </ol>
+
+      <pre><code>let prevSpectrum = [];
+let onsetThreshold = 500;
+
+function detectOnset() {
+  let spectrum = fft.analyze();
+  let flux = 0;
+
+  for (let i = 0; i < spectrum.length; i++) {
+    let diff = spectrum[i] - (prevSpectrum[i] || 0);
+    if (diff > 0) flux += diff;
+  }
+
+  prevSpectrum = spectrum.slice();
+  return flux > onsetThreshold;
+}</code></pre>
+
+      <p>Spectral flux is more reliable than simple volume thresholding because it responds to <em>changes</em> in the sound rather than sustained loudness. A sustained bass note has high energy but no onset; a quiet hi-hat hit has low energy but a sharp onset.</p>
+
+      <h3>Creative Mapping Strategies</h3>
+
+      <p>The art of audio-reactive visualization lies in choosing <em>how</em> audio properties map to visual properties. Here are some strategies that produce compelling results:</p>
+
+      <ul>
+        <li><strong>Direct mapping</strong> &mdash; Amplitude directly controls size, frequency directly controls color. Intuitive and transparent, but can feel mechanical.</li>
+        <li><strong>Threshold-triggered</strong> &mdash; Visual events (shape spawn, color shift, scene change) are triggered only when audio crosses a threshold. Creates punctuated, rhythmic visuals.</li>
+        <li><strong>Envelope following</strong> &mdash; Smooth the audio signal heavily and use it to modulate a slowly-changing parameter (background hue, camera zoom). Creates a sense of breathing or pulsing.</li>
+        <li><strong>Frequency separation</strong> &mdash; Use different frequency bands for different visual layers. Bass drives large structural elements; mids drive medium shapes; treble drives small details or particle effects. This creates depth and complexity.</li>
+        <li><strong>Historical/accumulated</strong> &mdash; Use the audio to leave traces over time (paint strokes, particle trails, growing structures). The visual becomes a record of the sound that has passed.</li>
+        <li><strong>Physics-driven</strong> &mdash; Use audio energy as a force in a physics simulation (push particles, distort springs, drive fluid flow). The mapping is indirect but produces naturalistic motion.</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>A common pitfall in audio-reactive art is making everything respond to everything. When every visual element pulses with the bass, the result is chaotic and exhausting. <strong>Selective mapping</strong> is more effective: choose a few key audio features and map them to a few visual properties, leaving other elements to evolve on their own timeline. Restraint creates legibility.</p>
+      </div>
+
+      <!-- ===============================================
+           QUIZ 2
+           =============================================== -->
+      <div class="quiz" data-id="ch12-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does the FFT (Fast Fourier Transform) do?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch12-q2" value="a"> Compresses audio files to reduce their size</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q2" value="b" data-correct> Converts a time-domain signal into its frequency-domain representation</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q2" value="c"> Removes noise from an audio signal</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q2" value="d"> Converts analog audio to digital samples</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The FFT decomposes a time-domain signal (amplitude over time) into its constituent frequencies, producing a frequency-domain representation (amplitude at each frequency). This allows us to see the spectral content of a sound &mdash; which pitches are present and how loud each one is.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           12.7 Amplitude and Energy
+           =============================================== -->
+      <h2 id="amplitude-and-energy">12.7 Amplitude and Energy</h2>
+
+      <p>While the FFT gives us detailed frequency information, sometimes we just need to know the overall <em>loudness</em> of the audio at a given moment. The <code>p5.Amplitude</code> class provides this.</p>
+
+      <h3>getLevel() and Smoothing</h3>
+
+      <p><code>p5.Amplitude</code> monitors the volume (RMS amplitude) of an audio input:</p>
+
+      <pre><code>let amp = new p5.Amplitude();
+amp.setInput(mic); // or setInput(soundFile)
+
+// In draw():
+let level = amp.getLevel(); // returns 0.0 to 1.0
+// Typically voice = 0.01-0.1, music = 0.05-0.3</code></pre>
+
+      <p>Raw amplitude values jump around rapidly. <strong>Smoothing</strong> makes visuals more pleasant by blending the current value with previous values:</p>
+
+      <pre><code>// Option 1: p5.Amplitude has built-in smoothing
+amp.smooth(0.8); // 0 = no smoothing, 1 = maximum smoothing
+
+// Option 2: Manual smoothing with lerp
+let smoothLevel = 0;
+// In draw():
+let rawLevel = amp.getLevel();
+smoothLevel = lerp(smoothLevel, rawLevel, 0.1);</code></pre>
+
+      <h3>Peak Detection</h3>
+
+      <p>To detect sudden bursts of volume (claps, hits, transients), compare the current level to a running average:</p>
+
+      <pre><code>let avgLevel = 0;
+let peakThreshold = 1.5; // detect levels 1.5x above average
+
+function draw() {
+  let level = amp.getLevel();
+  avgLevel = lerp(avgLevel, level, 0.01); // slow-moving average
+
+  if (level > avgLevel * peakThreshold && level > 0.05) {
+    // Peak detected! Trigger visual event
+    triggerFlash();
+  }
+}</code></pre>
+
+      <h3>Using Amplitude for Animation Parameters</h3>
+
+      <p>Amplitude values can drive any visual parameter. Common mappings include:</p>
+
+      <table>
+        <thead>
+          <tr><th>Audio Property</th><th>Visual Mapping</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Overall volume</td><td>Circle size</td><td><code>ellipse(x, y, level * 200)</code></td></tr>
+          <tr><td>Overall volume</td><td>Background brightness</td><td><code>background(level * 255)</code></td></tr>
+          <tr><td>Volume peak</td><td>Color flash</td><td>White flash on beat</td></tr>
+          <tr><td>Bass energy</td><td>Shake/vibration</td><td>Offset position randomly</td></tr>
+          <tr><td>Treble energy</td><td>Particle spawn rate</td><td>More particles when treble is high</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ===============================================
+           12.8 Microphone Input
+           =============================================== -->
+      <h2 id="microphone-input">12.8 Microphone Input</h2>
+
+      <p>Using the microphone as an audio source allows for interactive, real-time sound installations. The <code>p5.AudioIn</code> class provides access to the device microphone.</p>
+
+      <h3>Setting Up Microphone Input</h3>
+
+      <pre><code>let mic;
+
+function setup() {
+  createCanvas(400, 400);
+  mic = new p5.AudioIn();
+  mic.start(); // Request microphone access
+}
+
+function draw() {
+  background(20);
+  let vol = mic.getLevel();
+  let size = map(vol, 0, 0.3, 20, 400);
+  fill(200, 100, 100);
+  circle(width / 2, height / 2, size);
+}</code></pre>
+
+      <p>Here is a microphone level meter you can try:</p>
+
+      <div class="code-runner" data-height="300">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Microphone Level Meter</span>
+        </div>
+        <textarea class="cm-editor">// Microphone level meter with peak hold
+// Click to enable microphone
+let mic, amp;
+let audioStarted = false;
+let peakLevel = 0;
+let peakDecay = 0;
+let history = [];
+
+function setup() {
+  createCanvas(400, 250);
+  textFont('monospace');
+}
+
+function draw() {
+  background(20, 22, 30);
+
+  if (!audioStarted) {
+    fill(180);
+    noStroke();
+    textAlign(CENTER);
+    textSize(14);
+    text('Click to enable microphone', width/2, height/2);
+    return;
+  }
+
+  let level = amp.getLevel();
+
+  // Peak hold
+  if (level > peakLevel) {
+    peakLevel = level;
+    peakDecay = 0;
+  }
+  peakDecay++;
+  if (peakDecay > 60) peakLevel *= 0.98;
+
+  // History for waveform
+  history.push(level);
+  if (history.length > width) history.shift();
+
+  // Draw meter background
+  let meterX = 40, meterY = 30;
+  let meterW = width - 80, meterH = 40;
+  fill(40);
+  noStroke();
+  rect(meterX, meterY, meterW, meterH, 4);
+
+  // Draw level bar
+  let barW = map(level, 0, 0.5, 0, meterW);
+  let col;
+  if (level < 0.15) col = [50, 200, 80];
+  else if (level < 0.3) col = [220, 200, 40];
+  else col = [220, 60, 50];
+  fill(col[0], col[1], col[2]);
+  rect(meterX, meterY, barW, meterH, 4);
+
+  // Peak indicator
+  let peakX = map(peakLevel, 0, 0.5, meterX, meterX + meterW);
+  stroke(255, 100, 100);
+  strokeWeight(2);
+  line(peakX, meterY, peakX, meterY + meterH);
+
+  // dB scale
+  noStroke();
+  fill(120);
+  textSize(9);
+  textAlign(CENTER);
+  for (let db = -60; db <= 0; db += 10) {
+    let linear = pow(10, db / 20);
+    let x = map(linear, 0, 0.5, meterX, meterX + meterW);
+    if (x > meterX && x < meterX + meterW) {
+      text(db + 'dB', x, meterY + meterH + 15);
+    }
+  }
+
+  // History waveform
+  stroke(80, 180, 220, 150);
+  strokeWeight(1);
+  noFill();
+  beginShape();
+  for (let i = 0; i < history.length; i++) {
+    let x = map(i, 0, history.length, 0, width);
+    let y = map(history[i], 0, 0.3, height - 20, 100);
+    vertex(x, y);
+  }
+  endShape();
+
+  // Numeric readout
+  noStroke();
+  fill(200);
+  textAlign(LEFT);
+  textSize(12);
+  text('Level: ' + nf(level, 1, 4), 10, height - 5);
+  textAlign(RIGHT);
+  text('Peak: ' + nf(peakLevel, 1, 4), width - 10, height - 5);
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    amp = new p5.Amplitude(0.9);
+    amp.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Interactive Sound Installations</h3>
+
+      <p>Microphone-driven art installations are a rich tradition in new media art. Key design considerations include:</p>
+
+      <ul>
+        <li><strong>Ambient noise handling</strong> &mdash; The microphone picks up everything. Use thresholding to ignore low-level background noise. Calibrate the noise floor on-site before the exhibition opens.</li>
+        <li><strong>Latency</strong> &mdash; Even small delays between sound and visual response are noticeable. Minimize processing and use direct mappings for the most responsive feel.</li>
+        <li><strong>Feedback loops</strong> &mdash; If speakers are near the microphone, you can get acoustic feedback (the amplified sound is re-captured, amplified again, and so on). Either use headphones, place speakers far from the mic, or gate the microphone input when audio is playing.</li>
+        <li><strong>Privacy</strong> &mdash; Microphone access is sensitive. In public installations, clearly inform visitors that audio is being captured (even if not recorded). Browser permissions dialogs may appear, which can disrupt the experience.</li>
+        <li><strong>Gain staging</strong> &mdash; Different microphones and environments produce different input levels. Always normalize your input and use adaptive thresholds rather than hard-coded values.</li>
+      </ul>
+
+      <h3>Multiple Audio Sources</h3>
+
+      <p>You can connect multiple audio inputs to a single FFT analyzer, or use separate analyzers for different sources:</p>
+
+      <pre><code>// Multiple sources into one mixer
+let mic = new p5.AudioIn();
+let song = loadSound('track.mp3');
+
+// Both feed into the same FFT
+mic.start();
+fft = new p5.FFT();
+// fft.setInput() with no argument analyzes all sound output
+
+// OR: separate analysis for each source
+let micFFT = new p5.FFT();
+micFFT.setInput(mic);
+
+let songFFT = new p5.FFT();
+songFFT.setInput(song);</code></pre>
+
+      <p>This allows you to create installations where the microphone input is analyzed separately from a backing track, letting you detect audience interaction independently from the music. This separation of input sources is essential for interactive concert visuals, gallery installations with ambient soundtracks, and collaborative audiovisual performances.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Gain staging</strong> &mdash; The process of managing signal levels at each point in the audio chain to ensure optimal signal-to-noise ratio without distortion. In web audio, this means setting appropriate volume levels on inputs, gain nodes, and analyzers so that audio data is in a useful range for both listening and analysis.</p>
+      </div>
+
+      <!-- ===============================================
+           QUIZ 3
+           =============================================== -->
+      <div class="quiz" data-id="ch12-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">According to the Nyquist theorem, what happens if you try to record a 25,000 Hz tone using a sample rate of 44,100 Hz?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch12-q3" value="a"> The tone is recorded perfectly</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q3" value="b"> The tone is silently ignored</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q3" value="c" data-correct> The tone appears as a lower, incorrect frequency (aliasing)</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q3" value="d"> The recording device refuses to start</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Since 25,000 Hz exceeds the Nyquist frequency of 22,050 Hz (half of 44,100 Hz), the tone cannot be correctly represented. Instead, it is "folded" back into the representable range as a lower frequency &mdash; a phenomenon called <strong>aliasing</strong>. The aliased frequency would be $44{,}100 - 25{,}000 = 19{,}100$ Hz. This is why anti-aliasing filters are applied before sampling.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           12.9 Sound Synthesis Techniques
+           =============================================== -->
+      <h2 id="sound-synthesis">12.9 Sound Synthesis Techniques</h2>
+
+      <p>Beyond playing back recorded audio, we can build sounds from scratch using various synthesis techniques. These range from simple oscillator combinations to complex algorithmic processes.</p>
+
+      <h3>Additive Synthesis</h3>
+
+      <p>Additive synthesis builds complex sounds by combining multiple sine waves (called <strong>partials</strong> or <strong>harmonics</strong>). Fourier's theorem tells us that <em>any</em> periodic waveform can be constructed this way.</p>
+
+      <p>For example, a square wave is the sum of odd harmonics with decreasing amplitude:</p>
+
+      <p>$$\text{square}(t) = \frac{4}{\pi} \sum_{k=1,3,5,\ldots} \frac{1}{k} \sin(2\pi k f t) = \frac{4}{\pi}\left[\sin(\omega t) + \frac{1}{3}\sin(3\omega t) + \frac{1}{5}\sin(5\omega t) + \cdots\right]$$</p>
+
+      <p>In p5.js, additive synthesis means creating multiple oscillators:</p>
+
+      <pre><code>let oscs = [];
+let fundamental = 220; // A3
+
+function setup() {
+  createCanvas(400, 200);
+  // Create first 8 odd harmonics
+  for (let k = 1; k <= 15; k += 2) {
+    let o = new p5.Oscillator('sine');
+    o.freq(fundamental * k);
+    o.amp(0.3 / k); // amplitude decreases with harmonic number
+    o.start();
+    oscs.push(o);
+  }
+}</code></pre>
+
+      <h3>FM Synthesis (Conceptual)</h3>
+
+      <p><strong>Frequency Modulation (FM) synthesis</strong>, developed by John Chowning at Stanford in 1967, creates complex timbres by using one oscillator (the <strong>modulator</strong>) to rapidly vary the frequency of another (the <strong>carrier</strong>):</p>
+
+      <p>$$y(t) = A \sin\!\Big(2\pi f_c t + I \sin(2\pi f_m t)\Big)$$</p>
+
+      <p>where $f_c$ is the carrier frequency, $f_m$ is the modulator frequency, and $I$ is the <strong>modulation index</strong> (how much the frequency deviates). FM synthesis can produce an enormous range of timbres &mdash; from bell-like tones to metallic clangs to evolving textures &mdash; from just two oscillators.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>John Chowning's FM synthesis patent was licensed by Yamaha and became the basis of the <strong>Yamaha DX7</strong> synthesizer (1983), one of the best-selling synthesizers in history. The DX7's distinctive bright, bell-like tones defined the sound of 1980s pop music. It remains a landmark in the commercial application of academic computer music research.</p>
+      </div>
+
+      <p>The key insight of FM synthesis is that the <strong>ratio</strong> of carrier to modulator frequency ($f_c : f_m$) determines the harmonic structure of the resulting sound:</p>
+
+      <ul>
+        <li>Integer ratios (1:1, 2:1, 3:2) produce <strong>harmonic</strong> tones (musical, pitched)</li>
+        <li>Non-integer ratios (1:1.41, 1:2.76) produce <strong>inharmonic</strong> tones (bell-like, metallic, percussive)</li>
+        <li>The <strong>modulation index</strong> $I$ controls brightness &mdash; higher values add more sidebands (harmonics), making the sound brighter and more complex</li>
+      </ul>
+
+      <h3>Noise Generators</h3>
+
+      <p>p5.js provides a noise generator for creating noise-based sounds:</p>
+
+      <pre><code>let noise = new p5.Noise('white'); // 'white', 'pink', or 'brown'
+noise.amp(0.2);
+noise.start();</code></pre>
+
+      <ul>
+        <li><strong>White noise</strong> &mdash; Equal energy at all frequencies. Sounds like static or hissing.</li>
+        <li><strong>Pink noise</strong> &mdash; Energy decreases at 3 dB per octave. Sounds more natural, like rain or a waterfall.</li>
+        <li><strong>Brown noise</strong> &mdash; Energy decreases at 6 dB per octave. Deep, rumbling quality.</li>
+      </ul>
+
+      <h3>Filters</h3>
+
+      <p>Filters shape sound by boosting or attenuating specific frequency ranges:</p>
+
+      <pre><code>let filter = new p5.Filter();
+
+// Low-pass: allows frequencies below cutoff, removes highs
+filter.set('lowpass', 800, 5); // type, frequency, resonance
+
+// High-pass: allows frequencies above cutoff, removes lows
+filter.set('highpass', 200, 3);
+
+// Band-pass: allows only a narrow range around cutoff
+filter.set('bandpass', 1000, 10);
+
+// Connect: oscillator -> filter -> speakers
+osc.disconnect();
+osc.connect(filter);</code></pre>
+
+      <p>Here is a simple synth keyboard you can play. Each key triggers an oscillator with an envelope:</p>
+
+      <div class="code-runner" data-height="320">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Simple Synth Keyboard</span>
+        </div>
+        <textarea class="cm-editor">// Simple keyboard synth
+// Click keys to play notes
+let osc, env;
+let notes = [
+  {note: 'C', freq: 261.63, white: true},
+  {note: 'C#', freq: 277.18, white: false},
+  {note: 'D', freq: 293.66, white: true},
+  {note: 'D#', freq: 311.13, white: false},
+  {note: 'E', freq: 329.63, white: true},
+  {note: 'F', freq: 349.23, white: true},
+  {note: 'F#', freq: 369.99, white: false},
+  {note: 'G', freq: 392.00, white: true},
+  {note: 'G#', freq: 415.30, white: false},
+  {note: 'A', freq: 440.00, white: true},
+  {note: 'A#', freq: 466.16, white: false},
+  {note: 'B', freq: 493.88, white: true},
+  {note: 'C5', freq: 523.25, white: true}
+];
+let activeNote = -1;
+
+function setup() {
+  createCanvas(420, 260);
+  osc = new p5.Oscillator('triangle');
+  osc.amp(0);
+  osc.start();
+  env = new p5.Envelope();
+  env.setADSR(0.01, 0.15, 0.4, 0.3);
+  env.setRange(0.4, 0);
+  textFont('monospace');
+}
+
+function draw() {
+  background(30);
+  let whiteW = 50, whiteH = 180;
+  let blackW = 30, blackH = 110;
+  let startX = 10, startY = 40;
+
+  // Draw white keys
+  let wx = startX;
+  for (let i = 0; i < notes.length; i++) {
+    if (notes[i].white) {
+      fill(i === activeNote ? color(180, 220, 255) : 245);
+      stroke(100);
+      strokeWeight(1);
+      rect(wx, startY, whiteW - 2, whiteH, 0, 0, 4, 4);
+      // Label
+      fill(100);
+      noStroke();
+      textSize(10);
+      textAlign(CENTER);
+      text(notes[i].note, wx + whiteW/2 - 1, startY + whiteH - 10);
+      wx += whiteW;
+    }
+  }
+
+  // Draw black keys (on top)
+  wx = startX;
+  for (let i = 0; i < notes.length; i++) {
+    if (notes[i].white) {
+      wx += whiteW;
+    } else {
+      fill(i === activeNote ? color(80, 120, 200) : 30);
+      stroke(0);
+      strokeWeight(1);
+      rect(wx - blackW/2 - whiteW + whiteW/2 + 17, startY, blackW, blackH, 0, 0, 3, 3);
+    }
+  }
+
+  // Title
+  noStroke();
+  fill(180);
+  textAlign(LEFT);
+  textSize(13);
+  text('Click keys to play (triangle wave)', 10, 25);
+}
+
+function mousePressed() {
+  userStartAudio();
+  let whiteW = 50, blackW = 30;
+  let startX = 10, startY = 40;
+  let whiteH = 180, blackH = 110;
+
+  // Check black keys first (they are on top)
+  let wx = startX;
+  for (let i = 0; i < notes.length; i++) {
+    if (notes[i].white) {
+      wx += whiteW;
+    } else {
+      let bx = wx - blackW/2 - whiteW + whiteW/2 + 17;
+      if (mouseX > bx && mouseX < bx + blackW &&
+          mouseY > startY && mouseY < startY + blackH) {
+        playNote(i);
+        return;
+      }
+    }
+  }
+
+  // Check white keys
+  wx = startX;
+  for (let i = 0; i < notes.length; i++) {
+    if (notes[i].white) {
+      if (mouseX > wx && mouseX < wx + whiteW - 2 &&
+          mouseY > startY && mouseY < startY + whiteH) {
+        playNote(i);
+        return;
+      }
+      wx += whiteW;
+    }
+  }
+}
+
+function playNote(idx) {
+  activeNote = idx;
+  osc.freq(notes[idx].freq);
+  env.play(osc);
+  setTimeout(() => { activeNote = -1; }, 400);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- ===============================================
+           QUIZ 4
+           =============================================== -->
+      <div class="quiz" data-id="ch12-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which waveform contains <em>only odd-numbered harmonics</em> (1st, 3rd, 5th, 7th, ...)?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch12-q4" value="a"> Sawtooth wave</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q4" value="b" data-correct> Square wave</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q4" value="c"> Sine wave</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q4" value="d"> White noise</label></li>
+        </ul>
+        <div class="explanation">
+          <p>A square wave is composed of the fundamental frequency plus all odd harmonics with amplitudes that decrease as $1/k$. This gives it its characteristic hollow, clarinet-like sound. A sawtooth wave, by contrast, contains <em>all</em> harmonics (both odd and even). A sine wave has no harmonics at all. White noise has energy at all frequencies but is not periodic.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           12.10 History of Sound Art
+           =============================================== -->
+      <h2 id="history-of-sound-art">12.10 History of Sound Art</h2>
+
+      <p>Audio-reactive and computer-generated art exists within a rich tradition of artistic experimentation with sound that spans more than a century.</p>
+
+      <h3>Luigi Russolo and the Art of Noises (1913)</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Italian Futurist <strong>Luigi Russolo</strong> published his manifesto <em>L'Arte dei Rumori</em> (The Art of Noises) in 1913, arguing that the Industrial Revolution had given humans the ability to appreciate more complex sounds. He built mechanical noise-generating instruments called <strong>intonarumori</strong> ("noise intoners") that produced howls, roars, crackles, and buzzes. Russolo is considered a pioneer of noise music and electronic music, predating the existence of electronic instruments themselves.</p>
+      </div>
+
+      <h3>Musique Concrete (1940s-50s)</h3>
+
+      <p>In 1948, French engineer <strong>Pierre Schaeffer</strong> began creating music from recorded environmental sounds &mdash; train noises, voices, slamming doors &mdash; manipulated through tape techniques: cutting, splicing, reversing, and speed changes. This approach, called <strong>musique concrete</strong>, treated recorded sound as raw material to be sculpted, anticipating modern sampling and sound design by decades.</p>
+
+      <h3>John Cage: 4'33" and Chance Operations (1952)</h3>
+
+      <p><strong>John Cage</strong> radically expanded what could be considered music. His most famous work, <em>4'33"</em> (1952), consists of a performer sitting silently at a piano for four minutes and thirty-three seconds. The "music" is the ambient sound of the environment &mdash; the audience coughing, chairs creaking, air conditioning humming. Cage argued that all sound is music, and silence itself is impossible (there is always some sound). His use of chance operations (I Ching, dice, star charts) to compose anticipated algorithmic and generative music.</p>
+
+      <h3>Alvin Lucier: I Am Sitting in a Room (1969)</h3>
+
+      <p><strong>Alvin Lucier</strong> created <em>I Am Sitting in a Room</em> by recording himself speaking, then playing the recording back into the room and re-recording it, repeating this process many times. With each iteration, the room's <strong>resonant frequencies</strong> are amplified while other frequencies fade, gradually transforming intelligible speech into pure tones determined by the room's physical architecture. The piece makes audible the acoustic properties of a space.</p>
+
+      <h3>Karlheinz Stockhausen and Electronic Music (1950s-60s)</h3>
+
+      <p>German composer <strong>Karlheinz Stockhausen</strong> was among the first to compose music using pure electronic tones generated by oscillators at the WDR studio in Cologne. His <em>Studie I</em> (1953) was built entirely from sine waves combined through additive synthesis &mdash; making it one of the earliest works to use the same principles we explore with <code>p5.Oscillator</code> today. Stockhausen's work bridged the gap between musique concrete (recorded sounds) and <em>elektronische Musik</em> (purely synthesized sounds).</p>
+
+      <h3>Contemporary Sound Art</h3>
+
+      <p>Today, sound art encompasses a vast range of practices, many of which blur the boundaries between visual art, music, installation, and performance:</p>
+
+      <ul>
+        <li><strong>Ryoji Ikeda</strong> &mdash; Creates immersive audiovisual installations using data, ultrasonics, and precisely controlled sine tones. His work <em>test pattern</em> converts data into barcode-like visual patterns synchronized with sharp digital audio.</li>
+        <li><strong>Zimoun</strong> &mdash; Builds kinetic sound sculptures from simple mechanical elements (motors, cardboard boxes, cotton balls) that produce complex emergent soundscapes through sheer numbers of identical elements.</li>
+        <li><strong>Janet Cardiff</strong> &mdash; Creates "sound walks" using binaural recordings that overlay fictional narratives onto real physical spaces, creating an uncanny blending of real and recorded environments.</li>
+        <li><strong>Carsten Nicolai (Alva Noto)</strong> &mdash; Explores the boundary between sound and visual art using audio signals to generate visual patterns. His performances visualize sound as interference patterns and waveforms.</li>
+        <li><strong>TeamLab</strong> &mdash; Creates large-scale immersive digital installations where audience interaction generates both visual and sonic responses, dissolving the boundary between artwork and viewer.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>A recurring theme in sound art history is the progressive expansion of what counts as "music" or "sound art." From Russolo's embrace of industrial noise, through Cage's inclusion of silence and ambient sound, to contemporary artists who treat data streams and electromagnetic radiation as sonic material, the boundary between signal and noise, music and sound, has been continually challenged and redrawn.</p>
+      </div>
+
+      <!-- ===============================================
+           12.11 GPU-Accelerated Audio Visualization
+           =============================================== -->
+      <h2 id="gpu-audio-visualization">12.11 GPU-Accelerated Audio Visualization</h2>
+
+      <p>For truly complex audio visualizations, we can combine audio analysis with GPU shaders. The CPU performs the FFT analysis, then passes the frequency data to a shader as uniforms. The shader uses this data to drive visual effects at full resolution and frame rate.</p>
+
+      <h3>Passing Audio Data to Shaders</h3>
+
+      <p>The typical workflow is:</p>
+
+      <ol>
+        <li>Analyze audio on the CPU using <code>p5.FFT</code></li>
+        <li>Extract key values: bass energy, treble energy, overall amplitude, specific frequency bands</li>
+        <li>Pass these as <code>uniform float</code> values to the shader</li>
+        <li>The shader uses these values to modulate colors, distortions, or pattern parameters</li>
+      </ol>
+
+      <pre><code>// In draw():
+let spectrum = fft.analyze();
+let bass = fft.getEnergy("bass") / 255.0;   // normalize to 0-1
+let treble = fft.getEnergy("treble") / 255.0;
+let level = amp.getLevel();
+
+shader(myShader);
+myShader.setUniform('u_bass', bass);
+myShader.setUniform('u_treble', treble);
+myShader.setUniform('u_amplitude', level);
+myShader.setUniform('u_time', millis() / 1000.0);</code></pre>
+
+      <h3>Audio-Reactive Shader Concepts</h3>
+
+      <p>Inside the fragment shader, audio values can control virtually any parameter:</p>
+
+      <pre><code>// GLSL fragment shader excerpt
+uniform float u_bass;
+uniform float u_treble;
+uniform float u_amplitude;
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+
+  // Bass controls zoom/scale
+  float scale = 2.0 + u_bass * 3.0;
+
+  // Treble controls color intensity
+  vec3 col = baseColor * (0.5 + u_treble * 2.0);
+
+  // Amplitude controls distortion
+  uv += sin(uv * 10.0 + u_time) * u_amplitude * 0.1;
+
+  // ... rest of shader
+}</code></pre>
+
+      <p>For more advanced techniques, you can pass the entire FFT spectrum as a <strong>texture</strong>. Create a 1D texture (or a 1-pixel-high 2D texture) where each pixel's brightness corresponds to a frequency bin's amplitude. The shader can then sample this texture to access detailed frequency information at every pixel:</p>
+
+      <pre><code>// JavaScript side: pack spectrum into a texture
+let spectrumImg = createImage(1024, 1);
+spectrumImg.loadPixels();
+for (let i = 0; i < spectrum.length; i++) {
+  spectrumImg.pixels[i * 4] = spectrum[i];     // R
+  spectrumImg.pixels[i * 4 + 1] = spectrum[i]; // G
+  spectrumImg.pixels[i * 4 + 2] = spectrum[i]; // B
+  spectrumImg.pixels[i * 4 + 3] = 255;         // A
+}
+spectrumImg.updatePixels();
+myShader.setUniform('u_spectrum', spectrumImg);</code></pre>
+
+      <pre><code>// GLSL side: sample the spectrum texture
+uniform sampler2D u_spectrum;
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  // Sample spectrum at this pixel's x position
+  float freqAmp = texture2D(u_spectrum, vec2(uv.x, 0.5)).r / 255.0;
+  // Use freqAmp to drive visual effects...
+}</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The power of GPU-based audio visualization comes from the <strong>separation of concerns</strong>: the CPU handles audio analysis (which is inherently serial and sequential), while the GPU handles the visual rendering (which is inherently parallel). This lets you create visualizations at high resolution and frame rate that would be impossible if the CPU had to draw every pixel.</p>
+      </div>
+
+      <h3>Reaction-Diffusion Driven by Audio</h3>
+
+      <p>A particularly striking technique is to modulate the parameters of a reaction-diffusion simulation with audio data. The feed rate ($f$) and kill rate ($k$) can be linked to bass and treble energy respectively, causing the pattern to shift between spots, stripes, and spirals in response to music. Mouse interaction can seed new patterns, and beat detection can trigger sudden parameter changes.</p>
+
+      <p>The following sketch demonstrates an audio-reactive particle system entirely in p5.js (no shader required). It spawns particles from the center whose speed and color are driven by audio energy:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Audio-Reactive Particle System</span>
+        </div>
+        <textarea class="cm-editor">// Audio-reactive particle system
+// Click to enable microphone
+let mic, fft, amp;
+let particles = [];
+let audioStarted = false;
+
+function setup() {
+  createCanvas(500, 400);
+  colorMode(HSB, 360, 100, 100, 100);
+  textFont('monospace');
+}
+
+function draw() {
+  background(240, 20, 8, 30);
+
+  if (!audioStarted) {
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(15);
+    text('Click to enable microphone', width/2, height/2);
+    text('Then make sounds!', width/2, height/2 + 25);
+    return;
+  }
+
+  let spectrum = fft.analyze();
+  let bass = fft.getEnergy("bass");
+  let mid = fft.getEnergy("mid");
+  let treble = fft.getEnergy("treble");
+  let level = amp.getLevel();
+
+  // Spawn particles based on amplitude
+  let spawnCount = floor(map(level, 0, 0.2, 0, 5));
+  for (let i = 0; i < spawnCount; i++) {
+    let angle = random(TWO_PI);
+    let speed = map(level, 0, 0.3, 0.5, 4);
+    let hue = map(bass, 0, 255, 200, 360) % 360;
+    let size = map(mid, 0, 255, 2, 8);
+    particles.push({
+      x: width/2, y: height/2,
+      vx: cos(angle) * speed,
+      vy: sin(angle) * speed,
+      hue: hue,
+      size: size,
+      life: 1.0
+    });
+  }
+
+  // Update and draw particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.008;
+    p.size *= 0.998;
+
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+      continue;
+    }
+
+    noStroke();
+    fill(p.hue, 70, 90, p.life * 80);
+    ellipse(p.x, p.y, p.size, p.size);
+  }
+
+  // Limit particles
+  if (particles.length > 800) {
+    particles.splice(0, particles.length - 800);
+  }
+
+  // Draw center glow based on bass
+  let glowSize = map(bass, 0, 255, 10, 80);
+  noStroke();
+  fill(map(bass, 0, 255, 200, 320) % 360, 60, 80, 30);
+  ellipse(width/2, height/2, glowSize, glowSize);
+
+  // Info
+  fill(0, 0, 70);
+  textAlign(LEFT);
+  textSize(10);
+  text('Particles: ' + particles.length, 8, 15);
+  text('Bass: ' + bass + '  Mid: ' + mid + '  Treble: ' + treble, 8, 30);
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT(0.85, 256);
+    fft.setInput(mic);
+    amp = new p5.Amplitude(0.9);
+    amp.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- ===============================================
+           QUIZ 5
+           =============================================== -->
+      <div class="quiz" data-id="ch12-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In the Web Audio API, what is the correct order of node connections to play a filtered oscillator through the speakers?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch12-q5" value="a"> Destination &rarr; Filter &rarr; Oscillator</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q5" value="b" data-correct> Oscillator &rarr; Filter &rarr; Destination</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q5" value="c"> Filter &rarr; Oscillator &rarr; Destination</label></li>
+          <li class="option"><label><input type="radio" name="ch12-q5" value="d"> Oscillator &rarr; Destination &rarr; Filter</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Audio nodes are connected in a signal chain from source to destination. The oscillator (source) generates the tone, which flows through the filter (processing) that shapes the sound, and finally to the destination (speakers). Audio always flows from source nodes through processing nodes to the output.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <h3>Key Vocabulary</h3>
+
+      <table>
+        <thead>
+          <tr><th>Term</th><th>Definition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Sample rate</strong></td><td>Number of audio samples captured per second (e.g. 44,100 Hz for CD audio)</td></tr>
+          <tr><td><strong>Bit depth</strong></td><td>Number of bits per sample, determining dynamic range (16-bit = 96 dB)</td></tr>
+          <tr><td><strong>Nyquist frequency</strong></td><td>Half the sample rate; the maximum frequency that can be accurately represented</td></tr>
+          <tr><td><strong>Aliasing</strong></td><td>Artifact where frequencies above the Nyquist frequency appear as incorrect lower frequencies</td></tr>
+          <tr><td><strong>FFT</strong></td><td>Fast Fourier Transform; efficiently converts time-domain audio to frequency-domain</td></tr>
+          <tr><td><strong>Spectrum</strong></td><td>Array of amplitude values at each frequency bin (frequency-domain representation)</td></tr>
+          <tr><td><strong>Waveform</strong></td><td>Array of amplitude values over time (time-domain representation)</td></tr>
+          <tr><td><strong>Oscillator</strong></td><td>A tone generator producing a repeating waveform (sine, square, sawtooth, triangle)</td></tr>
+          <tr><td><strong>ADSR</strong></td><td>Attack-Decay-Sustain-Release; the four stages of an amplitude envelope</td></tr>
+          <tr><td><strong>Timbre</strong></td><td>The quality or "color" of a sound, determined by its harmonic content</td></tr>
+          <tr><td><strong>Harmonic</strong></td><td>An integer multiple of the fundamental frequency (2nd harmonic = 2x fundamental)</td></tr>
+          <tr><td><strong>Spectral flux</strong></td><td>Sum of positive differences in the spectrum between consecutive frames; used for beat detection</td></tr>
+          <tr><td><strong>Onset</strong></td><td>The beginning of a new sound event (note attack, drum hit)</td></tr>
+          <tr><td><strong>Decibel (dB)</strong></td><td>Logarithmic unit for measuring sound intensity or amplitude ratios</td></tr>
+          <tr><td><strong>Equal temperament</strong></td><td>Tuning system dividing the octave into 12 equal semitones, each with frequency ratio $2^{1/12}$</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ===============================================
+           12.12 Summary
+           =============================================== -->
+      <h2 id="summary">12.12 Summary</h2>
+
+      <p>This chapter covered the fundamentals of digital audio and audio-reactive art:</p>
+
+      <ul>
+        <li><strong>Sound is a pressure wave</strong> characterized by frequency (pitch), amplitude (loudness), and waveform (timbre). Digital audio represents these waves as sequences of numbers sampled at rates like 44,100 Hz.</li>
+        <li><strong>The Nyquist-Shannon theorem</strong> guarantees perfect reconstruction of a signal if the sample rate is at least twice the highest frequency present. Violating this causes aliasing.</li>
+        <li><strong>The Web Audio API</strong> provides a modular, node-based system for audio generation, processing, and analysis in the browser. <strong>p5-sound</strong> wraps this in a simpler interface.</li>
+        <li><strong>Oscillators</strong> generate waveforms (sine, square, sawtooth, triangle) at specified frequencies. The equal temperament system divides each octave into 12 semitones with the formula $f = 440 \times 2^{(n-69)/12}$.</li>
+        <li><strong>The FFT</strong> converts time-domain audio into frequency-domain data, revealing which frequencies are present and how loud each one is. This is the essential tool for audio-reactive visuals.</li>
+        <li><strong>Audio-reactive art</strong> maps audio properties (amplitude, frequency bands, spectral flux) to visual parameters (size, color, position, particle behavior).</li>
+        <li><strong>Sound art history</strong> stretches from Russolo's noise machines (1913) through Cage's silence (1952) to contemporary data-driven installations.</li>
+        <li><strong>GPU shaders</strong> can receive audio data as uniforms to create high-performance, full-resolution audio visualizations.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The core of audio-reactive art is <strong>mapping</strong>: choosing which audio property controls which visual property. The most compelling audio-reactive works use thoughtful, non-obvious mappings that reveal hidden structures in the sound. Experiment with different mappings &mdash; the same audio data can produce wildly different visual results depending on how you interpret it.</p>
+      </div>
+
+      <!-- ===============================================
+           12.13 References
+           =============================================== -->
+      <h2 id="references">12.13 References</h2>
+
+      <ul>
+        <li>Puckette, M. (2007). <em>The Theory and Technique of Electronic Music</em>. World Scientific.</li>
+        <li>Roads, C. (1996). <em>The Computer Music Tutorial</em>. MIT Press.</li>
+        <li>Smith, J. O. (2007). <em>Mathematics of the Discrete Fourier Transform (DFT)</em>. W3K Publishing. Available online at <a href="https://ccrma.stanford.edu/~jos/mdft/" target="_blank">ccrma.stanford.edu</a>.</li>
+        <li>p5.js Sound Library Reference: <a href="https://p5js.org/reference/#/libraries/p5.sound" target="_blank">p5js.org/reference/#/libraries/p5.sound</a></li>
+        <li>Web Audio API Specification: <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API" target="_blank">MDN Web Audio API</a></li>
+        <li>Russolo, L. (1913). <em>The Art of Noises</em>. Translated by Barclay Brown (1986), Pendragon Press.</li>
+        <li>Cage, J. (1961). <em>Silence: Lectures and Writings</em>. Wesleyan University Press.</li>
+        <li>Chowning, J. (1973). "The Synthesis of Complex Audio Spectra by Means of Frequency Modulation." <em>Journal of the Audio Engineering Society</em>, 21(7), 526-534.</li>
+        <li>Cooley, J. W. &amp; Tukey, J. W. (1965). "An Algorithm for the Machine Calculation of Complex Fourier Series." <em>Mathematics of Computation</em>, 19(90), 297-301.</li>
+        <li>Robert Munafo's Gray-Scott Reaction-Diffusion Explorer: <a href="https://mrob.com/pub/comp/xmorphia/" target="_blank">mrob.com/pub/comp/xmorphia</a></li>
+      </ul>
+
+      <!-- ===============================================
+           CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <div class="code-challenge" data-id="ch12-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>midiToFreq</code> that converts a MIDI note number to a frequency in Hz using the equal temperament formula. A4 (MIDI note 69) = 440 Hz. The formula is: $f = 440 \times 2^{(n - 69) / 12}$</p>
+        <textarea class="cm-editor">function midiToFreq(note) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "midiToFreq(69)", "expected": 440},
+          {"call": "midiToFreq(60)", "expected": 261.6256},
+          {"call": "midiToFreq(81)", "expected": 880},
+          {"call": "Math.round(midiToFreq(57) * 100) / 100", "expected": 220}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch12-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>dBToLinear</code> that converts a decibel value to a linear amplitude. The formula is: $A = 10^{dB / 20}$. For example, 0 dB = 1.0 (unity gain), -6 dB is approximately 0.5012, -20 dB = 0.1, and -infinity dB = 0. Round the result to 4 decimal places.</p>
+        <textarea class="cm-editor">function dBToLinear(dB) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "dBToLinear(0)", "expected": 1},
+          {"call": "dBToLinear(-20)", "expected": 0.1},
+          {"call": "dBToLinear(-6)", "expected": 0.5012},
+          {"call": "dBToLinear(20)", "expected": 10}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch12-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>noteFrequency</code> that takes a note name (string like "A", "C", "F#") and an octave number, and returns the frequency in Hz. Use A4 = 440 Hz as the reference. The semitone offsets from C are: C=0, C#=1, D=2, D#=3, E=4, F=5, F#=6, G=7, G#=8, A=9, A#=10, B=11. MIDI note = (octave + 1) * 12 + semitone offset. Round to 2 decimal places.</p>
+        <textarea class="cm-editor">function noteFrequency(noteName, octave) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "noteFrequency('A', 4)", "expected": 440},
+          {"call": "noteFrequency('C', 4)", "expected": 261.63},
+          {"call": "noteFrequency('A', 5)", "expected": 880},
+          {"call": "noteFrequency('E', 4)", "expected": 329.63}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- ===============================================
+           OPEN-ENDED EXERCISES
+           =============================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 12.1 &mdash; Audio-Reactive Generative Art</div>
+        <p class="prompt">Create a p5.js sketch that uses microphone input to generate an evolving visual artwork. The sketch should use at least two different FFT frequency bands (e.g., bass and treble) to control different visual properties. Ideas: bass could control background hue while treble controls the density of small shapes; or bass could drive large slow shapes while treble drives small fast particles.</p>
+        <textarea class="cm-editor">// Audio-Reactive Generative Art
+// Use microphone input to drive visuals
+let mic, fft;
+let audioStarted = false;
+
+function setup() {
+  createCanvas(500, 400);
+  colorMode(HSB, 360, 100, 100, 100);
+}
+
+function draw() {
+  if (!audioStarted) {
+    background(0, 0, 20);
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(14);
+    text('Click to start', width/2, height/2);
+    return;
+  }
+
+  // Your code here: analyze audio and create visuals
+  let spectrum = fft.analyze();
+  let bass = fft.getEnergy("bass");
+  let treble = fft.getEnergy("treble");
+
+  background(0, 0, 10, 20);
+  // ... create your audio-reactive art
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT(0.8, 256);
+    fft.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>// Audio-Reactive Generative Art - Solution
+let mic, fft;
+let audioStarted = false;
+let shapes = [];
+
+function setup() {
+  createCanvas(500, 400);
+  colorMode(HSB, 360, 100, 100, 100);
+}
+
+function draw() {
+  if (!audioStarted) {
+    background(0, 0, 20);
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(14);
+    text('Click to start', width/2, height/2);
+    return;
+  }
+
+  let spectrum = fft.analyze();
+  let bass = fft.getEnergy("bass");
+  let mid = fft.getEnergy("mid");
+  let treble = fft.getEnergy("treble");
+
+  // Bass controls background hue
+  let bgHue = map(bass, 0, 255, 200, 300);
+  background(bgHue, 30, 10, 25);
+
+  // Bass spawns large slow circles
+  if (bass > 100) {
+    shapes.push({
+      x: width/2 + random(-100, 100),
+      y: height/2 + random(-100, 100),
+      size: map(bass, 100, 255, 20, 120),
+      hue: map(bass, 0, 255, 0, 60),
+      life: 1.0,
+      type: 'circle'
+    });
+  }
+
+  // Treble spawns small fast particles
+  let trebleCount = floor(map(treble, 0, 255, 0, 4));
+  for (let i = 0; i < trebleCount; i++) {
+    let angle = random(TWO_PI);
+    shapes.push({
+      x: width/2, y: height/2,
+      vx: cos(angle) * map(treble, 0, 255, 1, 5),
+      vy: sin(angle) * map(treble, 0, 255, 1, 5),
+      size: map(treble, 0, 255, 2, 6),
+      hue: map(treble, 0, 255, 150, 250),
+      life: 1.0,
+      type: 'particle'
+    });
+  }
+
+  // Update and draw
+  for (let i = shapes.length - 1; i >= 0; i--) {
+    let s = shapes[i];
+    s.life -= 0.01;
+    if (s.type === 'particle') {
+      s.x += s.vx;
+      s.y += s.vy;
+    }
+    if (s.life <= 0) { shapes.splice(i, 1); continue; }
+
+    noStroke();
+    fill(s.hue, 70, 90, s.life * 60);
+    ellipse(s.x, s.y, s.size * s.life, s.size * s.life);
+  }
+
+  if (shapes.length > 600) shapes.splice(0, shapes.length - 600);
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT(0.85, 256);
+    fft.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 12.2 &mdash; Simple Drum Machine</div>
+        <p class="prompt">Build a simple drum machine using oscillators and noise. Create at least three different "drum" sounds (kick, snare, hi-hat) using oscillators with short envelopes and noise bursts. Trigger them with keyboard keys or on-screen buttons. A kick drum can be simulated with a low-frequency sine wave with a fast pitch drop; a snare with white noise mixed with a mid-frequency tone; a hi-hat with filtered high-frequency noise.</p>
+        <textarea class="cm-editor">// Simple Drum Machine
+// Press keys: K=kick, S=snare, H=hi-hat
+
+function setup() {
+  createCanvas(400, 250);
+  textFont('monospace');
+  textSize(14);
+}
+
+function draw() {
+  background(25, 25, 35);
+  fill(200);
+  noStroke();
+  textAlign(CENTER);
+  text('DRUM MACHINE', width/2, 30);
+  textSize(13);
+  text('Press K = Kick, S = Snare, H = Hi-hat', width/2, 55);
+
+  // Draw pads
+  // Your code here
+}
+
+function keyPressed() {
+  userStartAudio();
+  // Your code here: trigger sounds based on key
+}
+
+// Create your drum sound functions here</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>// Simple Drum Machine - Solution
+let kickOsc, snareOsc, snareNoise;
+let kickEnv, snareEnv, snareNoiseEnv, hatEnv;
+let hatNoise, hatFilter;
+let lastHit = '';
+let hitTime = 0;
+
+function setup() {
+  createCanvas(400, 250);
+  textFont('monospace');
+
+  // Kick: low sine with pitch sweep
+  kickOsc = new p5.Oscillator('sine');
+  kickOsc.amp(0);
+  kickOsc.start();
+  kickEnv = new p5.Envelope();
+  kickEnv.setADSR(0.005, 0.15, 0, 0.1);
+  kickEnv.setRange(0.6, 0);
+
+  // Snare: mid tone + noise
+  snareOsc = new p5.Oscillator('triangle');
+  snareOsc.freq(200);
+  snareOsc.amp(0);
+  snareOsc.start();
+  snareEnv = new p5.Envelope();
+  snareEnv.setADSR(0.002, 0.08, 0, 0.05);
+  snareEnv.setRange(0.3, 0);
+
+  snareNoise = new p5.Noise('white');
+  snareNoise.amp(0);
+  snareNoise.start();
+  snareNoiseEnv = new p5.Envelope();
+  snareNoiseEnv.setADSR(0.001, 0.1, 0, 0.08);
+  snareNoiseEnv.setRange(0.25, 0);
+
+  // Hi-hat: filtered noise
+  hatNoise = new p5.Noise('white');
+  hatNoise.amp(0);
+  hatNoise.start();
+  hatFilter = new p5.Filter('highpass');
+  hatFilter.freq(8000);
+  hatNoise.disconnect();
+  hatNoise.connect(hatFilter);
+  hatEnv = new p5.Envelope();
+  hatEnv.setADSR(0.001, 0.05, 0, 0.03);
+  hatEnv.setRange(0.2, 0);
+}
+
+function draw() {
+  background(25, 25, 35);
+
+  // Title
+  fill(200);
+  noStroke();
+  textAlign(CENTER);
+  textSize(16);
+  text('DRUM MACHINE', width/2, 30);
+  textSize(11);
+  fill(120);
+  text('Press K = Kick  |  S = Snare  |  H = Hi-hat', width/2, 52);
+
+  // Draw pads
+  let padW = 100, padH = 80;
+  let y = 90;
+  let labels = ['KICK (K)', 'SNARE (S)', 'HI-HAT (H)'];
+  let colors = [[200,60,60],[60,200,100],[60,120,220]];
+  let keys = ['k','s','h'];
+
+  for (let i = 0; i < 3; i++) {
+    let x = 40 + i * 120;
+    let isActive = lastHit === keys[i] && millis() - hitTime < 150;
+    if (isActive) {
+      fill(colors[i][0], colors[i][1], colors[i][2]);
+    } else {
+      fill(50, 52, 60);
+    }
+    stroke(colors[i][0], colors[i][1], colors[i][2]);
+    strokeWeight(2);
+    rect(x, y, padW, padH, 8);
+
+    noStroke();
+    fill(isActive ? 30 : 180);
+    textSize(11);
+    text(labels[i], x + padW/2, y + padH/2 + 4);
+  }
+
+  // Recent hit
+  fill(100);
+  textSize(10);
+  text('Click canvas first, then press keys', width/2, 220);
+}
+
+function keyPressed() {
+  userStartAudio();
+  if (key === 'k' || key === 'K') {
+    kickOsc.freq(150);
+    kickEnv.play(kickOsc);
+    // Quick pitch drop for punch
+    kickOsc.freq(150);
+    kickOsc.freq(50, 0.08);
+    lastHit = 'k'; hitTime = millis();
+  }
+  if (key === 's' || key === 'S') {
+    snareEnv.play(snareOsc);
+    snareNoiseEnv.play(snareNoise);
+    lastHit = 's'; hitTime = millis();
+  }
+  if (key === 'h' || key === 'H') {
+    hatEnv.play(hatNoise);
+    lastHit = 'h'; hitTime = millis();
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 12.3 &mdash; Spectrum Visualizer with Color Mapping</div>
+        <p class="prompt">Create a circular frequency spectrum visualizer. Display the FFT frequency bins as points or lines radiating outward from the center of the canvas. Use frequency to determine the angle, amplitude to determine the radius, and map the frequency to a color gradient (low frequencies = warm colors, high frequencies = cool colors). Add smoothing to make the visualization fluid.</p>
+        <textarea class="cm-editor">// Circular Spectrum Visualizer
+// Click to enable microphone
+let mic, fft;
+let audioStarted = false;
+
+function setup() {
+  createCanvas(450, 450);
+  colorMode(HSB, 360, 100, 100, 100);
+}
+
+function draw() {
+  background(240, 15, 8, 30);
+
+  if (!audioStarted) {
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(14);
+    text('Click to start', width/2, height/2);
+    return;
+  }
+
+  // Your code here
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT(0.85, 256);
+    fft.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>// Circular Spectrum Visualizer - Solution
+let mic, fft;
+let audioStarted = false;
+
+function setup() {
+  createCanvas(450, 450);
+  colorMode(HSB, 360, 100, 100, 100);
+}
+
+function draw() {
+  background(240, 15, 8, 25);
+
+  if (!audioStarted) {
+    fill(0, 0, 80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(14);
+    text('Click to start', width/2, height/2);
+    return;
+  }
+
+  let spectrum = fft.analyze();
+  translate(width/2, height/2);
+
+  let numBands = 80;
+  let innerR = 40;
+
+  // Draw inner circle
+  noFill();
+  stroke(0, 0, 30, 40);
+  strokeWeight(1);
+  ellipse(0, 0, innerR * 2, innerR * 2);
+
+  // Draw spectrum
+  for (let i = 0; i < numBands; i++) {
+    let idx = floor(map(i, 0, numBands, 0, spectrum.length / 2));
+    let amp = spectrum[idx];
+    let angle = map(i, 0, numBands, 0, TWO_PI);
+    let r = map(amp, 0, 255, innerR, 200);
+    let x1 = cos(angle) * innerR;
+    let y1 = sin(angle) * innerR;
+    let x2 = cos(angle) * r;
+    let y2 = sin(angle) * r;
+
+    // Warm to cool color mapping
+    let hue = map(i, 0, numBands, 0, 270);
+    let bright = map(amp, 0, 255, 30, 100);
+
+    stroke(hue, 80, bright, 80);
+    strokeWeight(2);
+    line(x1, y1, x2, y2);
+
+    // Dot at end
+    noStroke();
+    fill(hue, 60, 100, map(amp, 0, 255, 0, 90));
+    ellipse(x2, y2, map(amp, 0, 255, 2, 8));
+  }
+
+  // Mirror for symmetry
+  for (let i = 0; i < numBands; i++) {
+    let idx = floor(map(i, 0, numBands, 0, spectrum.length / 2));
+    let amp = spectrum[idx];
+    let angle = map(i, 0, numBands, 0, TWO_PI) + PI;
+    let r = map(amp, 0, 255, innerR, 150);
+    let x2 = cos(angle) * r;
+    let y2 = sin(angle) * r;
+    let hue = map(i, 0, numBands, 0, 270);
+
+    noStroke();
+    fill(hue, 50, map(amp, 0, 255, 20, 80), 40);
+    ellipse(x2, y2, map(amp, 0, 255, 1, 5));
+  }
+}
+
+function mousePressed() {
+  if (!audioStarted) {
+    userStartAudio();
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT(0.85, 256);
+    fft.setInput(mic);
+    audioStarted = true;
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- ===============================================
+           CHAPTER END QUIZ
+           =============================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 12 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of sound and audio-reactive art concepts.</p>
+
+        <div class="quiz" data-id="ch12-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">A digital audio file has a sample rate of 48,000 Hz and a bit depth of 24 bits. Approximately how much dynamic range (in dB) does the 24-bit depth provide?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch12-fq1" value="a"> 96 dB</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq1" value="b" data-correct> 144 dB</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq1" value="c"> 48 dB</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq1" value="d"> 192 dB</label></li>
+          </ul>
+          <div class="explanation"><p>The dynamic range formula is approximately $6.02 \times n$ dB, where $n$ is the bit depth. For 24-bit audio: $6.02 \times 24 \approx 144$ dB. This is far greater than the ~120 dB range of human hearing and provides ample headroom for professional audio production.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch12-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">In p5.js, what does <code>fft.getEnergy("bass")</code> return?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch12-fq2" value="a"> The total energy of the audio signal</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq2" value="b" data-correct> The amplitude of frequencies in the 20-140 Hz range (0-255)</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq2" value="c"> A boolean indicating whether bass is present</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq2" value="d"> The frequency of the loudest bass note in Hz</label></li>
+          </ul>
+          <div class="explanation"><p><code>fft.getEnergy("bass")</code> returns a single number from 0 to 255 representing the average amplitude of frequency components in the bass range (20-140 Hz). It must be called after <code>fft.analyze()</code> to get current data.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch12-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">Why must audio in web browsers be initiated by a user gesture (click, tap, or keypress)?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch12-fq3" value="a"> Because the Web Audio API has a bug that requires user input</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq3" value="b"> Because audio files are too large to load automatically</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq3" value="c" data-correct> To prevent websites from playing unwanted sounds without the user's consent (autoplay policy)</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq3" value="d"> Because microphones require a hardware reset before use</label></li>
+          </ul>
+          <div class="explanation"><p>Browser autoplay policies exist to prevent websites from playing unexpected audio, which was a major source of user annoyance. The policy requires that audio be initiated by a deliberate user action. In p5.js, you can call <code>userStartAudio()</code> inside a <code>mousePressed()</code> or <code>keyPressed()</code> handler to satisfy this requirement.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch12-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">What is the frequency of the note A5, given that A4 = 440 Hz?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch12-fq4" value="a"> 550 Hz</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq4" value="b"> 660 Hz</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq4" value="c" data-correct> 880 Hz</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq4" value="d"> 1760 Hz</label></li>
+          </ul>
+          <div class="explanation"><p>Each octave doubles the frequency. A5 is one octave above A4, so its frequency is $440 \times 2 = 880$ Hz. Similarly, A3 = 220 Hz, A6 = 1760 Hz, and so on.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch12-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">In spectral flux beat detection, why do we only sum the <em>positive</em> differences between consecutive FFT frames?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch12-fq5" value="a"> Negative differences indicate silence</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq5" value="b" data-correct> We want to detect increases in energy (onsets), not decreases (decays)</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq5" value="c"> Negative numbers cannot be stored in the FFT array</label></li>
+            <li class="option"><label><input type="radio" name="ch12-fq5" value="d"> It is a limitation of the p5.js FFT implementation</label></li>
+          </ul>
+          <div class="explanation"><p>Beat detection targets the <em>onset</em> of new sounds &mdash; moments when energy suddenly increases. Positive spectral flux (energy going up) indicates a new sound starting. Negative flux (energy decreasing) indicates a sound dying away, which is not a beat. By summing only positive differences, we respond to attacks rather than decays.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch11/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 11</span>
+        </a>
+        <a href="../ch13/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 13: Algorithmic Thinking &amp; Shader Porting</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

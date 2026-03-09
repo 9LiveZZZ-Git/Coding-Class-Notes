@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 4: Creative Fractals &amp; Coloring — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch04">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 4: Creative Fractals &amp; Coloring</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 4: Creative Fractals &amp; Coloring</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts — Beyond the Mandelbrot set: alternative formulas, smooth coloring, cosine palettes, Newton fractals, and frame feedback</p>
+
+      <!-- ===============================================
+           4.1 INTRODUCTION
+           =============================================== -->
+      <h2 id="introduction">4.1 Introduction</h2>
+
+      <p>In the previous chapter, we built a Mandelbrot set renderer in GLSL. The iteration rule was straightforward:</p>
+
+      <p>$$z_{n+1} = z_n^2 + c$$</p>
+
+      <p>with $z_0 = 0$ and $c$ determined by each pixel's position in the complex plane. For each pixel, we iterated until $|z|$ exceeded an escape radius or we hit a maximum iteration count. Escaped pixels were colored by iteration count; non-escaping pixels were colored black.</p>
+
+      <p>This gave us the iconic Mandelbrot image. But we can push much further in two directions:</p>
+
+      <ol>
+        <li><strong>Different formulas</strong>: What happens if we replace $z^2$ with $z^3$, or $\sin(z)$, or $e^z$? Each function has its own geometry, its own symmetries, and produces its own fractal landscape.</li>
+        <li><strong>Better coloring</strong>: Instead of just counting iterations (which produces visible banding), we can extract rich statistics from the iteration process and map them to color in sophisticated ways.</li>
+      </ol>
+
+      <p>This chapter explores both directions. We will also introduce Newton fractals as a fundamentally different kind of fractal iteration, cover the technique of frame feedback in GLSL for cellular automata and trail effects, and connect our computational work to the history of early abstract animation.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Fractal exploration is <strong>computational alchemy</strong>. We do not have a complete theory that predicts what each formula will look like. We must compute it and see. The artist's role is to explore parameter spaces, discover visual phenomena, and develop aesthetic judgment about coloring and composition.</p>
+      </div>
+
+      <p>By the end of this chapter, you will be able to render fractals from arbitrary complex functions, color them with smooth gradients and perceptually uniform palettes, implement Newton's method as a fractal generator, and use frame feedback for cellular automata and visual effects.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The idea of iterating complex functions and studying the resulting geometry dates to the early 20th century. Pierre Fatou (1878--1929) and Gaston Julia (1893--1978) independently studied the iteration of rational functions in the complex plane around 1918--1920. However, without computers, they could only prove theorems about the structure -- they never saw the images. It was not until Benoit Mandelbrot used IBM computers in 1978--1980 to render these sets that their extraordinary visual beauty was revealed.</p>
+      </div>
+
+      <p>Starter code for this chapter: <a href="https://editor.p5js.org/kybr/sketches/NmgtHIKFc">p5.js Web Editor -- Fractal Starter</a></p>
+
+      <h3>4.1.1 A Map of the Territory</h3>
+
+      <p>The landscape we are about to explore can be organized along two axes. The <strong>formula axis</strong> determines the shape of the fractal: $z^2 + c$ gives the Mandelbrot, $z^3 + c$ gives the cubic Multibrot, $\sin(z) + c$ gives a periodic tree-like structure, and so on. The <strong>coloring axis</strong> determines how we render the fractal: raw iteration count, smooth coloring, orbit statistics, cosine palettes, HSV mapping, or CIELAB perceptual gradients. Any formula can be combined with any coloring method, giving us a vast creative space to explore.</p>
+
+      <p>We will also encounter two entirely different <em>types</em> of fractal iteration:</p>
+
+      <ul>
+        <li><strong>Escape-time fractals</strong> (Mandelbrot, Julia sets): We iterate until $|z|$ exceeds a threshold, then color by how long it took to escape.</li>
+        <li><strong>Convergence fractals</strong> (Newton fractals): We iterate until $z$ converges to a fixed point, then color by which fixed point it reached.</li>
+      </ul>
+
+      <p>Both types produce intricate fractal boundaries, but for fundamentally different reasons. Understanding both gives us a much richer toolkit for creative computation.</p>
+
+      <!-- ===============================================
+           4.2 COMPLEX ARITHMETIC IN GLSL
+           =============================================== -->
+      <h2 id="complex-arithmetic">4.2 Complex Arithmetic in GLSL</h2>
+
+      <p>GLSL has no native complex number type. This is because GLSL was designed for 3D graphics, where complex numbers are rarely needed. However, we can represent a complex number $a + bi$ as a <code>vec2</code> where <code>.x</code> is the real part $a$ and <code>.y</code> is the imaginary part $b$. We then build complex operations as functions, creating a small but powerful library.</p>
+
+      <h3>4.2.1 Basic Operations</h3>
+
+      <p><strong>Addition and subtraction</strong> work automatically because GLSL's <code>vec2</code> addition is component-wise:</p>
+
+      <pre><code>vec2 z1 = vec2(1.0, 2.0); // 1 + 2i
+vec2 z2 = vec2(3.0, 4.0); // 3 + 4i
+vec2 sum = z1 + z2;        // 4 + 6i  (correct!)</code></pre>
+
+      <p><strong>Scalar multiplication</strong> also works automatically:</p>
+
+      <pre><code>vec2 scaled = z1 * 3.0; // 3 + 6i (correct!)</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Complex multiplication does NOT work with <code>*</code></strong>, because <code>vec2 * vec2</code> in GLSL performs component-wise multiplication, not complex multiplication. <code>z1 * z2</code> gives <code>vec2(3, 8)</code>, but the correct result of $(1+2i)(3+4i) = -5 + 10i$ is <code>vec2(-5, 10)</code>.</p>
+      </div>
+
+      <p>We implement complex multiplication from the formula $(a+bi)(c+di) = (ac-bd) + (ad+bc)i$:</p>
+
+      <pre><code>vec2 cx_mul(vec2 a, vec2 b) {
+  return vec2(
+    a.x * b.x - a.y * b.y,  // real: ac - bd
+    a.x * b.y + a.y * b.x   // imag: ad + bc
+  );
+}</code></pre>
+
+      <h3>4.2.2 Division and Conjugate</h3>
+
+      <p><strong>Complex division</strong> uses the conjugate trick. To divide $\frac{a+bi}{c+di}$, we multiply numerator and denominator by the conjugate $c - di$:</p>
+
+      <p>$$\frac{a+bi}{c+di} = \frac{(a+bi)(c-di)}{(c+di)(c-di)} = \frac{(ac+bd) + (bc-ad)i}{c^2+d^2}$$</p>
+
+      <pre><code>vec2 cx_div(vec2 a, vec2 b) {
+  float denom = dot(b, b); // b.x^2 + b.y^2
+  return vec2(
+    a.x*b.x + a.y*b.y,
+    a.y*b.x - a.x*b.y
+  ) / denom;
+}</code></pre>
+
+      <p>Note the use of <code>dot(b, b)</code> instead of <code>b.x*b.x + b.y*b.y</code>. GLSL's built-in <code>dot()</code> function computes the dot product, which for a <code>vec2</code> is exactly $x^2 + y^2$ -- the squared modulus of the complex number. This is a recurring pattern: we use <code>dot(z, z)</code> whenever we need $|z|^2$.</p>
+
+      <p>The <strong>conjugate</strong> $\overline{a+bi} = a - bi$ simply negates the imaginary part:</p>
+
+      <pre><code>vec2 cx_conj(vec2 z) { return vec2(z.x, -z.y); }</code></pre>
+
+      <h3>4.2.3 Powers and Transcendental Functions</h3>
+
+      <p><strong>Complex squaring</strong> is a special case of multiplication, slightly optimized:</p>
+
+      <pre><code>vec2 cx_sqr(vec2 z) {
+  return vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y);
+}</code></pre>
+
+      <p><strong>Complex power</strong> uses the polar form $z = re^{i\theta}$ where $r = |z|$ and $\theta = \arg(z)$. Then $z^n = r^n e^{in\theta} = r^n(\cos(n\theta) + i\sin(n\theta))$:</p>
+
+      <pre><code>vec2 cx_pow(vec2 z, float n) {
+  float r = length(z);
+  float theta = atan(z.y, z.x);
+  return pow(r, n) * vec2(cos(n*theta), sin(n*theta));
+}</code></pre>
+
+      <p><strong>Complex exponential</strong> follows from Euler's formula $e^{a+bi} = e^a(\cos b + i\sin b)$:</p>
+
+      <pre><code>vec2 cx_exp(vec2 z) {
+  return exp(z.x) * vec2(cos(z.y), sin(z.y));
+}</code></pre>
+
+      <p><strong>Complex sine</strong>: Using the identity $\sin(a+bi) = \sin a \cosh b + i\cos a \sinh b$:</p>
+
+      <pre><code>float cosh_f(float x) { return (exp(x) + exp(-x)) * 0.5; }
+float sinh_f(float x) { return (exp(x) - exp(-x)) * 0.5; }
+
+vec2 cx_sin(vec2 z) {
+  return vec2(sin(z.x)*cosh_f(z.y), cos(z.x)*sinh_f(z.y));
+}</code></pre>
+
+      <p><strong>Complex cosine</strong>: $\cos(a+bi) = \cos a \cosh b - i\sin a \sinh b$:</p>
+
+      <pre><code>vec2 cx_cos(vec2 z) {
+  return vec2(cos(z.x)*cosh_f(z.y), -sin(z.x)*sinh_f(z.y));
+}</code></pre>
+
+      <p><strong>Complex logarithm</strong> (principal branch): $\ln(z) = \ln|z| + i\arg(z)$:</p>
+
+      <pre><code>vec2 cx_log(vec2 z) {
+  return vec2(log(length(z)), atan(z.y, z.x));
+}</code></pre>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Complex Number Library</strong> -- The complete set of functions (<code>cx_mul</code>, <code>cx_div</code>, <code>cx_sqr</code>, <code>cx_pow</code>, <code>cx_exp</code>, <code>cx_sin</code>, <code>cx_cos</code>, <code>cx_log</code>, <code>cx_conj</code>) that you paste at the top of your GLSL fragment shader to enable complex arithmetic. Every fractal shader in this chapter uses this library.</p>
+      </div>
+
+      <h3>4.2.4 Why Build Our Own Library?</h3>
+
+      <p>You might wonder why GLSL does not simply include complex number support. The answer is that GLSL is designed for 3D graphics -- transforming vertices, computing lighting, and texturing surfaces. Complex numbers are not part of that world. But because GLSL provides fast <code>vec2</code> operations, it turns out to be an excellent platform for complex number computation. Our library adds the missing operations.</p>
+
+      <p>The key insight is that complex arithmetic maps perfectly onto 2D vector operations with just a few modifications. Addition is identical. Multiplication requires the "FOIL" cross terms. Division requires the conjugate trick. And transcendental functions use Euler's formula to bridge the gap between exponential and trigonometric representations.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Euler's Formula</strong> is the bridge between exponential and trigonometric representations of complex numbers: $e^{i\theta} = \cos\theta + i\sin\theta$. This single identity underlies our implementations of <code>cx_exp</code>, <code>cx_pow</code>, <code>cx_sin</code>, and <code>cx_cos</code>. It is arguably the most important formula in all of mathematics for connecting algebra, geometry, and analysis.</p>
+      </div>
+
+      <h3>4.2.5 The Modulus and Argument</h3>
+
+      <p>Every complex number $z = a + bi$ can also be written in <strong>polar form</strong> as $z = re^{i\theta}$, where:</p>
+
+      <ul>
+        <li>$r = |z| = \sqrt{a^2 + b^2}$ is the <strong>modulus</strong> (distance from the origin)</li>
+        <li>$\theta = \arg(z) = \text{atan2}(b, a)$ is the <strong>argument</strong> (angle from the positive real axis)</li>
+      </ul>
+
+      <p>In GLSL, the modulus is <code>length(z)</code> and the argument is <code>atan(z.y, z.x)</code>. The squared modulus <code>dot(z, z)</code> (which equals $a^2 + b^2$) is what we use for escape testing, because it avoids the expensive square root.</p>
+
+      <p>The following interactive demo lets you explore complex arithmetic visually. Each point on the plane represents a complex number; the output shows the result of applying a complex function.</p>
+
+      <!-- Interactive Demo: Complex Arithmetic Visualizer -->
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Complex Arithmetic Visualizer</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  textFont('monospace');
+  textSize(12);
+}
+
+function draw() {
+  background(20, 20, 40);
+
+  // Map mouse to complex number
+  let re = map(mouseX, 0, width, -2, 2);
+  let im = map(mouseY, 0, height, 2, -2);
+
+  // Draw grid
+  stroke(60);
+  strokeWeight(0.5);
+  for (let x = -2; x <= 2; x += 0.5) {
+    let sx = map(x, -2, 2, 0, width);
+    line(sx, 0, sx, height);
+  }
+  for (let y = -2; y <= 2; y += 0.5) {
+    let sy = map(y, 2, -2, 0, height);
+    line(0, sy, width, sy);
+  }
+
+  // Draw axes
+  stroke(100);
+  strokeWeight(1);
+  line(width/2, 0, width/2, height);
+  line(0, height/2, width, height/2);
+
+  // Draw z = mouse position
+  let zx = mouseX, zy = mouseY;
+  fill(100, 200, 255);
+  noStroke();
+  ellipse(zx, zy, 10, 10);
+
+  // Compute z^2
+  let z2re = re*re - im*im;
+  let z2im = 2*re*im;
+  let z2x = map(z2re, -2, 2, 0, width);
+  let z2y = map(z2im, 2, -2, 0, height);
+  fill(255, 100, 100);
+  ellipse(z2x, z2y, 10, 10);
+
+  // Compute e^z
+  let ezr = exp(re) * cos(im);
+  let ezi = exp(re) * sin(im);
+  let ezx = map(ezr, -2, 2, 0, width);
+  let ezy = map(ezi, 2, -2, 0, height);
+  fill(100, 255, 100);
+  ellipse(ezx, ezy, 10, 10);
+
+  // Labels
+  fill(255);
+  noStroke();
+  text('z = ' + re.toFixed(2) + ' + ' + im.toFixed(2) + 'i', 10, 20);
+  fill(100, 200, 255);
+  text('z (blue)', 10, 40);
+  fill(255, 100, 100);
+  text('z^2 = ' + z2re.toFixed(2) + ' + ' + z2im.toFixed(2) + 'i (red)', 10, 55);
+  fill(100, 255, 100);
+  text('e^z = ' + ezr.toFixed(2) + ' + ' + ezi.toFixed(2) + 'i (green)', 10, 70);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 1 -->
+      <div class="quiz" data-id="ch04-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In GLSL, why can't we use <code>vec2 result = z1 * z2;</code> for complex multiplication?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch04-q1" value="a"> GLSL does not support multiplication of <code>vec2</code> types</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q1" value="b" data-correct> <code>vec2 * vec2</code> performs component-wise multiplication, not complex multiplication</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q1" value="c"> Complex numbers require <code>vec4</code>, not <code>vec2</code></label></li>
+          <li class="option"><label><input type="radio" name="ch04-q1" value="d"> GLSL uses row-major multiplication which reverses the operands</label></li>
+        </ul>
+        <div class="explanation">
+          <p>GLSL's <code>*</code> operator on <code>vec2</code> performs component-wise multiplication: <code>vec2(a,b) * vec2(c,d) = vec2(a*c, b*d)</code>. But complex multiplication requires the cross terms: $(a+bi)(c+di) = (ac - bd) + (ad + bc)i$. We must implement this manually with <code>cx_mul()</code>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           4.3 ALTERNATIVE FRACTAL FORMULAS
+           =============================================== -->
+      <h2 id="alternative-formulas">4.3 Alternative Fractal Formulas</h2>
+
+      <p>The Mandelbrot iteration $z_{n+1} = z^2 + c$ is just one of infinitely many possible iteration rules. By changing the formula, we explore entirely different fractal landscapes. Each function's geometry -- its symmetries, periodicities, and growth rates -- shapes the fractal it produces.</p>
+
+      <h3>4.3.1 The Multibrot Family: $z^n + c$</h3>
+
+      <p>Replacing the exponent 2 with higher powers gives us the <strong>Multibrot</strong> family. The general formula is $z_{n+1} = z_n^p + c$, where $p$ is any real number greater than 1. The name "Multibrot" is a portmanteau of "multi" and "Mandelbrot."</p>
+
+      <p>The mathematics behind the symmetry is elegant. In polar form, if $z = re^{i\theta}$, then $z^n = r^n e^{in\theta}$. The function $z^n$ maps the complex plane by multiplying angles by $n$ and raising magnitudes to the $n$-th power. This angular multiplication creates $n$ identical "petals" around the origin. The Multibrot set inherits $(n-1)$-fold rotational symmetry from the critical point structure of the iteration.</p>
+
+      <p><strong>$z^3 + c$ (Cubic Mandelbrot)</strong>: This produces a fractal with 2-fold rotational symmetry (the standard Mandelbrot has only mirror symmetry). The main body has fewer, larger bulbs, and the filaments branch in threes.</p>
+
+      <pre><code>// Cubic Mandelbrot iteration
+z = cx_mul(cx_sqr(z), z) + c;</code></pre>
+
+      <p><strong>$z^4 + c$ (Quartic Mandelbrot)</strong>: Produces 3-fold rotational symmetry with even more elaborate branching patterns. The general rule is that $z^n + c$ produces $(n-1)$-fold symmetry.</p>
+
+      <pre><code>// Quartic Mandelbrot iteration
+vec2 z2 = cx_sqr(z);
+z = cx_sqr(z2) + c;</code></pre>
+
+      <h3>4.3.2 Transcendental Fractals</h3>
+
+      <p>Moving beyond polynomial iteration formulas opens up a vast new territory. Transcendental functions -- those involving $e^z$, $\sin(z)$, $\cos(z)$, and their compositions -- produce fractals with qualitatively different character. While polynomial fractals have a finite number of symmetry axes, transcendental fractals can have infinite periodicity.</p>
+
+      <p><strong>$e^z + c$ (Exponential)</strong>: The exponential function has period $2\pi i$ in the imaginary direction (since $e^{z + 2\pi i} = e^z$), creating ribbon-like, vertically periodic structures that look like flowing curtains or jellyfish tentacles.</p>
+
+      <pre><code>z = cx_exp(z) + c;
+// Scale: c = vPosition * 3.0 - vec2(1.0, 0.0)
+// Escape: dot(z,z) > 100.0</code></pre>
+
+      <p><strong>$\sin(z) + c$ (Sine)</strong>: The sine function has period $2\pi$ in the real direction, producing horizontally periodic, tree-like branching structures. The hyperbolic sine in the imaginary component causes rapid growth in the imaginary direction, making the fractal expand vertically much faster than horizontally.</p>
+
+      <pre><code>z = cx_sin(z) + c;
+// Scale: c = vPosition * 4.0
+// Escape: dot(z,z) > 50.0</code></pre>
+
+      <p>The sine fractal is particularly beautiful because it combines the organic, branching quality of tree-like structures with the mathematical precision of periodic repetition. The horizontal periodicity means that the same pattern repeats every $2\pi$ units along the real axis, like an infinite wallpaper.</p>
+
+      <p><strong>$\cos(z) + c$ (Cosine)</strong>: Very similar to the sine fractal, but shifted by $\pi/2$. The cosine fractal has a different center of symmetry and produces slightly different (but equally beautiful) structures.</p>
+
+      <pre><code>z = cx_cos(z) + c;
+// Scale: c = vPosition * 4.0
+// Escape: dot(z,z) > 50.0</code></pre>
+
+      <h3>4.3.3 The Burning Ship Fractal</h3>
+
+      <p>The <strong>Burning Ship</strong> fractal uses a simple but powerful modification to the Mandelbrot formula:</p>
+
+      <p>$$z_{n+1} = (|\text{Re}(z_n)| + i|\text{Im}(z_n)|)^2 + c$$</p>
+
+      <p>In code, this means taking <code>abs(z)</code> before squaring. This seemingly small change -- reflecting each component to be positive before the squaring step -- has dramatic consequences. The absolute value operation is not holomorphic (not complex-differentiable), which breaks the smooth, flowing character of the standard Mandelbrot. The result is jagged, angular structures with sharp edges and asymmetric features.</p>
+
+      <p>When viewed with the imaginary axis flipped (upside down), the main body of the fractal resembles a ship engulfed in flames, giving it its evocative name. The "mast" and "rigging" structures are particularly striking.</p>
+
+      <p>In GLSL:</p>
+
+      <pre><code>// Burning Ship iteration
+z = abs(z); // take absolute value of both components
+z = vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y) + c; // then square and add c</code></pre>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The Burning Ship fractal was first described by Michael Michelitsch and Otto E. Rossler in 1992. It is sometimes called the "Mandelbrot's evil twin" because it shares the same basic structure but with a more aggressive, asymmetric appearance.</p>
+      </div>
+
+      <!-- Interactive: Burning Ship GLSL -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Burning Ship Fractal</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision highp float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  // Center and scale the view
+  vec2 c = (uv - vec2(0.4, 0.6)) * 3.5;
+
+  vec2 z = vec2(0.0);
+  int iterations = 0;
+  const int MAX_ITER = 200;
+
+  for (int i = 0; i < MAX_ITER; i++) {
+    // Burning Ship: take abs of components before squaring
+    z = abs(z);
+    z = vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y) + c;
+    if (dot(z, z) > 256.0) break;
+    iterations++;
+  }
+
+  // Smooth coloring
+  float smoothIter = float(iterations);
+  if (iterations < MAX_ITER) {
+    float logZn = log(dot(z, z)) / 2.0;
+    float nu = log(logZn / log(2.0)) / log(2.0);
+    smoothIter = float(iterations) + 1.0 - nu;
+  }
+
+  float t = smoothIter / float(MAX_ITER);
+
+  // Fire-like color palette
+  vec3 color = vec3(0.0);
+  if (iterations < MAX_ITER) {
+    float h = t * 3.0;
+    color = vec3(
+      min(h, 1.0),
+      max(0.0, min(h - 0.5, 1.0) * 0.8),
+      max(0.0, (h - 1.5) * 0.6)
+    );
+    color = pow(color, vec3(0.7));
+  }
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <h3>4.3.4 More Exotic Formulas</h3>
+
+      <p><strong>$i^z + c$</strong>: Using $i^z = e^{z \cdot \ln(i)} = e^{z \cdot i\pi/2}$:</p>
+
+      <pre><code>vec2 lni = vec2(0.0, 3.14159265 / 2.0); // ln(i) = i*pi/2
+z = cx_exp(cx_mul(z, lni)) + c;</code></pre>
+
+      <p>This formula creates spiraling, galaxy-like structures because multiplying by $i\pi/2$ rotates and scales the complex plane before exponentiation.</p>
+
+      <p><strong>$\sin(z)^2 + c$</strong>: Combines the periodicity of sine with the doubling behavior of squaring:</p>
+
+      <pre><code>vec2 sv = cx_sin(z);
+z = cx_mul(sv, sv) + c;</code></pre>
+
+      <p><strong>$c^z + i$</strong>: Here the base varies per pixel rather than the exponent:</p>
+
+      <pre><code>z = cx_exp(cx_mul(z, cx_log(c))) + vec2(0.0, 1.0);</code></pre>
+
+      <p>Each of these formulas produces a unique fractal landscape. The creative process involves trying different formulas, adjusting viewing parameters, and developing an intuition for which mathematical properties (periodicity, symmetry, growth rate) produce which visual effects.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Mandelbrot vs. Julia sets</strong>: For any iteration formula $z_{n+1} = f(z_n, c)$, there are two different fractals you can render. In the <strong>Mandelbrot</strong> view, $z_0 = 0$ is fixed and $c$ varies per pixel. In the <strong>Julia</strong> view, $c$ is fixed and $z_0$ varies per pixel. Every point in the Mandelbrot set corresponds to a connected Julia set; every point outside corresponds to a disconnected (dust-like) Julia set.</p>
+      </div>
+
+      <h3>4.3.5 Viewing Parameters</h3>
+
+      <p>Different formulas need different viewing parameters. Each function maps the complex plane differently:</p>
+
+      <table>
+        <thead>
+          <tr><th>Formula</th><th>Zoom</th><th>Center</th><th>Escape Radius</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>$z^2 + c$</td><td>1.5</td><td>$(-0.5, 0)$</td><td>4</td></tr>
+          <tr><td>$z^3 + c$</td><td>1.5</td><td>$(0, 0)$</td><td>4</td></tr>
+          <tr><td>$z^4 + c$</td><td>1.5</td><td>$(0, 0)$</td><td>4</td></tr>
+          <tr><td>$e^z + c$</td><td>3.0</td><td>$(-1, 0)$</td><td>100</td></tr>
+          <tr><td>$\sin(z) + c$</td><td>4.0</td><td>$(0, 0)$</td><td>50</td></tr>
+          <tr><td>Burning Ship</td><td>1.8</td><td>$(-0.4, -0.6)$</td><td>256</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>If you switch formulas and see only black or only color, your viewing window is probably wrong. Zoom out (increase scale) or shift the center. Also check the escape radius -- transcendental functions like $e^z$ can produce enormous values rapidly, requiring a larger escape threshold.</p>
+      </div>
+
+      <!-- ===============================================
+           4.4 COLORING FRACTALS: BEYOND ITERATION COUNT
+           =============================================== -->
+      <h2 id="coloring-fractals">4.4 Coloring Fractals: Beyond Iteration Count</h2>
+
+      <h3>4.4.1 The Banding Problem</h3>
+
+      <p>With just the integer iteration count, we get a limited palette. Points inside the set all get the same color (black). Points outside get one of $N$ possible colors, where $N$ is the maximum iteration count. This produces visible <strong>banding</strong> -- sharp concentric boundaries where the iteration count changes by 1.</p>
+
+      <p>These bands follow the <strong>equipotential lines</strong> of the Mandelbrot set -- curves where every point has the same escape time. While mathematically interesting (they reveal the structure of the escape-time function), they are aesthetically undesirable because they create jarring visual artifacts that distract from the fractal's underlying geometry.</p>
+
+      <p>The rest of this section presents three approaches to eliminating banding: smooth coloring (the most common), histogram equalization (for maximum dynamic range), and distance estimation (for boundary-focused rendering).</p>
+
+      <h3>4.4.2 Smooth Coloring (Normalized Iteration Count)</h3>
+
+      <p>The key insight is that when $z$ escapes, its magnitude $|z|$ contains information about how "close" it was to escaping on the previous iteration. We can use this to compute a fractional iteration count.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem: Smooth Iteration Count</div>
+        <p>For the iteration $z_{n+1} = z_n^2 + c$, when $z$ escapes after $n$ iterations with $|z_n| = R$, the smooth iteration count is:</p>
+        <p>$$n_{\text{smooth}} = n + 1 - \frac{\log(\log|z_n|)}{\log 2}$$</p>
+        <p>This formula produces a continuous value that varies smoothly from pixel to pixel, eliminating banding.</p>
+      </div>
+
+      <p><strong>Derivation:</strong> After $n$ iterations, $|z_n| \approx R^{2^{n-n_0}}$ for some reference iteration $n_0$. Taking logs twice:</p>
+
+      <p>$$\log\log|z_n| \approx (n - n_0)\log 2 + \log\log R$$</p>
+
+      <p>Solving for the fractional part gives us the correction term $1 - \frac{\log(\log|z_n|)}{\log 2}$. For this to work well, use a larger escape radius (e.g., $|z|^2 > 256$ instead of $|z|^2 > 4$), which gives the formula more "room" to be accurate.</p>
+
+      <p>More concretely: if you use escape radius $R = 2$, then $\log|z_n|$ might only be slightly above $\log 2 \approx 0.693$, and the double logarithm is very sensitive to this value, producing noisy corrections. With $R = 16$ (i.e., $|z|^2 > 256$), $\log|z_n|$ is at least $\log 16 \approx 2.77$, and the correction is much smoother.</p>
+
+      <p>For the general power $z^p + c$, the smooth coloring formula becomes:</p>
+
+      <p>$$n_{\text{smooth}} = n + 1 - \frac{\log(\log|z_n|)}{\log p}$$</p>
+
+      <pre><code>// GLSL smooth iteration count
+float smoothIter = float(iterations);
+if (iterations < MAX_ITER) {
+  float logZn = log(dot(z, z)) / 2.0; // log|z|
+  float nu = log(logZn / log(2.0)) / log(2.0);
+  smoothIter = float(iterations) + 1.0 - nu;
+}</code></pre>
+
+      <h3>4.4.3 Why the Smooth Coloring Formula Works</h3>
+
+      <p>To understand the smooth coloring formula more deeply, consider what happens as $z$ escapes. After many iterations, the growth of $|z|$ is dominated by the squaring operation. If $|z_n|$ is large, then $|z_{n+1}| \approx |z_n|^2$ (the $+c$ term becomes negligible).</p>
+
+      <p>Starting from some iteration $n_0$ where $|z_{n_0}| = R_0$ (some large value), we have:</p>
+
+      <p>$$|z_{n_0 + k}| \approx R_0^{2^k}$$</p>
+
+      <p>Taking the logarithm twice:</p>
+
+      <p>$$\log\log|z_{n_0+k}| \approx k \cdot \log 2 + \log\log R_0$$</p>
+
+      <p>This shows that $\log\log|z|$ increases linearly with iteration count (with slope $\log 2$), which is exactly what we need for smooth interpolation. Solving for the "fractional iteration count" gives us:</p>
+
+      <p>$$k_{\text{frac}} = \frac{\log\log|z_n| - \log\log R_0}{\log 2}$$</p>
+
+      <p>The formula $n + 1 - \frac{\log\log|z_n|}{\log 2}$ is a simplified version that absorbs the constant terms. The $+1$ accounts for the fact that we detect escape one iteration after the "true" escape point.</p>
+
+      <h3>4.4.4 Histogram Coloring</h3>
+
+      <p><strong>Histogram coloring</strong> (also called <strong>histogram equalization</strong>) assigns colors so that equal areas of the image get equal ranges of the color palette. Without this technique, most of the palette might be "spent" on a narrow band of iteration counts that covers a large area, while the interesting boundary region gets only a few colors.</p>
+
+      <p>The algorithm is a two-pass technique:</p>
+
+      <ol>
+        <li><strong>First pass</strong>: Compute the iteration count for every pixel and build a histogram $H[k]$ counting how many pixels have iteration count $k$.</li>
+        <li><strong>Compute cumulative distribution</strong>: For each iteration count $k$, compute $C[k] = \sum_{j=0}^{k} H[j] / N_{\text{total}}$, where $N_{\text{total}}$ is the total number of escaped pixels. This gives the fraction of pixels with iteration count $\leq k$.</li>
+        <li><strong>Second pass</strong>: For each pixel with iteration count $k$, its normalized color value is $t = C[k]$. This spreads colors evenly across the image area.</li>
+      </ol>
+
+      <p>Mathematically, if we define the probability distribution $p(k) = H[k] / N_{\text{total}}$, then the cumulative distribution function $C(k) = \sum_{j=0}^{k} p(j)$ maps iteration counts to a uniform distribution over $[0, 1]$. This is the discrete analogue of the probability integral transform.</p>
+
+      <p>This technique is harder to implement in a single-pass GLSL shader (it requires computing the histogram over all pixels, which needs texture readback or compute shaders), but produces excellent results in CPU-based renderers or multi-pass GPU implementations. It ensures that no color is "wasted" on iteration count ranges that cover very few pixels, maximizing the visual information content of the image.</p>
+
+      <h3>4.4.4 Distance Estimation Coloring</h3>
+
+      <p>The <strong>distance estimator</strong> computes an approximation of the distance from a point $c$ to the boundary of the Mandelbrot set. During iteration, we also track the derivative $z'_n$ of the orbit:</p>
+
+      <p>$$z'_{n+1} = 2z_n z'_n + 1 \quad \text{with } z'_0 = 0$$</p>
+
+      <p>The distance estimate is then:</p>
+
+      <p>$$d(c) \approx \frac{|z_n| \cdot \log|z_n|}{|z'_n|}$$</p>
+
+      <p>In GLSL, tracking the derivative alongside the main iteration:</p>
+
+      <pre><code>vec2 z = vec2(0.0);
+vec2 dz = vec2(0.0); // derivative
+const int MAX_ITER = 300;
+int iterations = 0;
+
+for (int i = 0; i < MAX_ITER; i++) {
+  // Update derivative first: dz = 2*z*dz + 1
+  dz = 2.0 * cx_mul(z, dz) + vec2(1.0, 0.0);
+  // Then update z
+  z = cx_sqr(z) + c;
+  if (dot(z, z) > 1e6) break;
+  iterations++;
+}
+
+// Distance estimate
+float r = length(z);
+float dr = length(dz);
+float dist = 0.5 * r * log(r) / dr;</code></pre>
+
+      <p>This can be used to color the exterior of the set by distance to the boundary, producing smooth shading that resembles a 3D rendering of the fractal. The distance estimator is also useful for adaptive rendering: areas far from the boundary can be rendered at lower resolution, while areas near the boundary (where the interesting detail is) get more computational attention.</p>
+
+      <h3>4.4.5 Orbit Statistics</h3>
+
+      <p>During iteration, the sequence $z_0, z_1, z_2, \ldots$ traces a path through the complex plane. This path -- called the <strong>orbit</strong> -- contains rich information that we can extract and map to color. Here are the most useful orbit statistics:</p>
+
+      <p><strong>Total path length</strong>: The sum of distances between consecutive orbit points.</p>
+
+      <p>$$L = \sum_{i=0}^{N-1} |z_{i+1} - z_i|$$</p>
+
+      <pre><code>float pathLength = 0.0;
+for (int i = 0; i < MAX_ITER; i++) {
+  vec2 newZ = cx_sqr(z) + c;
+  pathLength += distance(newZ, z);
+  z = newZ;
+  if (dot(z, z) > 256.0) break;
+  iterations++;
+}</code></pre>
+
+      <p><strong>Average orbit distance</strong>: The mean distance from the origin across all orbit points.</p>
+
+      <p>$$\bar{r} = \frac{1}{N} \sum_{i=0}^{N} |z_i|$$</p>
+
+      <pre><code>float sumR = 0.0;
+// ... inside the loop:
+sumR += length(z);
+// ... after the loop:
+float avgOrbit = sumR / max(float(iterations), 1.0);</code></pre>
+
+      <p><strong>Orbit trap</strong>: The minimum distance from any orbit point to some geometric feature -- a point, a line, a circle, or any shape you choose. This technique was popularized by Clifford Pickover.</p>
+
+      <pre><code>// Point orbit trap at the origin
+float minDist = 1e10;
+// ... inside the loop:
+minDist = min(minDist, length(z));
+
+// Circle orbit trap (center=(0.5, 0), radius=0.3)
+float trapDist = abs(length(z - vec2(0.5, 0.0)) - 0.3);
+minDist = min(minDist, trapDist);
+
+// Cross orbit trap (distance to nearest axis)
+float crossDist = min(abs(z.x), abs(z.y));
+minDist = min(minDist, crossDist);</code></pre>
+
+      <p><strong>Tortuosity</strong>: The ratio of path length to displacement. A value of 1.0 means the orbit is a straight line; higher values indicate winding, chaotic orbits.</p>
+
+      <pre><code>float displacement = length(z); // z_0 was (0,0)
+float tortuosity = pathLength / max(displacement, 0.001);</code></pre>
+
+      <h3>4.4.6 Combining Statistics into Color</h3>
+
+      <p>The art of fractal coloring lies in how we map these statistics to visual properties. There is no single "correct" mapping -- this is where artistic judgment matters most. Here are some strategies:</p>
+
+      <p><strong>Map statistics to HSV channels</strong>: Use one statistic for hue, another for saturation, another for brightness.</p>
+
+      <pre><code>float hue = fract(smoothIter / 25.0);
+float sat = clamp(avgSegment * 0.5, 0.3, 1.0);
+float val = clamp(1.0 - tortuosity * 0.05, 0.2, 1.0);
+vec3 color = hsv2rgb(vec3(hue, sat, val));</code></pre>
+
+      <p><strong>Map to RGB channels directly</strong>: Each statistic modulates one color channel.</p>
+
+      <pre><code>float r = sin(smoothIter * 0.1) * 0.5 + 0.5;
+float g = sin(pathLength * 0.05 + 2.0) * 0.5 + 0.5;
+float b = sin(avgOrbit * 0.2 + 4.0) * 0.5 + 0.5;
+vec3 color = vec3(r, g, b);</code></pre>
+
+      <p><strong>Use orbit trap as alpha/blend</strong>: Blend between two color schemes based on how close the orbit came to a trap shape.</p>
+
+      <pre><code>float t = smoothIter / float(MAX_ITER);
+vec3 baseColor = palette(t, ...);
+float trapFactor = clamp(1.0 - minDist * 5.0, 0.0, 1.0);
+vec3 trapColor = vec3(1.0, 0.9, 0.7); // warm highlight
+vec3 color = mix(baseColor, trapColor, trapFactor);</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>When using multiple orbit statistics, make sure they are on comparable scales before combining them. Path length can range from 0 to thousands; tortuosity from 1 to hundreds; orbit trap from 0 to a few. Normalize each statistic (e.g., using <code>clamp</code>, <code>fract</code>, or division by expected range) before mapping to color.</p>
+      </div>
+
+      <!-- Interactive: Smooth Coloring Mandelbrot GLSL -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Smooth Coloring Mandelbrot</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision highp float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+
+vec2 cx_sqr(vec2 z) {
+  return vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y);
+}
+
+vec3 hsv2rgb(vec3 c) {
+  vec3 rgb = clamp(
+    abs(mod(c.x*6.0+vec3(0,4,2),6.0)-3.0)-1.0,
+    0.0, 1.0);
+  return c.z * mix(vec3(1.0), rgb, c.y);
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  float aspect = u_resolution.x / u_resolution.y;
+  vec2 c = (uv - 0.5) * vec2(aspect, 1.0) * 3.0 - vec2(0.5, 0.0);
+
+  vec2 z = vec2(0.0);
+  const int MAX_ITER = 300;
+  int iterations = 0;
+  float pathLength = 0.0;
+  float sumOrbit = 0.0;
+
+  for (int i = 0; i < MAX_ITER; i++) {
+    vec2 newZ = cx_sqr(z) + c;
+    pathLength += distance(newZ, z);
+    sumOrbit += length(newZ);
+    z = newZ;
+    if (dot(z, z) > 256.0) break;
+    iterations++;
+  }
+
+  // Smooth iteration count
+  float smoothIter = float(iterations);
+  if (iterations < MAX_ITER) {
+    float logZn = log(dot(z, z)) / 2.0;
+    float nu = log(logZn / log(2.0)) / log(2.0);
+    smoothIter = float(iterations) + 1.0 - nu;
+  }
+
+  float avgOrbit = sumOrbit / max(float(iterations), 1.0);
+
+  // Multi-statistic HSV coloring
+  float hue = fract(smoothIter / 25.0 + u_time * 0.02);
+  float sat = 0.5 + 0.5 * sin(pathLength * 0.1);
+  float val = clamp(smoothIter / float(MAX_ITER) * 3.0, 0.0, 1.0);
+
+  vec3 color = hsv2rgb(vec3(hue, clamp(sat, 0.3, 1.0), val));
+  if (iterations == MAX_ITER) color = vec3(0.0);
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <!-- Quiz 2 -->
+      <div class="quiz" data-id="ch04-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Why does the smooth iteration count formula require a larger escape radius (e.g., 256 instead of 4)?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch04-q2" value="a"> The formula only works for values of $|z|$ greater than 256</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q2" value="b" data-correct> A larger escape radius gives the logarithmic correction more room to be accurate, reducing artifacts</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q2" value="c"> The GPU cannot compute small logarithms accurately</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q2" value="d"> Smaller escape radii cause integer overflow in the iteration counter</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The smooth coloring formula $n + 1 - \frac{\log(\log|z_n|)}{\log 2}$ relies on the asymptotic behavior of the orbit for large $|z|$. The larger the escape radius, the better the approximation. With a small radius like 4, the correction term can be inaccurate, producing visible artifacts.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           4.5 COSINE COLOR PALETTES
+           =============================================== -->
+      <h2 id="cosine-palettes">4.5 Cosine Color Palettes</h2>
+
+      <p>One of the most elegant and flexible coloring techniques for fractals comes from Inigo Quilez, a pioneer in real-time shader graphics. His <strong>cosine palette</strong> formula generates smooth, controllable color gradients from just four parameter vectors:</p>
+
+      <p>$$\text{color}(t) = \mathbf{a} + \mathbf{b} \cdot \cos\left(2\pi(\mathbf{c} \cdot t + \mathbf{d})\right)$$</p>
+
+      <p>where $t \in [0, 1]$ is the input parameter (normalized iteration count, for fractals), and $\mathbf{a}$, $\mathbf{b}$, $\mathbf{c}$, $\mathbf{d}$ are <code>vec3</code> values (one component per RGB channel).</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The four parameters control the palette as follows:</p>
+        <ul>
+          <li><strong>a</strong> = offset (shifts the overall brightness of each channel)</li>
+          <li><strong>b</strong> = amplitude (controls the range/contrast of each channel)</li>
+          <li><strong>c</strong> = frequency (how many times the cosine cycles across $[0,1]$)</li>
+          <li><strong>d</strong> = phase (shifts where each channel's cosine starts)</li>
+        </ul>
+        <p>A common starting point is $\mathbf{a} = \mathbf{b} = (0.5, 0.5, 0.5)$, $\mathbf{c} = (1, 1, 1)$, and varying $\mathbf{d}$ to control the palette's hue distribution.</p>
+      </div>
+
+      <p>The beauty of this formula is its simplicity: one line of code, four parameters, infinite variety. Let us see how it works in practice.</p>
+
+      <p>In GLSL:</p>
+
+      <pre><code>vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+  return a + b * cos(6.28318 * (c * t + d));
+}
+
+// Example: rainbow palette
+vec3 color = palette(t,
+  vec3(0.5), vec3(0.5),
+  vec3(1.0), vec3(0.0, 0.33, 0.67));</code></pre>
+
+      <h3>4.5.1 Understanding the Parameters</h3>
+
+      <p>Let us break down each parameter to build intuition:</p>
+
+      <p><strong>$\mathbf{a}$ (offset)</strong>: This shifts the entire palette up or down in brightness. Setting $\mathbf{a} = (0.5, 0.5, 0.5)$ centers the cosine oscillation so colors range from 0 to 1. Setting $\mathbf{a} = (0.3, 0.3, 0.3)$ produces a darker palette.</p>
+
+      <p><strong>$\mathbf{b}$ (amplitude)</strong>: This controls how much each channel oscillates. With $\mathbf{b} = (0.5, 0.5, 0.5)$ and $\mathbf{a} = (0.5, 0.5, 0.5)$, colors span the full $[0, 1]$ range. Reducing $\mathbf{b}$ narrows the color range (more pastel); increasing it beyond 0.5 requires clamping.</p>
+
+      <p><strong>$\mathbf{c}$ (frequency)</strong>: This determines how many times the cosine completes a full cycle as $t$ goes from 0 to 1. With $\mathbf{c} = (1, 1, 1)$, each channel cycles once. With $\mathbf{c} = (2, 1, 0)$, the red channel cycles twice, green once, and blue stays constant -- producing warm-to-cool transitions.</p>
+
+      <p><strong>$\mathbf{d}$ (phase)</strong>: This is the most artistically powerful parameter. It controls where each channel starts its cosine cycle. Setting $\mathbf{d} = (0, 0.33, 0.67)$ staggers the channels by one-third of a cycle each, producing a rainbow. Setting $\mathbf{d} = (0, 0.1, 0.2)$ keeps the channels close together, producing warm sunset-like gradients.</p>
+
+      <h3>4.5.2 Palette Presets</h3>
+
+      <p>Some beautiful palette presets (from Quilez's article):</p>
+
+      <table>
+        <thead>
+          <tr><th>Name</th><th>a</th><th>b</th><th>c</th><th>d</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Rainbow</td><td>(0.5, 0.5, 0.5)</td><td>(0.5, 0.5, 0.5)</td><td>(1.0, 1.0, 1.0)</td><td>(0.00, 0.33, 0.67)</td></tr>
+          <tr><td>Sunset</td><td>(0.5, 0.5, 0.5)</td><td>(0.5, 0.5, 0.5)</td><td>(1.0, 1.0, 1.0)</td><td>(0.00, 0.10, 0.20)</td></tr>
+          <tr><td>Ocean</td><td>(0.5, 0.5, 0.5)</td><td>(0.5, 0.5, 0.5)</td><td>(1.0, 1.0, 0.5)</td><td>(0.80, 0.90, 0.30)</td></tr>
+          <tr><td>Lava</td><td>(0.5, 0.5, 0.5)</td><td>(0.5, 0.5, 0.5)</td><td>(2.0, 1.0, 0.0)</td><td>(0.50, 0.20, 0.25)</td></tr>
+        </tbody>
+      </table>
+
+      <!-- Interactive: Cosine Palette Designer -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Cosine Palette Designer</span>
+        </div>
+        <textarea class="cm-editor">// Cosine Palette Designer
+// Drag mouse vertically to change phase offset
+let a, b, c, d;
+
+function setup() {
+  createCanvas(400, 400);
+  textFont('monospace');
+  textSize(11);
+  a = [0.5, 0.5, 0.5];
+  b = [0.5, 0.5, 0.5];
+  c = [1.0, 1.0, 1.0];
+  d = [0.0, 0.33, 0.67];
+}
+
+function cosinePalette(t, a, b, c, d) {
+  return [
+    a[0] + b[0] * cos(TWO_PI * (c[0] * t + d[0])),
+    a[1] + b[1] * cos(TWO_PI * (c[1] * t + d[1])),
+    a[2] + b[2] * cos(TWO_PI * (c[2] * t + d[2]))
+  ];
+}
+
+function draw() {
+  background(30);
+
+  // Update d based on mouse
+  if (mouseIsPressed) {
+    d[0] = map(mouseX, 0, width, 0, 1);
+    d[1] = map(mouseX, 0, width, 0, 1) + 0.33;
+    d[2] = map(mouseY, 0, height, 0, 1);
+  }
+
+  // Draw palette strip
+  for (let x = 0; x < width; x++) {
+    let t = x / width;
+    let col = cosinePalette(t, a, b, c, d);
+    stroke(col[0]*255, col[1]*255, col[2]*255);
+    line(x, 50, x, 130);
+  }
+
+  // Draw individual R, G, B curves
+  noFill();
+  strokeWeight(2);
+
+  // Red channel
+  stroke(255, 80, 80);
+  beginShape();
+  for (let x = 0; x < width; x++) {
+    let t = x / width;
+    let v = a[0] + b[0] * cos(TWO_PI * (c[0] * t + d[0]));
+    vertex(x, map(v, 0, 1, 350, 170));
+  }
+  endShape();
+
+  // Green channel
+  stroke(80, 255, 80);
+  beginShape();
+  for (let x = 0; x < width; x++) {
+    let t = x / width;
+    let v = a[1] + b[1] * cos(TWO_PI * (c[1] * t + d[1]));
+    vertex(x, map(v, 0, 1, 350, 170));
+  }
+  endShape();
+
+  // Blue channel
+  stroke(80, 80, 255);
+  beginShape();
+  for (let x = 0; x < width; x++) {
+    let t = x / width;
+    let v = a[2] + b[2] * cos(TWO_PI * (c[2] * t + d[2]));
+    vertex(x, map(v, 0, 1, 350, 170));
+  }
+  endShape();
+
+  // Labels
+  strokeWeight(1);
+  fill(255);
+  noStroke();
+  text('Cosine Palette Designer', 10, 25);
+  text('Click and drag to change phase (d)', 10, 40);
+  text('d = [' + d[0].toFixed(2) + ', ' + d[1].toFixed(2) + ', ' + d[2].toFixed(2) + ']', 10, 370);
+  text('a = [0.5, 0.5, 0.5]  b = [0.5, 0.5, 0.5]  c = [1, 1, 1]', 10, 390);
+
+  // Axis labels
+  fill(150);
+  text('0', 5, 355);
+  text('1', 5, 175);
+  text('t=0', 5, 145);
+  text('t=1', width - 30, 145);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>4.5.3 Applying Cosine Palettes to Fractals</h3>
+
+      <p>To use a cosine palette with a fractal, normalize your coloring value to $[0, 1]$ (or any range -- the cosine will wrap cyclically) and pass it through the palette function:</p>
+
+      <pre><code>// In a Mandelbrot shader:
+float t = smoothIter / float(MAX_ITER);
+
+// Multiply t to control cycling speed
+vec3 color = palette(t * 5.0,
+  vec3(0.5, 0.5, 0.5),  // a: centered brightness
+  vec3(0.5, 0.5, 0.5),  // b: full range
+  vec3(1.0, 1.0, 1.0),  // c: one cycle each
+  vec3(0.0, 0.33, 0.67)  // d: rainbow phase
+);
+
+if (iterations == MAX_ITER) color = vec3(0.0); // inside = black</code></pre>
+
+      <p>The multiplier on $t$ controls how many times the palette cycles across the fractal. A multiplier of 1.0 maps the entire palette once across the full iteration range. A multiplier of 5.0 creates five bands of color. Adding <code>u_time</code> to the phase creates smoothly animated color cycling.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem: Cosine Palette Bounds</div>
+        <p>For a cosine palette with parameters $\mathbf{a}$ and $\mathbf{b}$, the output for each channel is bounded by $[a_i - |b_i|, \; a_i + |b_i|]$. To ensure all values stay in $[0, 1]$, we need $a_i - |b_i| \geq 0$ and $a_i + |b_i| \leq 1$. The standard choice $a_i = b_i = 0.5$ is optimal: it uses the full $[0, 1]$ range without clamping.</p>
+      </div>
+
+      <!-- ===============================================
+           4.6 COLOR SPACES: HSV AND CIELAB
+           =============================================== -->
+      <h2 id="color-spaces">4.6 Color Spaces: HSV and CIELAB</h2>
+
+      <h3>4.6.1 RGB: The Default</h3>
+
+      <p>RGB is the native color space of screens. Each color is a mix of Red, Green, and Blue intensities. GLSL's <code>gl_FragColor</code> output is in RGBA format.</p>
+
+      <p><strong>Problem</strong>: RGB is not intuitive for artistic color design. "Make this color warmer" does not map to a simple RGB change. Also, RGB is not perceptually uniform -- equal numerical distances in RGB do not correspond to equal perceived color differences.</p>
+
+      <h3>4.6.2 HSV (Hue, Saturation, Value)</h3>
+
+      <p>HSV rearranges color into more intuitive dimensions:</p>
+
+      <ul>
+        <li><strong>Hue</strong> ($H$): The "color" -- position on the rainbow. Cyclic: $0 = 360 = \text{red}$.</li>
+        <li><strong>Saturation</strong> ($S$): Vividness. $0 = \text{gray}$, $1 = \text{fully vivid}$.</li>
+        <li><strong>Value</strong> ($V$): Brightness. $0 = \text{black}$, $1 = \text{maximum brightness}$.</li>
+      </ul>
+
+      <p>HSV is excellent for fractals because we can cycle through all hues by mapping iteration count to $H$, while independently controlling vividness and brightness with $S$ and $V$. The cyclic nature of hue (wrapping from 1.0 back to 0.0) is a natural match for fractal coloring, where we often want the colors to cycle smoothly through the rainbow as iteration count increases.</p>
+
+      <p>A common technique is to set hue proportional to the smooth iteration count, saturation to a constant (say 0.8 for vivid colors), and value based on whether the point escaped:</p>
+
+      <pre><code>// HSV fractal coloring pattern
+float hue = fract(smoothIter / 30.0); // cycle every 30 iterations
+float sat = 0.8;
+float val = (iterations < MAX_ITER) ? 0.9 : 0.0; // black for interior
+vec3 color = hsv2rgb(vec3(hue, sat, val));</code></pre>
+
+      <p>The divisor in <code>fract(smoothIter / 30.0)</code> controls how many iterations span a full color cycle. Smaller values create rapid cycling with many color bands; larger values create gradual transitions with fewer bands. This is a key artistic parameter to experiment with.</p>
+
+      <h3>4.6.3 The HSV to RGB Algorithm</h3>
+
+      <p>The standard HSV to RGB conversion divides the hue circle into six sectors of 60 degrees each. In each sector, one RGB channel is at maximum, one is at minimum, and one transitions linearly between them. The compact GLSL implementation below achieves this without explicit branching:</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>HSV to RGB conversion</strong> in GLSL uses a compact formula that computes three piecewise-linear ramps, phase-shifted by 120 degrees. The <code>mod(..., 6.0) - 3.0</code> creates a sawtooth wave that, after taking absolute value and subtracting 1, produces the characteristic triangular ramps for each channel:</p>
+      </div>
+
+      <pre><code>vec3 hsv2rgb(vec3 c) {
+  // c.x = hue [0,1], c.y = saturation [0,1], c.z = value [0,1]
+  vec3 rgb = clamp(
+    abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0,
+    0.0, 1.0
+  );
+  return c.z * mix(vec3(1.0), rgb, c.y);
+}</code></pre>
+
+      <!-- Interactive: HSV Color Wheel -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>HSV Color Wheel</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  colorMode(HSB, 360, 100, 100);
+  textFont('monospace');
+  noStroke();
+}
+
+function draw() {
+  background(0, 0, 15);
+  let cx = width / 2;
+  let cy = height / 2;
+  let outerR = 150;
+
+  // Draw HSV wheel
+  for (let a = 0; a < 360; a += 1) {
+    for (let r = 30; r < outerR; r += 1) {
+      let sat = map(r, 30, outerR, 0, 100);
+      fill(a, sat, 100);
+      let x = cx + r * cos(radians(a));
+      let y = cy + r * sin(radians(a));
+      rect(x, y, 3, 3);
+    }
+  }
+
+  // Inner circle shows value gradient
+  for (let r = 0; r < 30; r++) {
+    let v = map(r, 0, 30, 100, 0);
+    fill(0, 0, v);
+    ellipse(cx, cy, r * 2, r * 2);
+  }
+
+  // Show color under mouse
+  let dx = mouseX - cx;
+  let dy = mouseY - cy;
+  let dist_val = sqrt(dx*dx + dy*dy);
+  let angle = (degrees(atan2(dy, dx)) + 360) % 360;
+  let sat = map(dist_val, 30, outerR, 0, 100);
+  sat = constrain(sat, 0, 100);
+
+  if (dist_val < outerR + 10) {
+    // Draw selection indicator
+    stroke(255);
+    strokeWeight(2);
+    noFill();
+    ellipse(mouseX, mouseY, 16, 16);
+    noStroke();
+
+    // Show current HSV values
+    fill(0, 0, 100);
+    textSize(12);
+    text('H: ' + angle.toFixed(0) + ' deg', 10, 20);
+    text('S: ' + sat.toFixed(0) + '%', 10, 36);
+    text('V: 100%', 10, 52);
+
+    // Preview swatch
+    fill(angle, sat, 100);
+    rect(10, 60, 60, 30, 5);
+  }
+
+  // Labels
+  fill(0, 0, 70);
+  textSize(10);
+  text('Red (0)', cx + outerR + 5, cy + 4);
+  text('Green (120)', cx - 30, cy - outerR - 8);
+  text('Blue (240)', cx - 50, cy + outerR + 15);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>4.6.3 CIELAB (L*a*b*)</h3>
+
+      <p><a href="https://en.wikipedia.org/wiki/CIELAB_color_space">CIELAB</a> is a color space designed by the International Commission on Illumination (CIE) to be <strong>perceptually uniform</strong>. This means a distance of 1 unit in CIELAB looks like the same "amount of color change" everywhere in the space.</p>
+
+      <p>The three channels are:</p>
+
+      <ul>
+        <li><strong>L*</strong> (0 to 100): Lightness. Perceptually linear -- $L^* = 50$ looks "halfway between black and white."</li>
+        <li><strong>a*</strong> (roughly -128 to +127): Green (negative) to Red (positive).</li>
+        <li><strong>b*</strong> (roughly -128 to +127): Blue (negative) to Yellow (positive).</li>
+      </ul>
+
+      <p>Why does perceptual uniformity matter for fractals? Consider a gradient from dark blue to light yellow. In RGB, a linear interpolation produces muddy, grayish intermediate colors. In CIELAB, the same interpolation produces a smooth, natural-looking transition. When coloring fractals, we often map a continuous value (like smooth iteration count) to a color gradient, and perceptual uniformity ensures that equal changes in the value produce equal visual changes in the output.</p>
+
+      <h3>4.6.5 CIELAB to RGB Conversion</h3>
+
+      <p>The conversion from CIELAB to RGB involves passing through the CIE XYZ color space, then applying the sRGB color matrix and gamma correction. The XYZ space is a device-independent space that represents all visible colors; CIELAB is a nonlinear transformation of XYZ designed for perceptual uniformity.</p>
+
+      <p>The conversion from CIELAB to RGB involves passing through the XYZ color space with gamma correction:</p>
+
+      <pre><code>vec3 lab2rgb(vec3 lab) {
+  float fy = (lab.x + 16.0) / 116.0;
+  float fx = lab.y / 500.0 + fy;
+  float fz = fy - lab.z / 200.0;
+  float delta = 6.0 / 29.0;
+  float d2 = delta * delta;
+  float x = (fx > delta) ? fx*fx*fx : (fx - 16.0/116.0) * 3.0 * d2;
+  float y = (fy > delta) ? fy*fy*fy : (fy - 16.0/116.0) * 3.0 * d2;
+  float z = (fz > delta) ? fz*fz*fz : (fz - 16.0/116.0) * 3.0 * d2;
+  x *= 0.95047; z *= 1.08883; // D65 white point
+  float r =  3.2406*x - 1.5372*y - 0.4986*z;
+  float g = -0.9689*x + 1.8758*y + 0.0415*z;
+  float b =  0.0557*x - 0.2040*y + 1.0570*z;
+  // Gamma correction
+  r = r > 0.0031308 ? 1.055*pow(r,1.0/2.4)-0.055 : 12.92*r;
+  g = g > 0.0031308 ? 1.055*pow(g,1.0/2.4)-0.055 : 12.92*g;
+  b = b > 0.0031308 ? 1.055*pow(b,1.0/2.4)-0.055 : 12.92*b;
+  return clamp(vec3(r, g, b), 0.0, 1.0);
+}</code></pre>
+
+      <h3>4.6.6 Using CIELAB for Fractal Coloring</h3>
+
+      <p>CIELAB is particularly effective for creating natural-looking fractal gradients. Instead of mapping iteration count to HSV hue (which produces a "neon rainbow" look), we can trace a path through CIELAB space:</p>
+
+      <pre><code>// CIELAB fractal coloring
+float t = smoothIter / float(MAX_ITER);
+float L = 50.0 + 40.0 * cos(t * 6.28318);        // lightness oscillation
+float a = 80.0 * cos(t * 6.28318 * 3.0);          // green-red oscillation
+float b = 80.0 * sin(t * 6.28318 * 3.0 + 1.0);    // blue-yellow oscillation
+vec3 color = lab2rgb(vec3(L, a, b));</code></pre>
+
+      <p>The resulting colors are more subdued and "natural" than HSV rainbows -- they look like they could appear in nature or in high-quality print. This makes CIELAB a good choice for fractal art intended for print or exhibition, where the garish quality of RGB/HSV rainbows can be distracting.</p>
+
+      <h3>4.6.7 When to Use Which Color Space</h3>
+
+      <table>
+        <thead>
+          <tr><th>Color Space</th><th>Strengths</th><th>Best For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>RGB</td><td>Native to screens, no conversion needed</td><td>Direct pixel manipulation</td></tr>
+          <tr><td>HSV</td><td>Intuitive hue/saturation/brightness</td><td>Cycling through colors, artistic control</td></tr>
+          <tr><td>CIELAB</td><td>Perceptually uniform</td><td>Smooth gradients, scientific visualization</td></tr>
+          <tr><td>Cosine Palette</td><td>Compact, highly flexible</td><td>Shader-based art, fractal coloring</td></tr>
+        </tbody>
+      </table>
+
+      <p>For most fractal work, <strong>HSV</strong> is the pragmatic choice: easy to understand, easy to convert, and the cyclic nature of hue maps naturally to iteration count. Use <strong>CIELAB</strong> when you want especially smooth, natural-looking gradients. Use <strong>cosine palettes</strong> when you want maximum flexibility with minimal code.</p>
+
+      <!-- Quiz 3 -->
+      <div class="quiz" data-id="ch04-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does "perceptually uniform" mean in the context of the CIELAB color space?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch04-q3" value="a"> Every color in the space can be displayed on any screen</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q3" value="b"> The color space uses uniform RGB values across all channels</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q3" value="c" data-correct> Equal numerical distances correspond to equal perceived color differences</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q3" value="d"> The brightness is uniform across all hues</label></li>
+        </ul>
+        <div class="explanation">
+          <p>In a perceptually uniform color space, a step of size $\Delta$ looks like the same amount of change regardless of where you are in the space. In RGB, a change from dark blue to slightly lighter dark blue might be invisible, while the same numerical step in bright yellow is obvious. CIELAB corrects for this nonlinearity in human color perception.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           4.7 NEWTON FRACTALS
+           =============================================== -->
+      <h2 id="newton-fractals">4.7 Newton Fractals</h2>
+
+      <h3>4.7.1 Newton's Method in the Complex Plane</h3>
+
+      <p><a href="https://en.wikipedia.org/wiki/Newton%27s_method">Newton's method</a> is a root-finding algorithm that iterates:</p>
+
+      <p>$$z_{n+1} = z_n - \frac{f(z_n)}{f'(z_n)}$$</p>
+
+      <p>In one dimension (real numbers), Newton's method is a standard technique taught in calculus: start with a guess, compute the tangent line to the function at that point, and follow the tangent line to where it crosses zero. This gives a better approximation, and we repeat. The method converges quadratically (the number of correct digits roughly doubles each iteration) when started near a root.</p>
+
+      <p>In the complex plane, the situation becomes dramatically more interesting. A polynomial of degree $n$ has exactly $n$ roots (by the Fundamental Theorem of Algebra), and each starting point $z_0$ converges to one of them. The question "which root does $z_0$ converge to?" partitions the complex plane into $n$ <strong>basins of attraction</strong>.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The fractal arises from the boundaries between basins of attraction.</strong> For each root, there is a region of starting points that converge to it (its "basin of attraction"). Points near the boundary between two basins exhibit chaotic behavior -- tiny changes in starting position lead to convergence to different roots. These boundaries are fractal curves of infinite complexity.</p>
+      </div>
+
+      <h3>4.7.2 The Standard Example: $f(z) = z^3 - 1$</h3>
+
+      <p>This function has three roots, equally spaced on the unit circle at angles $0$, $\frac{2\pi}{3}$, and $\frac{4\pi}{3}$:</p>
+
+      <p>$$z_1 = 1, \quad z_2 = -\frac{1}{2} + \frac{\sqrt{3}}{2}i, \quad z_3 = -\frac{1}{2} - \frac{\sqrt{3}}{2}i$$</p>
+
+      <p>The derivative is $f'(z) = 3z^2$, so Newton's iteration becomes:</p>
+
+      <p>$$z_{n+1} = z_n - \frac{z_n^3 - 1}{3z_n^2}$$</p>
+
+      <h3>4.7.3 Coloring by Root Convergence</h3>
+
+      <p>For each pixel, we iterate until $z$ is close to one of the known roots (within a small tolerance like $10^{-4}$), then assign a color based on which root it converged to. We can also modulate the brightness based on how many iterations were needed:</p>
+
+      <pre><code>// After the iteration loop:
+vec2 root1 = vec2(1.0, 0.0);
+vec2 root2 = vec2(-0.5, 0.866025);
+vec2 root3 = vec2(-0.5, -0.866025);
+
+int whichRoot = -1;
+if (distance(z, root1) < 0.001) whichRoot = 0;
+if (distance(z, root2) < 0.001) whichRoot = 1;
+if (distance(z, root3) < 0.001) whichRoot = 2;
+
+// Shade by iteration count (fewer iterations = brighter)
+float shade = 1.0 - float(iterations) / float(MAX_ITER) * 0.7;
+
+vec3 color = vec3(0.0);
+if (whichRoot == 0) color = vec3(1.0, 0.2, 0.2) * shade;
+if (whichRoot == 1) color = vec3(0.2, 1.0, 0.2) * shade;
+if (whichRoot == 2) color = vec3(0.3, 0.3, 1.0) * shade;</code></pre>
+
+      <p>The shade variation creates a 3D-like appearance, as if the fractal were a landscape viewed from above, with valleys (many iterations) appearing darker than ridges (few iterations).</p>
+
+      <h3>4.7.4 Understanding Basin Boundaries</h3>
+
+      <p>The fractal boundary between basins of attraction has a remarkable property: it is the same boundary for all three (or $n$) basins. In other words, any point on the boundary is simultaneously on the boundary of every basin. This was proven by Fatou and Julia in the early 20th century and is one of the most counterintuitive results in complex dynamics.</p>
+
+      <p>A consequence is that if you zoom into any part of the boundary, you will see regions of all three colors interleaved at every scale. There is no "clean" border between any two basins -- the third basin is always present, interweaving with the other two in a fractal pattern.</p>
+
+      <p>The speed of convergence also varies dramatically near the boundary. Points far from the boundary converge in just a few iterations (bright in our shading scheme). Points near the boundary take many iterations (dark), and points exactly on the boundary never converge (they form a set of measure zero called the <strong>Julia set</strong> of the Newton map).</p>
+
+      <h3>4.7.5 Damped Newton's Method</h3>
+
+      <p>The generalized Newton iteration introduces a multiplier $m$:</p>
+
+      <p>$$z_{n+1} = z_n - m \cdot \frac{f(z_n)}{f'(z_n)}$$</p>
+
+      <ul>
+        <li>$m = 1$: Standard Newton's method</li>
+        <li>$m \neq 1$ (real): Relaxed ($m &lt; 1$) or over-relaxed ($m &gt; 1$) Newton -- produces dramatic fractal variations</li>
+        <li>$m$ complex: Produces spiraling, twisting basin boundaries</li>
+      </ul>
+
+      <!-- Interactive: Newton Fractal GLSL -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Newton Fractal (z^3 - 1) -- move mouse to change damping</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision highp float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+
+vec2 cx_mul(vec2 a, vec2 b) {
+  return vec2(a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x);
+}
+vec2 cx_sqr(vec2 z) {
+  return vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y);
+}
+vec2 cx_div(vec2 a, vec2 b) {
+  return vec2(a.x*b.x+a.y*b.y, a.y*b.x-a.x*b.y) / dot(b,b);
+}
+
+vec3 hsv2rgb(vec3 c) {
+  vec3 rgb = clamp(
+    abs(mod(c.x*6.0+vec3(0,4,2),6.0)-3.0)-1.0,
+    0.0, 1.0);
+  return c.z * mix(vec3(1.0), rgb, c.y);
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  float aspect = u_resolution.x / u_resolution.y;
+  vec2 z = (uv - 0.5) * vec2(aspect, 1.0) * 4.0;
+
+  // Damping from mouse (default to standard Newton)
+  vec2 m = vec2(1.0, 0.0);
+  if (u_mouse.x > 0.0 || u_mouse.y > 0.0) {
+    m = vec2(
+      mix(0.5, 1.5, u_mouse.x / u_resolution.x),
+      mix(-0.5, 0.5, u_mouse.y / u_resolution.y)
+    );
+  }
+
+  // Three roots of z^3 - 1
+  vec2 r1 = vec2(1.0, 0.0);
+  vec2 r2 = vec2(-0.5, 0.866025);
+  vec2 r3 = vec2(-0.5, -0.866025);
+
+  const int MAX_ITER = 80;
+  int iterations = 0;
+  int whichRoot = -1;
+
+  for (int i = 0; i < MAX_ITER; i++) {
+    vec2 z3 = cx_mul(z, cx_sqr(z));      // z^3
+    vec2 f_z = z3 - vec2(1.0, 0.0);      // z^3 - 1
+    vec2 fp_z = cx_sqr(z) * 3.0;         // 3z^2
+    vec2 dz = cx_div(f_z, fp_z);
+    z = z - cx_mul(m, dz);
+    iterations++;
+
+    if (distance(z, r1) < 0.001) { whichRoot = 0; break; }
+    if (distance(z, r2) < 0.001) { whichRoot = 1; break; }
+    if (distance(z, r3) < 0.001) { whichRoot = 2; break; }
+  }
+
+  float shade = 1.0 - float(iterations) / float(MAX_ITER) * 0.85;
+  vec3 color = vec3(0.0);
+
+  if (whichRoot == 0) color = hsv2rgb(vec3(0.0, 0.8, shade));
+  if (whichRoot == 1) color = hsv2rgb(vec3(0.33, 0.8, shade));
+  if (whichRoot == 2) color = hsv2rgb(vec3(0.66, 0.8, shade));
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <p>Map the mouse position to $m$ in JavaScript for real-time exploration:</p>
+
+      <pre><code>s.setUniform("m", [
+  map(mouseX, 0, width, 0.5, 1.5),   // real part
+  map(mouseY, 0, height, -0.5, 0.5)  // imaginary part
+]);</code></pre>
+
+      <p>Try moving the mouse to the center of the canvas ($m \approx 1 + 0i$) and then slowly away. Near $m = 1$, you see the clean three-fold Newton fractal. As $m$ deviates from 1, the basin boundaries widen, swirl, and develop increasingly chaotic structures. Some values of $m$ produce spiraling vortices; others create kaleidoscopic patterns with multiple symmetry levels.</p>
+
+      <h3>4.7.6 Other Polynomials</h3>
+
+      <p>The technique generalizes to any polynomial. For $f(z) = z^n - 1$, the roots are the $n$-th roots of unity, equally spaced on the unit circle at angles $\frac{2\pi k}{n}$ for $k = 0, 1, \ldots, n-1$. The derivative is $f'(z) = nz^{n-1}$.</p>
+
+      <p>For $f(z) = z^5 - 1$, we get five basins of attraction with 5-fold rotational symmetry. For $f(z) = z^3 - 2z + 2$, we get three roots that are not equally spaced, producing an asymmetric but equally fractal boundary.</p>
+
+      <p>You can even use non-polynomial functions. For example, $f(z) = \sin(z)$ has infinitely many roots at $z = n\pi$, and Newton's method applied to it produces an infinite fractal pattern:</p>
+
+      <pre><code>// Newton's method for sin(z)
+// f(z) = sin(z), f'(z) = cos(z)
+vec2 dz = cx_div(cx_sin(z), cx_cos(z));
+z = z - dz;</code></pre>
+
+      <h3>4.7.6 Artistic Variations</h3>
+
+      <p>Beyond changing the polynomial, several modifications produce artistically interesting results:</p>
+
+      <ul>
+        <li><strong>Nova fractal</strong>: Add a constant $c$ per pixel: $z_{n+1} = z_n - m \cdot \frac{f(z_n)}{f'(z_n)} + c$. This combines Newton iteration with Mandelbrot-style parameter variation.</li>
+        <li><strong>Halley's method</strong>: A higher-order root-finding method that uses the second derivative: $z_{n+1} = z_n - \frac{2f(z_n)f'(z_n)}{2[f'(z_n)]^2 - f(z_n)f''(z_n)}$. This produces smoother basins with different fractal structure.</li>
+        <li><strong>Blending convergence and iteration count</strong>: Use the iteration count for brightness modulation on top of root-based hue, creating depth and texture in the image.</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Newton fractals were first studied computationally by John Hubbard in the 1970s. He was surprised to find that Newton's method -- a well-understood algorithm from 1669 -- produced fractal basin boundaries in the complex plane. The result showed that even simple, deterministic processes can produce arbitrarily complex behavior. The mathematician Arthur Cayley had attempted to analyze the convergence boundaries of Newton's method for cubic polynomials in 1879, but could not resolve the question -- it would take a century and the advent of computer graphics to reveal the fractal answer.</p>
+      </div>
+
+      <!-- Quiz 4 -->
+      <div class="quiz" data-id="ch04-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In a Newton fractal for $z^3 - 1$, what creates the fractal pattern?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch04-q4" value="a"> The three roots are positioned in a fractal arrangement</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q4" value="b"> Random noise in the floating-point computation creates fractal artifacts</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q4" value="c" data-correct> The boundaries between basins of attraction (regions converging to different roots) are fractally complex</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q4" value="d"> The iteration formula contains a fractal term</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Each root has a "basin of attraction" -- the set of starting points that converge to it under Newton's iteration. The boundaries between these basins are fractal curves. Near a boundary, an infinitesimal change in starting position can cause convergence to a different root, and these boundary regions contain infinitely nested detail.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           4.8 GLSL FRAME FEEDBACK
+           =============================================== -->
+      <h2 id="frame-feedback">4.8 GLSL Frame Feedback</h2>
+
+      <h3>4.8.1 The Concept</h3>
+
+      <p>So far, each frame is computed from scratch -- the shader does not know what it drew last frame. <strong>Frame feedback</strong> changes this: we save the previous frame as a texture and feed it back into the shader as an input.</p>
+
+      <p>This enables:</p>
+
+      <ul>
+        <li><strong>Cellular automata</strong> (Game of Life) -- each cell's next state depends on its neighbors' current states</li>
+        <li><strong>Reaction-diffusion systems</strong> -- chemicals diffusing and reacting across a surface</li>
+        <li><strong>Trail effects</strong> -- fading afterimages that create motion trails</li>
+        <li><strong>Iterative refinement</strong> -- progressively rendering more detail each frame</li>
+      </ul>
+
+      <h3>4.8.2 The Ping-Pong Pattern</h3>
+
+      <p>The key technique is <strong>double buffering</strong> (also called "ping-pong"):</p>
+
+      <ol>
+        <li>Frame 1: Read from buffer A, write to buffer B</li>
+        <li>Frame 2: Read from buffer B, write to buffer A</li>
+        <li>Frame 3: Read from buffer A, write to buffer B ...</li>
+      </ol>
+
+      <p>We alternate which buffer we read from and which we write to. This avoids the problem of reading from and writing to the same buffer simultaneously (which would give unpredictable results since the GPU processes pixels in parallel).</p>
+
+      <p>In p5.js, we can use <code>createGraphics()</code> or <code>createFramebuffer()</code> to make off-screen buffers. Here is the JavaScript pattern:</p>
+
+      <pre><code>let bufferA, bufferB;
+let currentBuffer = 0;
+
+function setup() {
+  createCanvas(512, 512, WEBGL);
+  bufferA = createGraphics(512, 512, WEBGL);
+  bufferB = createGraphics(512, 512, WEBGL);
+  bufferA.pixelDensity(1);
+  bufferB.pixelDensity(1);
+  // Initialize bufferA with starting state...
+}
+
+function draw() {
+  let readBuf = (currentBuffer === 0) ? bufferA : bufferB;
+  let writeBuf = (currentBuffer === 0) ? bufferB : bufferA;
+
+  // Run shader: read from readBuf, write to writeBuf
+  writeBuf.shader(myShader);
+  myShader.setUniform("prevFrame", readBuf);
+  myShader.setUniform("resolution", [512, 512]);
+  writeBuf.quad(-1, -1, 1, -1, 1, 1, -1, 1);
+
+  // Display the result
+  image(writeBuf, -width/2, -height/2, width, height);
+
+  // Swap buffers
+  currentBuffer = 1 - currentBuffer;
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Forgetting to set <code>pixelDensity(1)</code> on the off-screen buffers is a common source of bugs. On high-DPI displays (Retina), p5.js defaults to 2x pixel density, which means your 512x512 buffer is actually 1024x1024 pixels. This causes texture coordinate mismatches in the shader. Always set <code>pixelDensity(1)</code> for buffers used in frame feedback.</p>
+      </div>
+
+      <h3>4.8.3 Game of Life in GLSL</h3>
+
+      <p>The most famous example of a system that benefits from frame feedback is Conway's <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of Life</a>, a cellular automaton invented by mathematician John Conway in 1970. Each cell (pixel) is alive (1) or dead (0), and its next state depends only on its current state and the states of its eight neighbors.</p>
+
+      <p>The rules are remarkably simple -- just three conditions:</p>
+
+      <ul>
+        <li>A dead cell with <strong>exactly 3</strong> live neighbors becomes alive (birth)</li>
+        <li>A live cell with <strong>2 or 3</strong> live neighbors stays alive (survival)</li>
+        <li>All other live cells die (underpopulation or overpopulation)</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The Game of Life demonstrates <strong>emergence</strong>: complex, seemingly purposeful behavior arising from extremely simple rules. From these three conditions alone, the following phenomena arise:</p>
+        <ul>
+          <li><strong>Still lifes</strong>: Stable patterns that do not change (blocks, beehives, loaves)</li>
+          <li><strong>Oscillators</strong>: Patterns that cycle through a fixed sequence of states (blinkers, pulsars, pentadecathlons)</li>
+          <li><strong>Spaceships</strong>: Patterns that translate across the grid over time (gliders, lightweight spaceships)</li>
+          <li><strong>Guns</strong>: Patterns that periodically emit spaceships (Gosper's glider gun)</li>
+          <li><strong>Universal computation</strong>: The Game of Life is Turing-complete -- it can simulate any computation</li>
+        </ul>
+        <p>This is a central theme in computing arts -- designing systems whose output transcends the simplicity of their rules.</p>
+      </div>
+
+      <h3>4.8.4 Implementing Game of Life in GLSL</h3>
+
+      <p>In the GLSL Game of Life, each pixel stores a binary state (alive or dead) in its red channel. The fragment shader reads the previous frame via a texture uniform, counts the eight neighbors by sampling surrounding pixels, and applies the rules:</p>
+
+      <pre><code>// GLSL Game of Life fragment shader (core logic)
+vec2 pixel = 1.0 / resolution;
+float current = texture2D(prevFrame, vTexCoord).r;
+
+// Count live neighbors
+float neighbors = 0.0;
+for (int dx = -1; dx <= 1; dx++) {
+  for (int dy = -1; dy <= 1; dy++) {
+    if (dx == 0 && dy == 0) continue;
+    vec2 nc = vTexCoord + vec2(float(dx), float(dy)) * pixel;
+    neighbors += step(0.5, texture2D(prevFrame, nc).r);
+  }
+}
+
+// Apply rules
+float alive = 0.0;
+if (current > 0.5) {
+  // Alive: survive with 2 or 3 neighbors
+  if (neighbors > 1.5 && neighbors < 3.5) alive = 1.0;
+} else {
+  // Dead: birth with exactly 3 neighbors
+  if (neighbors > 2.5 && neighbors < 3.5) alive = 1.0;
+}
+
+gl_FragColor = vec4(vec3(alive), 1.0);</code></pre>
+
+      <p>The <code>step(0.5, value)</code> function returns 1.0 if value >= 0.5, and 0.0 otherwise. This converts the continuous texture value into a binary alive/dead decision, handling any floating-point imprecision from the texture sampling.</p>
+
+      <p>The JavaScript side manages the ping-pong buffers and initializes the grid with random state. Clicking the canvas adds live cells, seeding new patterns.</p>
+
+      <h3>4.8.5 Frame Feedback for Visual Effects</h3>
+
+      <!-- Interactive: Frame Feedback Trail Effect -->
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Frame Feedback Trail Effect (using createFramebuffer)</span>
+        </div>
+        <textarea class="cm-editor">// Frame Feedback Trail Effect
+// Demonstrates feedback using p5.js framebuffer
+let prev;
+
+function setup() {
+  createCanvas(400, 400);
+  prev = createGraphics(400, 400);
+  prev.background(0);
+  background(0);
+}
+
+function draw() {
+  // Draw previous frame with slight fade
+  tint(255, 245);
+  image(prev, 0, 0);
+  noTint();
+
+  // Draw new content: colorful moving circles
+  let t = frameCount * 0.03;
+  noStroke();
+
+  for (let i = 0; i < 3; i++) {
+    let angle = t + i * TWO_PI / 3;
+    let x = width/2 + cos(angle) * 120;
+    let y = height/2 + sin(angle * 1.3) * 120;
+    let hue_val = (frameCount * 2 + i * 120) % 360;
+
+    colorMode(HSB, 360, 100, 100);
+    fill(hue_val, 80, 100);
+    ellipse(x, y, 20, 20);
+    colorMode(RGB);
+  }
+
+  // Mouse interaction
+  if (mouseIsPressed) {
+    fill(255);
+    ellipse(mouseX, mouseY, 30, 30);
+  }
+
+  // Save current frame for next iteration
+  prev.image(get(), 0, 0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>4.8.4 Frame Feedback for Visual Effects</h3>
+
+      <p>Frame feedback is not limited to cellular automata. It opens up a wide range of visual effects:</p>
+
+      <p><strong>Trail effect (fading)</strong>: Blend the previous frame with new content to create motion trails:</p>
+
+      <pre><code>// In a GLSL shader with prevFrame texture:
+vec4 prev = texture2D(prevFrame, vTexCoord) * 0.95; // fade
+vec4 current = /* compute new content */;
+gl_FragColor = max(prev, current); // keep brighter</code></pre>
+
+      <p><strong>Reaction-diffusion</strong>: Each pixel's new value depends on its neighbors' previous values. The Gray-Scott model simulates two chemicals that diffuse and react:</p>
+
+      <pre><code>// Gray-Scott reaction-diffusion (simplified)
+float a = texture2D(prevFrame, vTexCoord).r;
+float b = texture2D(prevFrame, vTexCoord).g;
+
+// Laplacian: average of neighbors minus center
+float laplacianA = 0.0, laplacianB = 0.0;
+for (int dx = -1; dx <= 1; dx++) {
+  for (int dy = -1; dy <= 1; dy++) {
+    vec2 nc = vTexCoord + vec2(float(dx), float(dy)) * pixel;
+    vec4 n = texture2D(prevFrame, nc);
+    float w = (dx == 0 || dy == 0) ? 0.2 : 0.05;
+    if (dx == 0 && dy == 0) w = -1.0;
+    laplacianA += n.r * w;
+    laplacianB += n.g * w;
+  }
+}
+
+float feed = 0.055, kill = 0.062;
+float newA = a + (1.0 * laplacianA - a*b*b + feed*(1.0-a));
+float newB = b + (0.5 * laplacianB + a*b*b - (kill+feed)*b);
+gl_FragColor = vec4(newA, newB, 0.0, 1.0);</code></pre>
+
+      <p>Reaction-diffusion systems produce organic-looking patterns -- spots, stripes, labyrinths, and worm-like structures -- from simple local rules. They model actual biological pattern formation (Alan Turing proposed this mechanism in 1952). We will cover this in depth in a later chapter.</p>
+
+      <p><strong>Zoom feedback</strong>: Sample the previous frame with a slight zoom or rotation to create recursive visual effects:</p>
+
+      <pre><code>// Zoom into center with slight rotation
+vec2 center = vec2(0.5, 0.5);
+vec2 offset = vTexCoord - center;
+float angle = 0.01; // slight rotation per frame
+mat2 rot = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+vec2 samplePos = center + rot * offset * 0.99; // 0.99 = zoom in
+vec4 prev = texture2D(prevFrame, samplePos) * 0.98;</code></pre>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Video feedback</strong> is the visual analogue of audio feedback (the screech when a microphone picks up its own speaker output). In video, pointing a camera at its own monitor creates recursive, fractal-like imagery. GLSL frame feedback is the digital version of this technique, with precise mathematical control over the transformation applied at each step.</p>
+      </div>
+
+      <!-- ===============================================
+           4.9 INTERACTIVITY AND ANIMATION
+           =============================================== -->
+      <h2 id="interactivity">4.9 Interactivity and Animation</h2>
+
+      <h3>4.9.1 Mouse-Controlled Zoom and Pan</h3>
+
+      <p>The mouse position can be sent to the shader as a uniform. This enables real-time parameter exploration:</p>
+
+      <pre><code>// JavaScript side
+function draw() {
+  shader(s);
+  s.setUniform("mouse", [
+    map(mouseX, 0, width, -1, 1),
+    map(mouseY, 0, height, 1, -1) // flip Y
+  ]);
+  quad(-1, -1, 1, -1, 1, 1, -1, 1);
+}</code></pre>
+
+      <p>Common uses for mouse uniforms in fractal exploration:</p>
+
+      <ul>
+        <li><strong>Julia set parameter</strong>: <code>vec2 c = mouse * 2.0;</code></li>
+        <li><strong>Newton multiplier</strong>: <code>vec2 m = mouse;</code></li>
+        <li><strong>Zoom center</strong>: pan the view to the mouse position</li>
+        <li><strong>Color control</strong>: adjust palette phase or saturation</li>
+      </ul>
+
+      <h3>4.9.2 Animated Parameter Morphing</h3>
+
+      <p>Sending a time uniform to the shader unlocks animation. The key insight is that fractal shapes change smoothly as their parameters change -- so animating a parameter creates a continuously morphing visual. This is one of the most compelling aspects of real-time fractal rendering.</p>
+
+      <pre><code>// JavaScript side
+s.setUniform("time", millis() / 1000.0);</code></pre>
+
+      <p>In the shader, use the time uniform to animate any parameter:</p>
+
+      <p>Time-based animation creates hypnotic fractal movies:</p>
+
+      <pre><code>// Animated Julia parameter traces a circle
+vec2 c = vec2(
+  -0.7 + 0.3 * cos(time * 0.3),
+   0.27 + 0.3 * sin(time * 0.3)
+);
+
+// Animated color phase
+float hue = fract(smoothIter / 30.0 + time * 0.05);
+
+// Animated power (morphing between z^2 and z^3)
+float power = 2.0 + sin(time * 0.5) * 0.5;
+z = cx_pow(z, power) + c;</code></pre>
+
+      <h3>4.9.3 Mouse Dragging for Pan</h3>
+
+      <p>For precise control of the view center, accumulate mouse drag movements:</p>
+
+      <pre><code>let cx = 0, cy = 0;
+
+function mouseDragged() {
+  cx += (mouseX - pmouseX) / width * 2;
+  cy -= (mouseY - pmouseY) / height * 2;
+  s.setUniform("center", [cx, cy]);
+}</code></pre>
+
+      <h3>4.9.4 Scroll Wheel for Zoom</h3>
+
+      <p>The mouse wheel provides intuitive zoom control. Each scroll step multiplies the zoom level by a factor:</p>
+
+      <pre><code>let zoom = 1.5;
+
+function mouseWheel(event) {
+  if (event.delta > 0) {
+    zoom *= 1.1; // zoom out
+  } else {
+    zoom *= 0.9; // zoom in
+  }
+  s.setUniform("zoom", zoom);
+  return false; // prevent page scroll
+}</code></pre>
+
+      <h3>4.9.5 GUI Sliders</h3>
+
+      <p>p5.js provides DOM elements for more structured parameter control:</p>
+
+      <pre><code>let iterSlider, zoomSlider;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight, WEBGL);
+  s = createShader(vertSrc, fragSrc);
+  noStroke();
+
+  iterSlider = createSlider(10, 500, 200, 1);
+  iterSlider.position(10, 10);
+  iterSlider.style('width', '200px');
+
+  zoomSlider = createSlider(1, 100, 15, 1);
+  zoomSlider.position(10, 40);
+  zoomSlider.style('width', '200px');
+}
+
+function draw() {
+  shader(s);
+  s.setUniform("maxIter", iterSlider.value());
+  s.setUniform("zoom", zoomSlider.value() / 10.0);
+  quad(-1, -1, 1, -1, 1, 1, -1, 1);
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>GLSL loop bounds must be compile-time constants.</strong> You cannot write <code>for (int i = 0; i &lt; maxIter; i++)</code> where <code>maxIter</code> is a uniform. Instead, use a fixed maximum with a runtime break: <code>for (int i = 0; i &lt; 500; i++) { if (i >= maxIter) break; ... }</code></p>
+      </div>
+
+      <h3>4.9.6 Keyboard Controls and Saving Output</h3>
+
+      <p>Keyboard events let you toggle modes and save output:</p>
+
+      <pre><code>function keyPressed() {
+  if (key === 's') saveCanvas('fractal', 'png');
+  if (key === 'h') {
+    // High-resolution export
+    resizeCanvas(3840, 2160);
+    draw();
+    saveCanvas('fractal-4k', 'png');
+    resizeCanvas(windowWidth, windowHeight);
+  }
+}</code></pre>
+
+      <h3>4.9.7 Combining Interactivity Techniques</h3>
+
+      <p>The most engaging fractal explorers combine multiple interaction modalities. A common setup is:</p>
+
+      <ul>
+        <li><strong>Mouse position</strong>: Controls the Julia set parameter $c$ (for real-time Julia set exploration)</li>
+        <li><strong>Mouse drag</strong>: Pans the view center</li>
+        <li><strong>Scroll wheel</strong>: Zooms in and out</li>
+        <li><strong>Keyboard 1-5</strong>: Selects different fractal formulas</li>
+        <li><strong>Keyboard c</strong>: Cycles through color palettes</li>
+        <li><strong>Keyboard s</strong>: Saves the current frame as a PNG image</li>
+      </ul>
+
+      <p>The following demo shows a Julia set explorer where the mouse position determines the $c$ parameter. Move the mouse to explore different Julia set shapes in real time. Each position in the Mandelbrot set corresponds to a different Julia set -- points inside the Mandelbrot set produce connected Julia sets, while points outside produce disconnected "dust" patterns.</p>
+
+      <!-- Interactive: Mandelbrot Zoom -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Interactive Julia Set Explorer (mouse = c parameter)</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision highp float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+
+vec2 cx_sqr(vec2 z) {
+  return vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y);
+}
+
+vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+  return a + b * cos(6.28318 * (c * t + d));
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  float aspect = u_resolution.x / u_resolution.y;
+
+  // Julia set: c comes from mouse, z from pixel position
+  vec2 z = (uv - 0.5) * vec2(aspect, 1.0) * 3.0;
+
+  // Map mouse to c parameter
+  vec2 c = vec2(-0.7, 0.27); // default
+  if (u_mouse.x > 0.0 || u_mouse.y > 0.0) {
+    c = (u_mouse / u_resolution - 0.5) * 3.0;
+    c.y = -c.y;
+  }
+
+  const int MAX_ITER = 200;
+  int iterations = 0;
+
+  for (int i = 0; i < MAX_ITER; i++) {
+    z = cx_sqr(z) + c;
+    if (dot(z, z) > 256.0) break;
+    iterations++;
+  }
+
+  // Smooth coloring
+  float smoothIter = float(iterations);
+  if (iterations < MAX_ITER) {
+    float logZn = log(dot(z, z)) / 2.0;
+    float nu = log(logZn / log(2.0)) / log(2.0);
+    smoothIter = float(iterations) + 1.0 - nu;
+  }
+
+  float t = smoothIter / float(MAX_ITER);
+
+  // Cosine palette coloring
+  vec3 color = palette(t * 4.0 + u_time * 0.1,
+    vec3(0.5, 0.5, 0.5),
+    vec3(0.5, 0.5, 0.5),
+    vec3(1.0, 1.0, 1.0),
+    vec3(0.0, 0.10, 0.20));
+
+  if (iterations == MAX_ITER) color = vec3(0.0);
+
+  gl_FragColor = vec4(color, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <!-- ===============================================
+           4.10 EARLY ABSTRACT ANIMATION
+           =============================================== -->
+      <h2 id="early-animation">4.10 Early Abstract Animation</h2>
+
+      <p>The computational approaches we have been studying -- generating images from mathematical functions, creating patterns through iterative processes, mapping data to visual form -- have a rich history that predates computers.</p>
+
+      <h3>4.10.1 Oskar Fischinger (1900--1967)</h3>
+
+      <p>Fischinger was a German-American animator who pioneered <strong>visual music</strong> -- abstract animated films synchronized to music. His work demonstrated that purely abstract visual forms, when carefully synchronized with music, could create deeply emotional experiences without any representational content.</p>
+
+      <p>His "Wax Experiments" (1921--1926) created animation by slicing through layered wax blocks, each cross-section becoming a frame. This is essentially 3D volumetric data rendered as a 2D sequence -- anticipating modern techniques like CT scanning, volume rendering, and slicing through 3D fractal data.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Fischinger's technique of encoding time as a spatial dimension (the depth axis of the wax block) is directly analogous to how we use <code>u_time</code> as a parameter in our shaders. Both approaches treat time as just another variable in a mathematical function.</p>
+      </div>
+
+      <h3>4.10.2 Norman McLaren (1914--1987)</h3>
+
+      <p>McLaren pioneered <strong>direct animation</strong> -- drawing and scratching directly on film, bypassing the camera entirely. In <em>Dots</em> (1940), he created both the visuals and soundtrack by hand-marking the film strip -- the visual patterns on one edge of the film were read by the projector's optical sound reader, producing corresponding audio tones. This is perhaps the earliest example of a unified audiovisual generative system.</p>
+
+      <p>McLaren's key insight: "Animation is not the art of drawings that move, but the art of movements that are drawn." This resonates directly with shader programming, where we design <em>processes</em> that produce visual output. McLaren worked at the National Film Board of Canada for over 40 years, producing over 60 films and mentoring generations of experimental animators.</p>
+
+      <h3>4.10.3 Mary Ellen Bute (1906--1983)</h3>
+
+      <p>Bute used oscilloscopes and electronic signals to generate abstract visual forms, synchronized to music. <em>Tarantella</em> (1940) combined electronic Lissajous figures with hand-animation. Bute's oscilloscope work is a direct predecessor of shader-based visualization: converting mathematical functions to visual patterns in real time. The Lissajous figures she used -- parametric curves of the form $(A\sin(at + \delta), B\sin(bt))$ -- are essentially what we compute when we evaluate trigonometric functions across the complex plane.</p>
+
+      <p>Bute was also notable for being one of the first women to gain recognition as an experimental filmmaker, working at a time when the field was overwhelmingly male. Her combination of mathematical sophistication with artistic sensitivity produced some of the most visually striking abstract films of the 1930s and 1940s.</p>
+
+      <h3>4.10.4 Heider and Simmel (1944)</h3>
+
+      <p>Fritz Heider and Marianne Simmel created a short animation of geometric shapes (triangles, circles) moving around a rectangle. When shown to test subjects, nearly everyone described the shapes as intentional agents: "the big triangle is chasing the small one," "the circle is hiding."</p>
+
+      <p>This demonstrates that <strong>humans automatically attribute agency to moving shapes</strong>. This phenomenon, known as <strong>animacy perception</strong>, is deeply hardwired in the human visual system. Infants as young as 6 months show sensitivity to animate motion. For computing artists, this is both a powerful tool and a responsibility: even abstract geometric forms, when animated, will be interpreted as characters with intentions, emotions, and social relationships.</p>
+
+      <p>This is directly relevant when we create agent-based simulations (which we will study in later chapters): viewers will see intentions and emotions in our agents' movements even if we coded no such thing. The implication is that motion design is never purely abstract -- it always carries narrative meaning for the viewer, whether intended or not.</p>
+
+      <h3>4.10.5 Viking Eggeling (1880--1925)</h3>
+
+      <p>Eggeling was a Swedish artist who created <em>Diagonal Symphony</em> (1924), often considered the first abstract animated film. Working from scroll-like drawings that depicted visual "themes" and their variations, Eggeling treated visual form like musical composition -- with counterpoint, rhythm, and development. His approach of systematic visual transformation parallels our use of parameterized functions and animated uniforms.</p>
+
+      <p>Eggeling developed a theory of "Generalbass der Malerei" (a thorough-bass of painting), seeking to discover universal principles of visual composition analogous to the rules of musical harmony. He spent years creating "scroll paintings" -- long horizontal compositions showing the progressive transformation of shapes -- before translating these into the animated film <em>Diagonal Symphony</em>. Tragically, Eggeling died in 1925, just days after the first public screening of his film.</p>
+
+      <p>The concept of the "visual scroll" -- a continuous transformation of form -- maps directly to our shader practice. A fragment shader with a time uniform is essentially an infinite visual scroll: the mathematical function describes a continuous transformation parameterized by time, and each frame is a slice through this continuum.</p>
+
+      <h3>4.10.6 Connections to Computing Arts</h3>
+
+      <p>Each of these pioneers illuminates a different aspect of computational art:</p>
+
+      <table>
+        <thead>
+          <tr><th>Artist</th><th>Technique</th><th>Computational Analogue</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Fischinger</td><td>Slicing 3D wax structures</td><td>Evaluating 2D functions, parameterized by time</td></tr>
+          <tr><td>McLaren</td><td>Drawing directly on film</td><td>Fragment shaders: defining color per pixel</td></tr>
+          <tr><td>Bute</td><td>Oscilloscope visualization</td><td>Real-time function rendering (GLSL)</td></tr>
+          <tr><td>Heider/Simmel</td><td>Moving geometric shapes</td><td>Agent-based simulation, emergence of narrative</td></tr>
+          <tr><td>Eggeling</td><td>Systematic visual transformation</td><td>Parameterized functions, animated uniforms</td></tr>
+        </tbody>
+      </table>
+
+      <h3>4.10.7 The Continuity</h3>
+
+      <p>These artists share a set of principles that run directly through computing arts:</p>
+
+      <ul>
+        <li><strong>Abstract form as a complete artistic language</strong> (no representation needed)</li>
+        <li><strong>Process over product</strong> (design the system, not individual frames)</li>
+        <li><strong>Mathematics as aesthetics</strong> (functions and transformations are inherently visual)</li>
+        <li><strong>Cross-modal correspondence</strong> (visual-musical synesthesia)</li>
+        <li><strong>Technology as artistic instrument</strong> (film, oscilloscopes, GPUs)</li>
+      </ul>
+
+      <p>When we write a fragment shader that generates a fractal landscape, we are working in the same tradition. The shader is a process -- a mathematical function that the GPU evaluates at every pixel -- and the resulting image emerges from this process. We do not draw the Mandelbrot set; we describe the rules, and the set reveals itself.</p>
+
+      <p>This shift from "drawing pictures" to "designing processes" is perhaps the most fundamental conceptual change in moving from traditional to computational art. Fischinger, McLaren, Bute, and Eggeling all understood this decades before computers made it explicit.</p>
+
+      <blockquote>
+        <p>"I am interested in the abstract presentation of music, not through illustrations, but through new forms created by the music itself." -- Oskar Fischinger</p>
+      </blockquote>
+
+      <!-- Quiz 5 -->
+      <div class="quiz" data-id="ch04-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Norman McLaren said: "Animation is not the art of drawings that move, but the art of movements that are drawn." How does this relate to shader programming?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch04-q5" value="a"> Shaders draw static images that are then animated by JavaScript</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q5" value="b" data-correct> In shader programming, we design processes and rules that generate visual output, rather than drawing individual frames</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q5" value="c"> McLaren used GLSL in his animation work</label></li>
+          <li class="option"><label><input type="radio" name="ch04-q5" value="d"> Both McLaren and shader programmers use vector graphics</label></li>
+        </ul>
+        <div class="explanation">
+          <p>McLaren's insight is that the fundamental unit of animation is not a picture but a transformation -- the change between frames. Similarly, a fragment shader is not a drawing but a function: given a position and time, it computes a color. We design the process (the mathematical rule), and the visual output emerges from it.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ===============================================
+           4.11 SUMMARY
+           =============================================== -->
+      <h2 id="summary">4.11 Summary</h2>
+
+      <p>This chapter covered a wide arc from mathematical foundations to artistic vision:</p>
+
+      <ul>
+        <li><strong>Complex arithmetic in GLSL</strong> provides the computational substrate for all our fractal work. We built multiplication, division, exponentiation, sine, cosine, power, and logarithm for complex numbers represented as <code>vec2</code>.</li>
+
+        <li><strong>Alternative fractal formulas</strong> ($z^3 + c$, $\sin(z) + c$, $e^z + c$, Burning Ship, etc.) produce entirely different fractal landscapes. Each function's geometry -- its symmetries, periodicities, and growth rates -- shapes the fractal it produces.</li>
+
+        <li><strong>Smooth coloring</strong> eliminates the banding artifacts of integer iteration counts. The formula $n_{\text{smooth}} = n + 1 - \frac{\log(\log|z|)}{\log 2}$ gives a continuous coloring value. Histogram coloring and distance estimation offer additional approaches.</li>
+
+        <li><strong>Cosine palettes</strong> ($\text{color}(t) = a + b\cos(2\pi(ct+d))$) provide compact, highly flexible color mapping with just four parameter vectors.</li>
+
+        <li><strong>Color spaces</strong> -- HSV for intuitive artistic control, CIELAB for perceptual uniformity -- give us tools to think about color beyond raw RGB values.</li>
+
+        <li><strong>Newton fractals</strong> arise from applying Newton's root-finding method to complex polynomials. They are colored by which root each starting point converges to, revealing fractal basin boundaries. The damping parameter $m$ creates dramatic variations.</li>
+
+        <li><strong>Frame feedback</strong> enables cellular automata, reaction-diffusion, and trail effects by feeding the previous frame back as a texture input using the ping-pong double-buffering pattern.</li>
+
+        <li><strong>Interactivity</strong> through mouse uniforms, time-based animation, and keyboard controls transforms static fractal renderers into real-time exploration tools.</li>
+
+        <li><strong>Early abstract animation</strong> -- Fischinger, McLaren, Bute, Heider and Simmel, Eggeling -- establishes that abstract moving forms carry meaning, that process can be art, and that mathematics and aesthetics are deeply intertwined.</li>
+      </ul>
+
+      <h3>4.11.2 Key Takeaways for Practice</h3>
+
+      <p>Here are the most practically useful techniques from this chapter, summarized for quick reference:</p>
+
+      <ol>
+        <li><strong>Always use the complex number library.</strong> Paste the complete set of <code>cx_*</code> functions at the top of every fractal shader. It costs nothing in performance for unused functions (GLSL compilers eliminate dead code).</li>
+        <li><strong>Use smooth coloring by default.</strong> There is almost never a reason to use raw integer iteration counts. The smooth formula adds one line of code and dramatically improves the output.</li>
+        <li><strong>Start with a cosine palette.</strong> The Quilez cosine palette formula is the best balance of flexibility, compactness, and visual quality for shader-based fractal coloring.</li>
+        <li><strong>Match escape radius to formula.</strong> For $z^n + c$, an escape radius of 4 is sufficient but 256 is better for smooth coloring. For $e^z + c$, use 100 or more. For $\sin(z) + c$, use 50.</li>
+        <li><strong>Explore parameter space systematically.</strong> When trying a new formula, start zoomed out (large scale), identify interesting regions, then zoom in. Many fractals have their most interesting features near specific parameter values that require exploration to find.</li>
+        <li><strong>Use the mouse for real-time exploration.</strong> Mapping mouse position to fractal parameters (Julia set $c$, Newton multiplier $m$, cosine palette phase) turns your shader into an interactive instrument.</li>
+      </ol>
+
+      <h3>4.11.1 Looking Ahead</h3>
+
+      <p>In the next chapter, we will deepen our use of frame feedback to build reaction-diffusion systems, and introduce <strong>Signed Distance Functions (SDFs)</strong> -- a powerful technique for rendering complex 2D and 3D shapes in GLSL. SDFs will connect our fractal work to a broader world of procedural shape generation, raymarching, and real-time 3D rendering.</p>
+
+      <p>The coloring and animation techniques from this chapter will carry forward into every subsequent topic. The cosine palette, smooth iteration count, and frame feedback pattern are tools you will use throughout the rest of the course.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The central lesson of this chapter</strong> is that the mathematical formula and the coloring method are independent creative choices. Any formula can be combined with any coloring technique. The fractal formula determines the <em>geometry</em> (where are the boundaries, what symmetries exist), while the coloring method determines the <em>aesthetic</em> (how that geometry is revealed to the viewer). Mastering both gives you an enormous creative space to explore.</p>
+      </div>
+
+      <!-- ===============================================
+           4.12 REFERENCES
+           =============================================== -->
+      <h2 id="references">4.12 References</h2>
+
+      <h3>Starter Code and Examples</h3>
+      <ul>
+        <li><a href="https://editor.p5js.org/kybr/sketches/NmgtHIKFc">Fractal starter sketch</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/NR0obTTlL">Coloring sketch</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/E9yDmPa4o">Iteration path visualization</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/QVXaYFrWA">Newton fractal</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/hV5wnBKNQ">Game of Life in GLSL</a></li>
+      </ul>
+
+      <h3>Fractal Explorers</h3>
+      <ul>
+        <li><a href="https://v8.zsnout.com/fractal-explorer">zsnout fractal explorer</a></li>
+        <li><a href="https://newton.bobin.at/">Newton fractal explorer</a></li>
+        <li><a href="https://www.malinc.se/m/NewtonFractals.php">Newton fractal generator</a></li>
+      </ul>
+
+      <h3>Technical References</h3>
+      <ul>
+        <li><a href="https://iquilezles.org/articles/palettes/">Inigo Quilez: Cosine Palettes</a></li>
+        <li><a href="https://mandelbrowser.y0.pl/tutorial/computing.html">Mandelbrot coloring tutorial</a></li>
+        <li><a href="https://paulbourke.net/fractals">Paul Bourke: Fractals</a></li>
+        <li><a href="https://thebookofshaders.com/">The Book of Shaders</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/HSL_and_HSV">Wikipedia: HSV Color Space</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/CIELAB_color_space">Wikipedia: CIELAB Color Space</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/Newton_fractal">Wikipedia: Newton Fractal</a></li>
+      </ul>
+
+      <h3>Videos</h3>
+      <ul>
+        <li><a href="https://www.youtube.com/watch?v=y9BK--OxZpY">3Blue1Brown: The meaning within the Mandelbrot set</a></li>
+        <li><a href="https://www.youtube.com/watch?v=LqbZpur38nw">3Blue1Brown: Beyond the Mandelbrot set</a></li>
+        <li><a href="https://www.youtube.com/watch?v=-RdOwhmqP5s">3Blue1Brown: Newton's Fractal</a></li>
+        <li><a href="https://www.youtube.com/watch?v=Ed1gsyxxwM0">Two Swap: Mandelbrot's Evil Twin (Burning Ship)</a></li>
+        <li><a href="https://www.youtube.com/watch?v=zXqIKlCzqL0">Oskar Fischinger: Wax Experiments</a></li>
+        <li><a href="https://www.youtube.com/watch?v=VTNmLt7QX8E">Heider and Simmel (1944)</a></li>
+        <li><a href="https://www.youtube.com/watch?v=E3-vsKwQ0Cg">Norman McLaren: Dots (1940)</a></li>
+        <li><a href="https://www.youtube.com/watch?v=czDsy8BYP1M">Mary Ellen Bute: Tarantella (1940)</a></li>
+        <li><a href="https://www.youtube.com/watch?v=jOzOZvoyUJ4">Curtis Roads: Half-life</a></li>
+      </ul>
+
+      <h3>Further Reading</h3>
+      <ul>
+        <li>Peitgen, H.-O., and Richter, P.H. <em>The Beauty of Fractals</em>. Springer-Verlag, 1986. (Seminal book on fractal visualization)</li>
+        <li>Mandelbrot, Benoit B. <em>The Fractal Geometry of Nature</em>. W.H. Freeman, 1982.</li>
+        <li>Turing, Alan. "The Chemical Basis of Morphogenesis." <em>Philosophical Transactions of the Royal Society</em>, 1952. (Foundation of reaction-diffusion)</li>
+        <li>Moritz, William. <em>Optical Poetry: The Life and Work of Oskar Fischinger</em>. Indiana University Press, 2004.</li>
+      </ul>
+
+      <!-- ===============================================
+           CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <!-- Code Challenge 1: hsvToRgb -->
+      <div class="code-challenge" data-id="ch04-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge: HSV to RGB Conversion</div>
+        <p class="prompt">Write a function <code>hsvToRgb(h, s, v)</code> that converts HSV color values to RGB. Parameters: <code>h</code> is hue in range $[0, 1]$ (0 = red, 0.33 = green, 0.67 = blue), <code>s</code> is saturation in $[0, 1]$, <code>v</code> is value/brightness in $[0, 1]$. Return an array <code>[r, g, b]</code> with values in $[0, 1]$, rounded to 2 decimal places.</p>
+        <textarea class="cm-editor">function hsvToRgb(h, s, v) {
+  // Your code here
+  // Convert h (0-1), s (0-1), v (0-1) to [r, g, b] (0-1)
+  // Round each component to 2 decimal places
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "hsvToRgb(0, 1, 1)", "expected": [1, 0, 0]},
+          {"call": "hsvToRgb(0.333, 1, 1)", "expected": [0, 1, 0]},
+          {"call": "hsvToRgb(0.667, 1, 1)", "expected": [0, 0, 1]},
+          {"call": "hsvToRgb(0, 0, 0.5)", "expected": [0.5, 0.5, 0.5]},
+          {"call": "hsvToRgb(0, 0, 1)", "expected": [1, 1, 1]}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Code Challenge 2: smoothColor -->
+      <div class="code-challenge" data-id="ch04-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge: Smooth Fractal Coloring</div>
+        <p class="prompt">Write a function <code>smoothColor(iteration, maxIter, zMagnitude)</code> that computes the smooth iteration count for Mandelbrot coloring. If <code>iteration</code> equals <code>maxIter</code> (point is in the set), return <code>-1</code>. Otherwise, apply the formula: $n_{\text{smooth}} = n + 1 - \frac{\log(\log|z|)}{\log 2}$ where $|z|$ is <code>zMagnitude</code>. Round to 2 decimal places.</p>
+        <textarea class="cm-editor">function smoothColor(iteration, maxIter, zMagnitude) {
+  // Your code here
+  // If iteration == maxIter, return -1
+  // Otherwise compute smooth iteration count
+  // Round to 2 decimal places
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "smoothColor(100, 100, 2.5)", "expected": -1},
+          {"call": "smoothColor(10, 100, 16.0)", "expected": 9},
+          {"call": "smoothColor(5, 100, 256.0)", "expected": 3},
+          {"call": "smoothColor(0, 100, 1000.0)", "expected": -1.25}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Code Challenge 3: cosinePalette -->
+      <div class="code-challenge" data-id="ch04-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge: Cosine Palette</div>
+        <p class="prompt">Implement the Inigo Quilez cosine palette formula: $\text{color}(t) = a + b \cdot \cos(2\pi(c \cdot t + d))$. Write <code>cosinePalette(t, a, b, c, d)</code> where each of <code>a</code>, <code>b</code>, <code>c</code>, <code>d</code> is an array of 3 numbers (for R, G, B channels). Return an array <code>[r, g, b]</code> rounded to 2 decimal places.</p>
+        <textarea class="cm-editor">function cosinePalette(t, a, b, c, d) {
+  // Your code here
+  // color_i = a_i + b_i * cos(2*PI * (c_i * t + d_i))
+  // Return [r, g, b] rounded to 2 decimal places
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "cosinePalette(0, [0.5,0.5,0.5], [0.5,0.5,0.5], [1,1,1], [0,0,0])", "expected": [1, 1, 1]},
+          {"call": "cosinePalette(0.5, [0.5,0.5,0.5], [0.5,0.5,0.5], [1,1,1], [0,0,0])", "expected": [0, 0, 0]},
+          {"call": "cosinePalette(0.25, [0.5,0.5,0.5], [0.5,0.5,0.5], [1,1,1], [0,0,0])", "expected": [0.5, 0.5, 0.5]},
+          {"call": "cosinePalette(0, [0.5,0.5,0.5], [0.5,0.5,0.5], [1,1,1], [0,0.33,0.67])", "expected": [1, 0.25, 0.25]}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- ===============================================
+           OPEN-ENDED EXERCISES
+           =============================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <!-- Exercise 1: Custom Fractal Formula Explorer -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 4.1: Custom Fractal Formula Explorer</div>
+        <p class="prompt">Create a p5.js sketch that renders a fractal using the formula $z_{n+1} = z^3 + c$ (cubic Mandelbrot). Implement smooth coloring and use a cosine palette. The sketch should use WEBGL mode with a custom shader. Adjust the viewing bounds to capture the 2-fold symmetry of the cubic Mandelbrot.</p>
+        <textarea class="cm-editor">// Custom Fractal Formula Explorer
+// Implement a cubic Mandelbrot (z^3 + c) with smooth coloring
+
+let s;
+let vertSrc = `
+precision highp float;
+attribute vec3 aPosition;
+varying vec2 vPos;
+void main() {
+  gl_Position = vec4(aPosition, 1.0);
+  vPos = aPosition.xy;
+}
+`;
+
+let fragSrc = `
+precision highp float;
+varying vec2 vPos;
+// Add your complex math functions and
+// fractal rendering here
+void main() {
+  gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+`;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  s = createShader(vertSrc, fragSrc);
+  noStroke();
+}
+
+function draw() {
+  shader(s);
+  quad(-1,-1, 1,-1, 1,1, -1,1);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let s;
+let vertSrc = `
+precision highp float;
+attribute vec3 aPosition;
+varying vec2 vPos;
+void main() {
+  gl_Position = vec4(aPosition, 1.0);
+  vPos = aPosition.xy;
+}
+`;
+
+let fragSrc = `
+precision highp float;
+varying vec2 vPos;
+
+vec2 cx_mul(vec2 a, vec2 b) {
+  return vec2(a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x);
+}
+vec2 cx_sqr(vec2 z) {
+  return vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y);
+}
+
+vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+  return a + b * cos(6.28318 * (c * t + d));
+}
+
+void main() {
+  vec2 c = vPos * 1.5; // viewing bounds
+  vec2 z = vec2(0.0);
+  const int MAX_ITER = 200;
+  int iterations = 0;
+
+  for (int i = 0; i < MAX_ITER; i++) {
+    z = cx_mul(cx_sqr(z), z) + c; // z^3 + c
+    if (dot(z, z) > 256.0) break;
+    iterations++;
+  }
+
+  float smoothIter = float(iterations);
+  if (iterations < MAX_ITER) {
+    float logZn = log(dot(z, z)) / 2.0;
+    float nu = log(logZn / log(3.0)) / log(3.0);
+    smoothIter = float(iterations) + 1.0 - nu;
+  }
+
+  float t = smoothIter / float(MAX_ITER);
+  vec3 color = palette(t * 5.0,
+    vec3(0.5), vec3(0.5),
+    vec3(1.0, 1.0, 0.5),
+    vec3(0.8, 0.9, 0.3));
+
+  if (iterations == MAX_ITER) color = vec3(0.0);
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  s = createShader(vertSrc, fragSrc);
+  noStroke();
+}
+
+function draw() {
+  shader(s);
+  quad(-1,-1, 1,-1, 1,1, -1,1);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: Newton Fractal with Custom Polynomial -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 4.2: Newton Fractal with Custom Polynomial</div>
+        <p class="prompt">Modify the Newton fractal to use $f(z) = z^4 - 1$ instead of $z^3 - 1$. This polynomial has four roots at $z = 1, i, -1, -i$. You will need to update the derivative ($f'(z) = 4z^3$), the root positions, and use four distinct colors. Write a GLSL fragment shader that renders this fractal.</p>
+        <textarea class="cm-editor">// Newton Fractal for z^4 - 1
+// Roots: 1, i, -1, -i
+// Derivative: 4z^3
+
+let s;
+let vertSrc = `
+precision highp float;
+attribute vec3 aPosition;
+varying vec2 vPos;
+void main() {
+  gl_Position = vec4(aPosition, 1.0);
+  vPos = aPosition.xy;
+}
+`;
+
+let fragSrc = `
+precision highp float;
+varying vec2 vPos;
+// Implement Newton's method for z^4 - 1
+void main() {
+  gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+`;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  s = createShader(vertSrc, fragSrc);
+  noStroke();
+}
+
+function draw() {
+  shader(s);
+  quad(-1,-1, 1,-1, 1,1, -1,1);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let s;
+let vertSrc = `
+precision highp float;
+attribute vec3 aPosition;
+varying vec2 vPos;
+void main() {
+  gl_Position = vec4(aPosition, 1.0);
+  vPos = aPosition.xy;
+}
+`;
+
+let fragSrc = `
+precision highp float;
+varying vec2 vPos;
+
+vec2 cx_mul(vec2 a, vec2 b) {
+  return vec2(a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x);
+}
+vec2 cx_sqr(vec2 z) {
+  return vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y);
+}
+vec2 cx_div(vec2 a, vec2 b) {
+  return vec2(a.x*b.x+a.y*b.y, a.y*b.x-a.x*b.y) / dot(b,b);
+}
+
+vec3 hsv2rgb(vec3 c) {
+  vec3 rgb = clamp(
+    abs(mod(c.x*6.0+vec3(0,4,2),6.0)-3.0)-1.0,
+    0.0, 1.0);
+  return c.z * mix(vec3(1.0), rgb, c.y);
+}
+
+void main() {
+  vec2 z = vPos * 2.0;
+
+  // Four roots of z^4 - 1
+  vec2 r0 = vec2(1.0, 0.0);
+  vec2 r1 = vec2(0.0, 1.0);
+  vec2 r2 = vec2(-1.0, 0.0);
+  vec2 r3 = vec2(0.0, -1.0);
+
+  const int MAX_ITER = 80;
+  int iterations = 0;
+  int whichRoot = -1;
+
+  for (int i = 0; i < MAX_ITER; i++) {
+    // f(z) = z^4 - 1
+    vec2 z2 = cx_sqr(z);
+    vec2 z4 = cx_sqr(z2);
+    vec2 f_z = z4 - vec2(1.0, 0.0);
+    // f'(z) = 4z^3
+    vec2 fp_z = cx_mul(z2, z) * 4.0;
+    vec2 dz = cx_div(f_z, fp_z);
+    z = z - dz;
+    iterations++;
+
+    if (distance(z, r0) < 0.001) { whichRoot = 0; break; }
+    if (distance(z, r1) < 0.001) { whichRoot = 1; break; }
+    if (distance(z, r2) < 0.001) { whichRoot = 2; break; }
+    if (distance(z, r3) < 0.001) { whichRoot = 3; break; }
+  }
+
+  float shade = 1.0 - float(iterations)/float(MAX_ITER)*0.8;
+  vec3 color = vec3(0.0);
+  if (whichRoot == 0) color = hsv2rgb(vec3(0.0, 0.85, shade));
+  if (whichRoot == 1) color = hsv2rgb(vec3(0.25, 0.85, shade));
+  if (whichRoot == 2) color = hsv2rgb(vec3(0.5, 0.85, shade));
+  if (whichRoot == 3) color = hsv2rgb(vec3(0.75, 0.85, shade));
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+function setup() {
+  createCanvas(400, 400, WEBGL);
+  s = createShader(vertSrc, fragSrc);
+  noStroke();
+}
+
+function draw() {
+  shader(s);
+  quad(-1,-1, 1,-1, 1,1, -1,1);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- ===============================================
+           CHAPTER END QUIZ
+           =============================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 4 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of creative fractals, coloring techniques, and frame feedback.</p>
+
+        <div class="quiz" data-id="ch04-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">What symmetry does the Multibrot set $z^4 + c$ exhibit?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch04-fq1" value="a"> 2-fold rotational symmetry</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq1" value="b" data-correct> 3-fold rotational symmetry</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq1" value="c"> 4-fold rotational symmetry</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq1" value="d"> Mirror symmetry only</label></li>
+          </ul>
+          <div class="explanation"><p>The Multibrot set $z^n + c$ exhibits $(n-1)$-fold rotational symmetry. For $z^4 + c$, that is $4 - 1 = 3$-fold rotational symmetry.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch04-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">In the cosine palette formula $\text{color}(t) = a + b \cdot \cos(2\pi(ct + d))$, what does the parameter $\mathbf{d}$ control?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch04-fq2" value="a"> The overall brightness offset</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq2" value="b"> The contrast/amplitude of the palette</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq2" value="c"> How many times the colors cycle</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq2" value="d" data-correct> The phase offset -- where each color channel's cosine wave starts</label></li>
+          </ul>
+          <div class="explanation"><p>The $\mathbf{d}$ vector controls the phase offset for each RGB channel. By shifting the phases, you change which colors appear at which $t$ values. The parameters are: $\mathbf{a}$ = brightness offset, $\mathbf{b}$ = amplitude, $\mathbf{c}$ = frequency, $\mathbf{d}$ = phase.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch04-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">Why does the "ping-pong" double-buffering technique use two buffers instead of one?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch04-fq3" value="a"> GPUs require exactly two texture units for rendering</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq3" value="b" data-correct> Reading from and writing to the same buffer simultaneously produces unpredictable results because the GPU processes pixels in parallel</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq3" value="c"> Two buffers allow rendering at double the resolution</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq3" value="d"> WebGL requires separate read and write buffers for security</label></li>
+          </ul>
+          <div class="explanation"><p>The GPU processes many pixels simultaneously. If a shader reads from the same buffer it is writing to, some pixels would read old values and others would read newly written values, depending on the order of execution. Two buffers solve this: we read from one (complete, stable data) and write to the other (fresh output), then swap for the next frame.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch04-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">What is the Burning Ship fractal's key modification to the standard Mandelbrot iteration?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch04-fq4" value="a"> It uses $z^3$ instead of $z^2$</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq4" value="b"> It uses a different escape radius</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq4" value="c" data-correct> It takes the absolute value of the real and imaginary components of $z$ before squaring</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq4" value="d"> It adds a sine function to the iteration</label></li>
+          </ul>
+          <div class="explanation"><p>The Burning Ship uses $z_{n+1} = (|\text{Re}(z_n)| + i|\text{Im}(z_n)|)^2 + c$. Taking the absolute value of each component before squaring breaks the smooth symmetry of the standard Mandelbrot, creating the jagged, asymmetric structures characteristic of the Burning Ship.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch04-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">How many roots does the polynomial $z^5 - 1$ have in the complex plane, and what is the angular spacing between them?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch04-fq5" value="a"> 4 roots, spaced 90 degrees apart</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq5" value="b" data-correct> 5 roots, spaced 72 degrees apart</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq5" value="c"> 5 roots, spaced 60 degrees apart</label></li>
+            <li class="option"><label><input type="radio" name="ch04-fq5" value="d"> 6 roots, spaced 72 degrees apart</label></li>
+          </ul>
+          <div class="explanation"><p>By the Fundamental Theorem of Algebra, $z^5 - 1$ has exactly 5 roots. These are the 5th roots of unity, equally spaced on the unit circle. The angular spacing is $\frac{360°}{5} = 72°$. The roots are $e^{2\pi i k / 5}$ for $k = 0, 1, 2, 3, 4$.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch03/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 3</span>
+        </a>
+        <a href="../ch05/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 5: Frame Feedback &amp; Signed Distance Functions</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

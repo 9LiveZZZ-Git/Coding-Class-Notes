@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 15: Supplementary Topics &mdash; Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror (shader chapters) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch15">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 15: Supplementary Topics</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 15: Supplementary Topics</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Essential programming concepts and creative computing techniques</p>
+
+
+      <!-- ===============================================
+           SECTION 15.1 — INTRODUCTION
+           =============================================== -->
+      <h2 id="introduction">15.1 Introduction</h2>
+
+      <p>This chapter is different from the rest of the textbook. Rather than following the chronological flow of the course, it serves as a <strong>reference chapter</strong>&mdash;a collection of foundational programming concepts that underpin everything you have learned and built throughout MAT 200C. Each section is self-contained, with complete working code examples and thorough explanations. You can read it straight through, or you can consult individual sections whenever you need them.</p>
+
+      <p>The topics covered here&mdash;object-oriented programming, functional programming, data structures, interactivity, pixel manipulation, types and binary data, software licenses, game design, and sound programming&mdash;are not afterthoughts. They are the essential building blocks that make particle systems possible (Chapter 3), that power cellular automata (Chapter 5), that enable interactive agent simulations (Chapter 7), and that form the foundation for GPU programming (Chapter 14). Every sketch you have written in this course has used at least several of these concepts, even if you were not explicitly aware of it.</p>
+
+      <p>If you have ever wondered why we iterate backwards through an array when removing elements, how <code>map()</code> and <code>filter()</code> differ from a <code>for</code> loop, what <code>pixelDensity(1)</code> actually does, or how to choose a license for your final project&mdash;this chapter has your answers.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Each section in this chapter is <strong>self-contained</strong>. You do not need to read them in order. Jump to whichever topic you need right now, study the explanations, run the code examples, and return to your project with a deeper understanding. Think of this chapter as a programmer&rsquo;s toolkit that you can reach into at any time.</p>
+      </div>
+
+      <p>Here is a roadmap of what each section covers and when you might need it:</p>
+
+      <ul>
+        <li><strong>Section 15.2 &ndash; Object-Oriented Programming</strong>: Classes, objects, inheritance. Essential for particle systems, agent simulations, and any project with multiple similar entities.</li>
+        <li><strong>Section 15.3 &ndash; Functional Programming</strong>: <code>map()</code>, <code>filter()</code>, <code>reduce()</code>. Cleaner code for data transformation and particle management.</li>
+        <li><strong>Section 15.4 &ndash; Data Structures</strong>: Arrays, objects, stacks, queues, 2D grids. The organizational backbone of every simulation.</li>
+        <li><strong>Section 15.5 &ndash; Interactivity</strong>: Mouse, keyboard, GUI controls, hit detection. Making your sketches responsive to the user.</li>
+        <li><strong>Section 15.6 &ndash; Pixel Manipulation</strong>: Direct access to pixel data for image processing, filters, and glitch art.</li>
+        <li><strong>Section 15.7 &ndash; Types, Strings, and Binary</strong>: Avoiding type coercion bugs, string manipulation, typed arrays for GPU and audio work.</li>
+        <li><strong>Section 15.8 &ndash; Software Licenses</strong>: Choosing licenses for your final project, proper attribution, the Free Culture movement.</li>
+        <li><strong>Section 15.9 &ndash; Games and Visual Art</strong>: Collision detection, state machines, game feel. Building interactive experiences with rules and goals.</li>
+        <li><strong>Section 15.10 &ndash; Sound and Audio</strong>: Oscillators, envelopes, filters, FFT analysis. Adding the sonic dimension to your work.</li>
+      </ul>
+
+
+      <!-- ===============================================
+           SECTION 15.2 — OBJECT-ORIENTED PROGRAMMING
+           =============================================== -->
+      <h2 id="oop">15.2 Object-Oriented Programming (OOP)</h2>
+
+      <p>Object-oriented programming is the single most important organizational tool for creative coding. Every particle system, every flock of agents, every game character in this course has been built using OOP principles. The core idea is simple: instead of managing dozens of loose variables, you bundle related data and behavior into a single <strong>class</strong>, and then create as many <strong>instances</strong> (objects) of that class as you need.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Class</strong> &mdash; A blueprint or template that defines the properties (data) and methods (behavior) that a type of object will have. Think of it as a cookie cutter: the cutter defines the shape, but each cookie is its own independent thing.</p>
+        <p><strong>Object (Instance)</strong> &mdash; A specific thing created from a class. Each instance has its own copy of the properties defined by the class, but shares the method definitions.</p>
+      </div>
+
+      <h3>15.2.1 Classes, Constructors, and <code>this</code></h3>
+
+      <p>A class definition uses the <code>class</code> keyword. Inside it, the <code>constructor()</code> method runs once when you create a new instance with <code>new</code>. The keyword <code>this</code> refers to the specific instance being created or acted upon&mdash;it is what distinguishes &ldquo;this ball&rsquo;s x position&rdquo; from &ldquo;that ball&rsquo;s x position.&rdquo;</p>
+
+      <pre><code>class Particle {
+  // Constructor: runs once when you create a new instance
+  constructor(x, y) {
+    this.x = x;             // Property: this particle's x position
+    this.y = y;             // Property: this particle's y position
+    this.vx = random(-2, 2); // Random horizontal velocity
+    this.vy = random(-3, 0); // Random upward velocity
+    this.lifespan = 255;     // Also used as alpha transparency
+    this.size = random(3, 10);
+  }
+
+  // Method: update this particle's state
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += 0.05;       // Gravity pulls it down each frame
+    this.lifespan -= 3;    // Fade out over time
+  }
+
+  // Method: draw this particle
+  display() {
+    noStroke();
+    fill(255, 100, 50, this.lifespan);
+    circle(this.x, this.y, this.size);
+  }
+
+  // Method: returns true when particle should be removed
+  isDead() {
+    return this.lifespan <= 0;
+  }
+}</code></pre>
+
+      <p>To create an instance, use the <code>new</code> keyword. This calls the constructor, creates a fresh object with its own properties, and returns it:</p>
+
+      <pre><code>let p = new Particle(200, 300);  // new calls the constructor
+p.update();                       // Call the particle's update method
+p.display();                      // Call the particle's display method
+console.log(p.lifespan);          // Access a property: 252</code></pre>
+
+      <h3>15.2.2 Managing Many Instances</h3>
+
+      <p>The real power of classes emerges when you manage many instances in an array. You can spawn new particles, update them all, draw them all, and remove dead ones&mdash;all with clean, readable code:</p>
+
+      <pre><code>let particles = [];
+
+// Spawn: add a new particle to the array
+particles.push(new Particle(mouseX, mouseY));
+
+// Update and display all particles
+for (let p of particles) {
+  p.update();
+  p.display();
+}
+
+// Remove dead particles (iterate backwards when using splice)
+for (let i = particles.length - 1; i >= 0; i--) {
+  if (particles[i].isDead()) {
+    particles.splice(i, 1);
+  }
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Always iterate backwards when removing elements with <code>splice()</code>.</strong> If you iterate forwards and remove an element at index 3, the element that was at index 4 shifts down to index 3&mdash;but your loop counter has already moved past index 3, so that element gets skipped. Backwards iteration avoids this because removals only affect indices you have already visited.</p>
+      </div>
+
+      <h3>15.2.3 Encapsulation: Keeping Logic Inside the Class</h3>
+
+      <p>One of the most powerful aspects of OOP is <strong>encapsulation</strong>&mdash;the idea that each object manages its own internal state. The <code>isDead()</code> method is a perfect example: the main sketch does not need to know that particles have a <code>lifespan</code> property or what its threshold value is. It simply asks each particle &ldquo;are you dead?&rdquo; and the particle answers. If you later change the death condition (say, particles die when they go off-screen instead of when lifespan hits zero), you only change the <code>isDead()</code> method&mdash;the main sketch remains untouched.</p>
+
+      <p>This principle of &ldquo;tell, don&rsquo;t ask&rdquo; makes your code more modular and easier to maintain. Instead of the main sketch reaching inside objects to read their properties and make decisions, the objects themselves contain the decision-making logic.</p>
+
+      <h3>15.2.4 Inheritance: <code>extends</code> and <code>super()</code></h3>
+
+      <p>Sometimes you want a new class that is similar to an existing one but with some differences. <strong>Inheritance</strong> lets a child class (subclass) extend a parent class (superclass), inheriting all its properties and methods while adding or overriding some of its own.</p>
+
+      <pre><code>class Shape {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  move(dx, dy) {
+    this.x += dx;
+    this.y += dy;
+  }
+}
+
+class CircleShape extends Shape {
+  constructor(x, y, r) {
+    super(x, y);   // Call the parent constructor first
+    this.r = r;     // Add a new property specific to circles
+  }
+  display() {
+    circle(this.x, this.y, this.r * 2);
+  }
+}</code></pre>
+
+      <p>The keyword <code>extends</code> declares the inheritance relationship. Inside the child constructor, you <strong>must</strong> call <code>super()</code> before using <code>this</code>&mdash;this runs the parent constructor to set up the inherited properties. You can also call <code>super.methodName()</code> to invoke the parent&rsquo;s version of a method.</p>
+
+      <p>When different classes share a common interface (like a <code>display()</code> method), you can store them in the same array and loop through them uniformly. A <code>CircleShape</code> and a <code>RectShape</code> both respond to <code>display()</code>, but each draws something different. This is called <strong>polymorphism</strong>&mdash;the same method name, different behavior depending on the object&rsquo;s class.</p>
+
+      <p>Inheritance is powerful but should be used sparingly. A good rule of thumb: use inheritance when there is a genuine &ldquo;is-a&rdquo; relationship (a CircleShape <em>is a</em> Shape). If the relationship is &ldquo;has-a&rdquo; (a Car <em>has a</em> Engine), prefer <strong>composition</strong>&mdash;storing one object as a property of another rather than using inheritance.</p>
+
+      <h3>15.2.5 When to Use Classes</h3>
+
+      <p>You do not need classes for everything. A simple sketch that draws a single pattern does not benefit from OOP. Use classes when you have:</p>
+
+      <ul>
+        <li><strong>Multiple instances</strong> of the same kind of thing (particles, agents, enemies, musical notes)</li>
+        <li><strong>State and behavior that belong together</strong> (a ball has position, velocity, and knows how to bounce&mdash;these should not be separate)</li>
+        <li><strong>Complex interactions between objects</strong> (collision detection, gravitational attraction, flocking behavior)</li>
+        <li><strong>Code that is becoming unmanageable</strong> (if you have <code>x1, y1, vx1, vy1, x2, y2, vx2, vy2...</code>, it is time for a class)</li>
+      </ul>
+
+      <p>The refactoring process is straightforward: identify the variables that belong together, bundle them into a class with a constructor, move the update logic into an <code>update()</code> method, move the drawing logic into a <code>display()</code> method, and replace your loose variables with an array of instances. Suddenly, adding 100 more entities is a one-line change instead of duplicating code 100 times.</p>
+
+      <p>Consider the difference between procedural and object-oriented approaches for managing two bouncing balls:</p>
+
+      <pre><code>// PROCEDURAL: variables for each ball, duplicated logic
+let x1 = 100, y1 = 200, vx1 = 2, vy1 = 3;
+let x2 = 300, y2 = 150, vx2 = -1, vy2 = 2;
+
+function draw() {
+  x1 += vx1; y1 += vy1;
+  if (x1 > width || x1 < 0) vx1 *= -1;
+  if (y1 > height || y1 < 0) vy1 *= -1;
+  circle(x1, y1, 30);
+
+  x2 += vx2; y2 += vy2;
+  if (x2 > width || x2 < 0) vx2 *= -1;
+  if (y2 > height || y2 < 0) vy2 *= -1;
+  circle(x2, y2, 30);
+  // Adding a 3rd ball means copying all of this AGAIN
+}
+
+// OOP: one class, any number of instances
+let balls = [];
+function setup() {
+  for (let i = 0; i < 100; i++) {
+    balls.push(new Ball(random(width), random(height)));
+  }
+}
+function draw() {
+  for (let b of balls) { b.update(); b.display(); }
+  // Adding more balls: just change the 100
+}</code></pre>
+
+      <p>The OOP version is not just shorter&mdash;it is fundamentally more scalable and maintainable. If you need to add a new behavior (say, color changing), you add it once in the class and every instance gets it automatically.</p>
+
+      <h3>15.2.6 Common OOP Mistakes</h3>
+
+      <p>Three mistakes trip up nearly every beginner learning OOP in JavaScript:</p>
+
+      <ul>
+        <li><strong>Forgetting <code>this</code></strong>: Inside a method, <code>x</code> is a local variable that disappears when the method ends. <code>this.x</code> is the object&rsquo;s property that persists. If you write <code>x = 5</code> instead of <code>this.x = 5</code> in a method, you are creating a temporary local variable, not setting the object&rsquo;s property.</li>
+        <li><strong>Forgetting <code>new</code></strong>: Writing <code>let b = Ball(100, 200)</code> without <code>new</code> calls <code>Ball</code> as a regular function, which will throw an error or produce <code>undefined</code>. Always use <code>new Ball(100, 200)</code>.</li>
+        <li><strong>Forgetting <code>super()</code></strong>: If your class extends another class, you must call <code>super()</code> in the constructor before using <code>this</code>. Omitting it produces a ReferenceError.</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The pattern of separating particles into <code>constructor()</code>, <code>update()</code>, <code>display()</code>, and <code>isDead()</code> methods comes from Daniel Shiffman&rsquo;s <em>The Nature of Code</em>, which built on the Processing tradition established by Casey Reas and Ben Fry. This convention is not required by JavaScript&mdash;you can name your methods anything&mdash;but it has become the standard vocabulary of creative coding, and using it makes your code immediately readable to other creative coders.</p>
+      </div>
+
+      <h3>15.2.7 Interactive Example: Particle Fountain</h3>
+
+      <p>This complete sketch creates a particle fountain that follows your mouse. Move your mouse across the canvas to see particles spray upward, arc under gravity, and fade away. Each particle is an independent object managing its own position, velocity, and lifespan.</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Particle Fountain &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let particles = [];
+
+function setup() {
+  createCanvas(400, 380);
+}
+
+function draw() {
+  background(0, 25);
+
+  // Spawn 3 particles per frame at the mouse position
+  for (let i = 0; i < 3; i++) {
+    particles.push(new Particle(mouseX, mouseY));
+  }
+
+  // Update, display, and remove dead particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update();
+    particles[i].display();
+    if (particles[i].isDead()) {
+      particles.splice(i, 1);
+    }
+  }
+
+  // Show particle count
+  fill(200);
+  noStroke();
+  textSize(12);
+  text("Particles: " + particles.length, 10, 20);
+}
+
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = random(-2, 2);
+    this.vy = random(-4, -1);
+    this.lifespan = 255;
+    this.size = random(3, 10);
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += 0.08; // Gravity
+    this.lifespan -= 3;
+  }
+
+  display() {
+    noStroke();
+    fill(255, 150, 50, this.lifespan);
+    circle(this.x, this.y, this.size);
+  }
+
+  isDead() {
+    return this.lifespan <= 0;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.3 — FUNCTIONAL PROGRAMMING
+           =============================================== -->
+      <h2 id="fp">15.3 Functional Programming (FP)</h2>
+
+      <p>Functional programming is a style of writing code that treats <strong>functions as values</strong>&mdash;they can be stored in variables, passed as arguments to other functions, and returned as results. Instead of writing step-by-step instructions that modify data in place, functional programming emphasizes <strong>transforming</strong> data: you take an array, apply a transformation, and get a new array back, leaving the original unchanged.</p>
+
+      <p>You have already been using functional programming without realizing it. Every time you wrote <code>particles.filter(p => p.lifespan > 0)</code> to remove dead particles, or used <code>p5.js</code>&rsquo;s <code>map()</code> function to convert a value from one range to another, you were thinking functionally.</p>
+
+      <h3>15.3.1 Arrow Functions</h3>
+
+      <p>Arrow functions are a concise syntax for writing functions, especially useful when passing small functions as arguments:</p>
+
+      <pre><code>// Traditional function
+function double(x) {
+  return x * 2;
+}
+
+// Arrow function (equivalent)
+let double = x => x * 2;
+
+// Multiple parameters require parentheses
+let add = (a, b) => a + b;
+
+// No parameters require empty parentheses
+let greet = () => "hello";</code></pre>
+
+      <p>When the function body is a single expression, you can omit the curly braces and the <code>return</code> keyword&mdash;the expression&rsquo;s value is returned automatically. For longer function bodies, use curly braces and an explicit <code>return</code>.</p>
+
+      <h3>15.3.2 The Big Three: <code>map()</code>, <code>filter()</code>, <code>reduce()</code></h3>
+
+      <p>These three array methods are the workhorses of functional programming. They all create <strong>new</strong> arrays or values without modifying the original.</p>
+
+      <p><strong><code>map()</code></strong> transforms every element in an array by applying a function to each one:</p>
+
+      <pre><code>let numbers = [1, 2, 3, 4, 5];
+let doubled = numbers.map(n => n * 2);     // [2, 4, 6, 8, 10]
+let squared = numbers.map(n => n * n);     // [1, 4, 9, 16, 25]
+// numbers is still [1, 2, 3, 4, 5] -- unchanged</code></pre>
+
+      <p><strong><code>filter()</code></strong> keeps only the elements for which a test function returns <code>true</code>:</p>
+
+      <pre><code>let numbers = [1, 2, 3, 4, 5, 6];
+let evens = numbers.filter(n => n % 2 === 0);  // [2, 4, 6]
+let big = numbers.filter(n => n > 3);           // [4, 5, 6]</code></pre>
+
+      <p><strong><code>reduce()</code></strong> combines all elements into a single value by applying a function that accumulates a result:</p>
+
+      <pre><code>let numbers = [1, 2, 3, 4, 5];
+let sum = numbers.reduce((acc, n) => acc + n, 0);     // 15
+let max = numbers.reduce((a, b) => a > b ? a : b);    // 5</code></pre>
+
+      <p>The second argument to <code>reduce()</code> is the initial value of the accumulator. For summing, you start at 0. For building an object, you start with <code>{}</code>.</p>
+
+      <h3>15.3.3 Other Useful Array Methods</h3>
+
+      <p>Beyond the Big Three, several other functional array methods are valuable in creative coding:</p>
+
+      <p><strong><code>forEach()</code></strong> is like <code>map()</code> but does not return a new array. Use it when you want to perform an action (like drawing) for each element:</p>
+
+      <pre><code>particles.forEach(p => {
+  p.update();
+  p.display();
+});</code></pre>
+
+      <p><strong><code>find()</code></strong> returns the first element that matches a condition. <strong><code>findIndex()</code></strong> returns its index:</p>
+
+      <pre><code>let weakAgent = agents.find(a => a.energy < 50);
+let weakIndex = agents.findIndex(a => a.energy < 50);</code></pre>
+
+      <p><strong><code>some()</code></strong> returns <code>true</code> if at least one element passes the test. <strong><code>every()</code></strong> returns <code>true</code> only if all elements pass:</p>
+
+      <pre><code>let anyAlive = particles.some(p => p.alive);    // true if any are alive
+let allDead = particles.every(p => !p.alive);    // true if all are dead</code></pre>
+
+      <p>These methods read like English, making your code&rsquo;s intent clear at a glance. &ldquo;Do some particles exist that are alive?&rdquo; is expressed naturally as <code>particles.some(p => p.alive)</code>.</p>
+
+      <h3>15.3.4 Pure Functions and Immutability</h3>
+
+      <p>A <strong>pure function</strong> always returns the same output for the same input and does not modify anything outside itself (no side effects). In creative coding, pure functions are ideal for transformations and calculations. Drawing functions are inherently impure (they modify the canvas), and that is perfectly fine. The goal is not to make everything pure, but to separate pure logic from impure side effects when it makes the code clearer.</p>
+
+      <p><strong>Immutability</strong> means not changing data after it is created. Instead of modifying an array in place, you create a new one. The <code>map()</code> and <code>filter()</code> methods embody this principle&mdash;they return new arrays and leave the originals untouched. For creative coding, strict immutability can be impractical (updating 1000 particle positions every frame by creating new arrays is wasteful), but the useful takeaway is: <strong>be intentional about when you mutate data</strong>.</p>
+
+      <h3>15.3.5 Creative Coding Applications</h3>
+
+      <p>Functional methods are particularly elegant for creative coding tasks. Compare removing dead particles imperatively versus functionally:</p>
+
+      <pre><code>// Imperative: backwards splice loop
+for (let i = particles.length - 1; i >= 0; i--) {
+  if (particles[i].isDead()) particles.splice(i, 1);
+}
+
+// Functional: one line with filter
+particles = particles.filter(p => !p.isDead());</code></pre>
+
+      <p>You can also chain operations together. Since <code>map()</code>, <code>filter()</code>, and <code>sort()</code> all return new arrays, you can call them one after another in a pipeline:</p>
+
+      <pre><code>let result = data
+  .filter(d => d > 10)        // Keep values above 10
+  .map(d => d * 2)            // Double each value
+  .sort((a, b) => a - b);    // Sort ascending</code></pre>
+
+      <p>Chaining reads like a recipe: &ldquo;Take the data, keep only values above 10, double each one, then sort them in ascending order.&rdquo; Each step is a clear, self-contained transformation. Compare this to the imperative equivalent, which requires a temporary array, a loop, an <code>if</code> statement, and a separate sort call&mdash;more code, more opportunities for bugs, and harder to read at a glance.</p>
+
+      <pre><code>// Imperative equivalent (same result, more code)
+let temp = [];
+for (let i = 0; i < data.length; i++) {
+  if (data[i] > 10) {
+    temp.push(data[i] * 2);
+  }
+}
+temp.sort((a, b) => a - b);</code></pre>
+
+      <p>Both approaches produce the same result. The functional version is more concise and often easier to read once you are comfortable with <code>filter</code> and <code>map</code>. The imperative version may be slightly faster for very large arrays because it iterates only once rather than creating intermediate arrays, but for creative coding workloads this difference is negligible.</p>
+
+      <h3>15.3.6 Interactive Example: Functional Data Visualization</h3>
+
+      <p>This sketch uses <code>map()</code> to transform raw data values into bar positions and colors, and <code>reduce()</code> to compute the average. Every visual element is derived from the data through functional transformations.</p>
+
+      <div class="code-runner" data-height="320">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Functional Data Visualization &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let data = [15, 42, 8, 67, 23, 91, 35, 56, 12, 78];
+
+function setup() {
+  createCanvas(400, 300);
+  noLoop();
+}
+
+function draw() {
+  background(30);
+  let barWidth = width / data.length;
+
+  // Transform data into visual objects using map
+  let bars = data.map((val, i) => ({
+    x: i * barWidth,
+    h: map(val, 0, 100, 0, height - 40),
+    hue: map(val, 0, 100, 200, 0),
+    value: val
+  }));
+
+  // Compute average using reduce
+  let avg = data.reduce((sum, v) => sum + v, 0) / data.length;
+
+  // Draw bars using forEach
+  colorMode(HSB, 360, 100, 100);
+  bars.forEach(b => {
+    fill(b.hue, 70, 80);
+    noStroke();
+    rect(b.x + 5, height - b.h, barWidth - 10, b.h);
+    fill(0, 0, 100);
+    textAlign(CENTER);
+    textSize(11);
+    text(b.value, b.x + barWidth / 2, height - b.h - 8);
+  });
+
+  // Draw average line
+  colorMode(RGB);
+  let avgY = height - map(avg, 0, 100, 0, height - 40);
+  stroke(255, 255, 0, 150);
+  strokeWeight(1);
+  line(0, avgY, width, avgY);
+  noStroke();
+  fill(255, 255, 0);
+  textAlign(LEFT);
+  text("avg: " + avg.toFixed(1), 5, avgY - 5);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="quiz" data-id="ch15-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does the expression <code>[1, 2, 3, 4, 5].filter(n => n % 2 === 0).map(n => n * 10)</code> produce?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch15-q1" value="a"> <code>[10, 20, 30, 40, 50]</code></label></li>
+          <li class="option"><label><input type="radio" name="ch15-q1" value="b" data-correct> <code>[20, 40]</code></label></li>
+          <li class="option"><label><input type="radio" name="ch15-q1" value="c"> <code>[2, 4]</code></label></li>
+          <li class="option"><label><input type="radio" name="ch15-q1" value="d"> <code>[10, 30, 50]</code></label></li>
+        </ul>
+        <div class="explanation">
+          <p>First, <code>filter(n => n % 2 === 0)</code> keeps only even numbers: <code>[2, 4]</code>. Then <code>map(n => n * 10)</code> multiplies each by 10: <code>[20, 40]</code>. The operations are chained&mdash;<code>map</code> receives the filtered array, not the original.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.4 — DATA STRUCTURES
+           =============================================== -->
+      <h2 id="data-structures">15.4 Data Structures</h2>
+
+      <p>Every creative coding project needs to organize data. A particle system stores hundreds of particles. A grid-based cellular automaton stores thousands of cell states. An undo system remembers past states. The way you organize this data&mdash;the <strong>data structure</strong> you choose&mdash;determines what operations are easy or hard, fast or slow.</p>
+
+      <h3>15.4.1 Arrays and Key Methods</h3>
+
+      <p>Arrays are ordered lists, and they are the data structure you use most often. Here is a reference of the essential methods:</p>
+
+      <pre><code>let a = [1, 2, 3];
+a.push(4);           // Add to end: [1, 2, 3, 4]
+a.pop();             // Remove from end, returns 4: [1, 2, 3]
+a.unshift(0);        // Add to beginning: [0, 1, 2, 3]
+a.shift();           // Remove from beginning, returns 0: [1, 2, 3]
+a.splice(1, 1);      // Remove 1 item at index 1: [1, 3]
+a.includes(3);       // true
+a.indexOf(3);        // 1
+a.slice(0, 2);       // Copy portion: [1, 3] (non-destructive)</code></pre>
+
+      <h3>15.4.2 Removing Items During Iteration</h3>
+
+      <p>Removing items from an array during iteration is one of the most common sources of bugs in creative coding. When you remove an item from an array during <em>forward</em> iteration using <code>splice()</code>, all subsequent indices shift down by one. Your loop counter moves forward, but the array has shifted backward&mdash;so you skip the next element.</p>
+
+      <pre><code>// WRONG -- skips elements after removal
+for (let i = 0; i < particles.length; i++) {
+  if (particles[i].isDead()) {
+    particles.splice(i, 1);
+    // The particle that was at index i+1 is now at index i
+    // But i increments to i+1, skipping it!
+  }
+}
+
+// CORRECT -- iterate backwards
+for (let i = particles.length - 1; i >= 0; i--) {
+  if (particles[i].isDead()) {
+    particles.splice(i, 1);
+    // Removal only affects indices we have already visited
+  }
+}
+
+// ALSO CORRECT -- use filter (creates a new array)
+particles = particles.filter(p => !p.isDead());</code></pre>
+
+      <p>The <code>filter()</code> approach is often cleaner and less error-prone. It creates a new array containing only the elements that pass the test, leaving the original unchanged. The backwards-iteration approach is better when you need to perform additional operations during the removal process (like spawning explosion particles where a dead particle was).</p>
+
+      <h3>15.4.3 Objects as Key-Value Pairs</h3>
+
+      <p>JavaScript objects store data as named <strong>key-value pairs</strong>. They are ideal for configuration settings, named properties, and structured data:</p>
+
+      <pre><code>let config = {
+  gravity: 0.1,
+  friction: 0.99,
+  maxParticles: 500
+};
+
+config.gravity;            // 0.1 (dot notation)
+config["friction"];        // 0.99 (bracket notation for dynamic keys)
+config.newProp = true;     // Add a new property on the fly</code></pre>
+
+      <h3>15.4.4 Stacks (LIFO) and Queues (FIFO)</h3>
+
+      <p>A <strong>stack</strong> follows the Last In, First Out principle: the most recently added item is the first one removed. Think of a stack of plates&mdash;you put plates on top and take them off the top. In JavaScript, use <code>push()</code> and <code>pop()</code> on an array:</p>
+
+      <pre><code>let undoStack = [];
+undoStack.push(currentState);        // Save state
+let previous = undoStack.pop();      // Restore most recent state</code></pre>
+
+      <p>A <strong>queue</strong> follows First In, First Out: the first item added is the first one processed, like a line at a store. Use <code>push()</code> and <code>shift()</code>:</p>
+
+      <pre><code>let eventQueue = [];
+eventQueue.push(newEvent);          // Add to end
+let next = eventQueue.shift();      // Process from front</code></pre>
+
+      <p>Stacks are perfect for undo/redo systems (as seen in Chapter 4). Queues are perfect for mouse trails and event processing.</p>
+
+      <h3>15.4.5 Choosing the Right Data Structure</h3>
+
+      <p>Choosing the right data structure is one of the most important decisions in programming. Here is a quick reference to guide your choice:</p>
+
+      <table>
+        <thead><tr><th>Situation</th><th>Data Structure</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Collection of particles or agents</td><td>Array</td><td>Ordered, easy to iterate, add/remove</td></tr>
+          <tr><td>Configuration settings</td><td>Object</td><td>Named keys, easy to read and modify</td></tr>
+          <tr><td>Grid simulation (Game of Life, heat)</td><td>2D Array</td><td>Row/column access, neighbor iteration</td></tr>
+          <tr><td>Undo/Redo history</td><td>Stack (<code>push</code>/<code>pop</code>)</td><td>LIFO order matches undo behavior</td></tr>
+          <tr><td>Mouse trail, event processing</td><td>Queue (<code>push</code>/<code>shift</code>)</td><td>FIFO order, oldest items processed first</td></tr>
+          <tr><td>Unique items, visited tracking</td><td>Set</td><td>Fast lookup, automatic deduplication</td></tr>
+          <tr><td>Key-value lookup with any key type</td><td>Map</td><td>Any key type, ordered, has <code>size</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>In practice, arrays and objects handle the vast majority of creative coding needs. Reach for more specialized structures (Map, Set, 2D arrays) when the situation calls for them. A good principle: start with the simplest data structure that works, and upgrade to a more specialized one only if you encounter a performance problem or if the code becomes hard to read.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Double Buffering</strong> &mdash; A technique where two copies of a data structure are maintained. During each update cycle, you read from one copy and write to the other, then swap them. This prevents partial updates from affecting calculations within the same frame. Used extensively in cellular automata (Chapter 5) and the heat diffusion simulation in this chapter.</p>
+      </div>
+
+      <h3>15.4.6 2D Arrays (Grids)</h3>
+
+      <p>A <strong>2D array</strong> is an array of arrays, forming a grid. This is essential for cellular automata (Chapter 5), tile maps, image processing, and grid-based simulations like heat diffusion. In these simulations, each cell stores a value (alive/dead, temperature, height, etc.) and interacts with its neighbors according to rules you define.</p>
+
+      <p>The key technique for grid simulations is <strong>double buffering</strong>: maintain two grids, read from one and write to the other, then swap them at the end of each frame. This prevents a cell&rsquo;s update from affecting its neighbors&rsquo; calculations within the same frame&mdash;without double buffering, the order in which cells are updated would influence the result, creating directional artifacts.</p>
+
+      <pre><code>// Create a 2D grid filled with zeros
+let grid = [];
+for (let i = 0; i < rows; i++) {
+  grid[i] = [];
+  for (let j = 0; j < cols; j++) {
+    grid[i][j] = 0;
+  }
+}
+
+// Access a cell
+let val = grid[row][col];
+grid[row][col] = 1;
+
+// Convert pixel coordinates to grid coordinates
+let col = floor(mouseX / cellSize);
+let row = floor(mouseY / cellSize);</code></pre>
+
+      <h3>15.4.7 Interactive Example: Heat Diffusion Grid</h3>
+
+      <p>This simulation uses a 2D grid where each cell has a temperature value. Heat diffuses from hot cells to cooler neighbors. Click and drag to add heat, then watch it spread and slowly cool down. This demonstrates 2D arrays, neighbor iteration, and the double-buffering technique (using two grids and swapping them each frame).</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Heat Diffusion &mdash; Click to add heat</span>
+        </div>
+        <textarea class="cm-editor">let grid, nextGrid;
+let cols = 80, rows = 60;
+let cellSize;
+
+function setup() {
+  createCanvas(400, 300);
+  pixelDensity(1);
+  cellSize = width / cols;
+  grid = make2D(cols, rows, 0);
+  nextGrid = make2D(cols, rows, 0);
+}
+
+function draw() {
+  // Add heat at mouse position
+  if (mouseIsPressed && mouseX > 0 && mouseX < width
+      && mouseY > 0 && mouseY < height) {
+    let ci = floor(mouseX / cellSize);
+    let cj = floor(mouseY / cellSize);
+    for (let di = -2; di <= 2; di++)
+      for (let dj = -2; dj <= 2; dj++) {
+        let ni = ci + di, nj = cj + dj;
+        if (ni >= 0 && ni < cols && nj >= 0 && nj < rows)
+          grid[ni][nj] = 1.0;
+      }
+  }
+
+  // Diffuse heat
+  for (let i = 0; i < cols; i++)
+    for (let j = 0; j < rows; j++) {
+      let sum = 0, count = 0;
+      for (let di = -1; di <= 1; di++)
+        for (let dj = -1; dj <= 1; dj++) {
+          let ni = i + di, nj = j + dj;
+          if (ni >= 0 && ni < cols && nj >= 0 && nj < rows) {
+            sum += grid[ni][nj]; count++;
+          }
+        }
+      nextGrid[i][j] = lerp(grid[i][j], sum / count, 0.2) * 0.998;
+    }
+
+  // Render using pixel manipulation
+  loadPixels();
+  for (let i = 0; i < cols; i++)
+    for (let j = 0; j < rows; j++) {
+      let t = nextGrid[i][j];
+      let r = constrain(t * 765, 0, 255);
+      let g = constrain(t * 765 - 255, 0, 255);
+      let b = constrain(t * 765 - 510, 0, 255);
+      for (let px = 0; px < cellSize; px++)
+        for (let py = 0; py < cellSize; py++) {
+          let idx = ((j * cellSize + py) * width + i * cellSize + px) * 4;
+          pixels[idx] = r;
+          pixels[idx + 1] = g;
+          pixels[idx + 2] = b;
+          pixels[idx + 3] = 255;
+        }
+    }
+  updatePixels();
+  [grid, nextGrid] = [nextGrid, grid]; // Swap
+}
+
+function make2D(c, r, val) {
+  return Array.from({length: c}, () => Array.from({length: r}, () => val));
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.5 — INTERACTIVITY
+           =============================================== -->
+      <h2 id="interactivity">15.5 Interactivity</h2>
+
+      <p>Interactivity is what transforms a generative sketch from something you <em>watch</em> into something you <em>experience</em>. p5.js provides a rich set of tools for responding to mouse actions, keyboard input, touch events, and GUI controls. This section covers the most important patterns.</p>
+
+      <h3>15.5.1 Mouse Events and Built-in Variables</h3>
+
+      <p>p5.js automatically tracks the mouse and provides built-in variables: <code>mouseX</code> and <code>mouseY</code> give the current position, <code>pmouseX</code> and <code>pmouseY</code> give the previous frame&rsquo;s position (useful for computing speed), and <code>mouseIsPressed</code> is <code>true</code> whenever a mouse button is held down.</p>
+
+      <p>For discrete events, define callback functions that p5.js will call automatically:</p>
+
+      <pre><code>function mousePressed() { /* fires once on click */ }
+function mouseReleased() { /* fires once on release */ }
+function mouseDragged() { /* fires while dragging */ }
+function mouseWheel(event) {
+  let delta = event.delta; // positive = scroll down
+  return false; // prevent page scroll
+}</code></pre>
+
+      <h3>15.5.2 Keyboard Events</h3>
+
+      <p>The <code>keyPressed()</code> function fires once when a key goes down. Use the <code>key</code> variable for letter keys and <code>keyCode</code> for special keys like arrows:</p>
+
+      <pre><code>function keyPressed() {
+  if (key === 'r') { /* reset */ }
+  if (keyCode === UP_ARROW) { /* move up */ }
+}
+
+// For continuous key detection (smooth movement), use keyIsDown() in draw():
+if (keyIsDown(LEFT_ARROW)) player.x -= 3;</code></pre>
+
+      <h3>15.5.3 GUI Controls</h3>
+
+      <p>p5.js can create HTML interface elements that interact with your canvas. Sliders, buttons, and inputs are positioned below or beside the canvas:</p>
+
+      <pre><code>let slider = createSlider(0, 100, 50, 1);  // min, max, default, step
+slider.position(10, height + 10);
+let val = slider.value();                   // read the current value
+
+let btn = createButton("Reset");
+btn.position(10, height + 40);
+btn.mousePressed(() => { /* handle click */ });</code></pre>
+
+      <h3>15.5.4 Responsive Canvas</h3>
+
+      <p>When the browser window is resized, p5.js calls <code>windowResized()</code> if you define it. Use this to create sketches that adapt to any screen size:</p>
+
+      <pre><code>function setup() {
+  createCanvas(windowWidth, windowHeight);
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}</code></pre>
+
+      <p>With a responsive canvas, use relative coordinates (like <code>width / 2</code> and <code>height / 2</code> for the center) rather than hard-coded pixel values. This ensures your sketch looks correct at any size. For example, instead of <code>circle(200, 200, 50)</code>, write <code>circle(width / 2, height / 2, min(width, height) * 0.1)</code>&mdash;the circle is always centered and scales proportionally with the canvas.</p>
+
+      <p>Responsive design is especially important if your final project will be exhibited in a gallery or presented on a projector, where the screen resolution may be very different from your development environment.</p>
+
+      <h3>15.5.5 Touch Events</h3>
+
+      <p>For mobile devices and touchscreens, p5.js provides <code>touchStarted()</code>, <code>touchMoved()</code>, and <code>touchEnded()</code>. The <code>touches</code> array contains all active touch points, each with <code>.x</code> and <code>.y</code> properties. Always return <code>false</code> from touch event functions to prevent the browser from scrolling or performing other default actions:</p>
+
+      <pre><code>function touchStarted() {
+  for (let t of touches) {
+    // Each touch point has .x and .y
+    particles.push(new Particle(t.x, t.y));
+  }
+  return false; // Prevent default browser behavior
+}</code></pre>
+
+      <h3>15.5.6 Preventing Default Browser Behavior</h3>
+
+      <p>By default, the browser handles certain events itself: right-click opens a context menu, spacebar scrolls the page, arrow keys scroll the page. To prevent these defaults in your sketch, return <code>false</code> from the relevant event handler:</p>
+
+      <pre><code>function keyPressed() {
+  // Prevent spacebar and arrow keys from scrolling
+  if ([32, 37, 38, 39, 40].includes(keyCode)) {
+    return false;
+  }
+}
+
+function mousePressed() {
+  // Prevent right-click context menu
+  return false;
+}</code></pre>
+
+      <p>This is especially important for game-like sketches where arrow keys and spacebar are used for gameplay. Without preventing defaults, pressing the spacebar would cause the page to scroll down, ruining the experience.</p>
+
+      <h3>15.5.7 Hit Detection</h3>
+
+      <p>p5.js does not have built-in hit detection&mdash;you must compute it yourself. The two most common tests are point-in-circle and point-in-rectangle:</p>
+
+      <pre><code>// Is the mouse over a circle?
+function isMouseOverCircle(cx, cy, r) {
+  return dist(mouseX, mouseY, cx, cy) < r;
+}
+
+// Is the mouse over a rectangle?
+function isMouseOverRect(rx, ry, rw, rh) {
+  return mouseX > rx && mouseX < rx + rw
+      && mouseY > ry && mouseY < ry + rh;
+}</code></pre>
+
+      <h3>15.5.8 Interactive Example: Control Panel</h3>
+
+      <p>This sketch combines sliders, a button, mouse interaction, and keyboard input to create a fully interactive particle playground. Adjust gravity and size, click to spawn particles, and press &lsquo;c&rsquo; to clear.</p>
+
+      <div class="code-runner" data-height="440">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Interactive Control Panel &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let particles = [];
+let gravSlider, sizeSlider, clearBtn;
+
+function setup() {
+  createCanvas(400, 350);
+  gravSlider = createSlider(0, 0.5, 0.1, 0.01);
+  gravSlider.position(10, height + 10);
+
+  sizeSlider = createSlider(2, 20, 6, 1);
+  sizeSlider.position(10, height + 35);
+
+  clearBtn = createButton("Clear");
+  clearBtn.position(200, height + 10);
+  clearBtn.mousePressed(() => { particles = []; });
+}
+
+function draw() {
+  background(20, 20, 30, 30);
+  let g = gravSlider.value();
+  let s = sizeSlider.value();
+
+  if (mouseIsPressed && mouseY < height) {
+    particles.push({
+      x: mouseX, y: mouseY,
+      vx: random(-3, 3), vy: random(-5, -1),
+      life: 200, s: s
+    });
+  }
+
+  for (let p of particles) {
+    p.vy += g;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 2;
+    if (p.y > height) { p.y = height; p.vy *= -0.6; }
+    noStroke();
+    fill(255, 150, 50, p.life);
+    circle(p.x, p.y, p.s);
+  }
+
+  particles = particles.filter(p => p.life > 0);
+
+  fill(200);
+  noStroke();
+  textSize(11);
+  text("Gravity: " + g.toFixed(2) + " | Size: " + s
+       + " | Count: " + particles.length, 10, 15);
+}
+
+function keyPressed() {
+  if (key === 'c') particles = [];
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="quiz" data-id="ch15-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">You want to move a player character smoothly while the user holds down the right arrow key. Which approach should you use?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch15-q2" value="a"> Check <code>keyCode === RIGHT_ARROW</code> inside <code>keyPressed()</code></label></li>
+          <li class="option"><label><input type="radio" name="ch15-q2" value="b" data-correct> Check <code>keyIsDown(RIGHT_ARROW)</code> inside <code>draw()</code></label></li>
+          <li class="option"><label><input type="radio" name="ch15-q2" value="c"> Check <code>key === 'ArrowRight'</code> inside <code>mousePressed()</code></label></li>
+          <li class="option"><label><input type="radio" name="ch15-q2" value="d"> Use <code>keyTyped()</code> to detect the arrow key</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>keyPressed()</code> fires <strong>once</strong> when a key goes down&mdash;it will not produce smooth continuous movement. For smooth movement, check <code>keyIsDown()</code> inside <code>draw()</code>, which runs every frame. This polls the key state 60 times per second, giving fluid motion. <code>keyTyped()</code> does not fire for arrow keys at all.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.6 — PIXEL MANIPULATION
+           =============================================== -->
+      <h2 id="pixel-manipulation">15.6 Pixel Manipulation</h2>
+
+      <p>Every image on your screen is made of pixels, and every pixel is stored as four numbers: red, green, blue, and alpha. Direct pixel manipulation gives you complete control over the image&mdash;every filter, every effect, every glitch art technique ultimately comes down to reading and writing pixel values.</p>
+
+      <h3>15.6.1 The <code>pixels[]</code> Array</h3>
+
+      <p>The p5.js canvas stores all pixel data in a one-dimensional array called <code>pixels[]</code>. Each pixel occupies four consecutive slots in the array: R, G, B, A. Before you can read or write this array, you must call <code>loadPixels()</code>. After modifying it, you must call <code>updatePixels()</code> to push the changes to the screen.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The <strong>pixel index formula</strong> converts 2D coordinates to a position in the 1D pixel array:</p>
+        <p>$$\text{index} = (y \times \text{width} + x) \times 4$$</p>
+        <p>Then <code>pixels[index]</code> is red, <code>pixels[index + 1]</code> is green, <code>pixels[index + 2]</code> is blue, and <code>pixels[index + 3]</code> is alpha. This formula works because pixels are stored row by row, left to right, top to bottom.</p>
+      </div>
+
+      <h3>15.6.2 <code>pixelDensity(1)</code>: Essential for Correct Access</h3>
+
+      <p>On high-DPI (Retina) displays, p5.js doubles the pixel density by default. This means a 400&times;400 canvas actually has 800&times;800 pixels, and the <code>pixels[]</code> array is four times larger than expected. <strong>Always call <code>pixelDensity(1)</code> in <code>setup()</code></strong> when doing direct pixel manipulation:</p>
+
+      <pre><code>function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1); // One canvas pixel = one screen pixel
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Forgetting <code>pixelDensity(1)</code> is the most common source of mysterious pixel manipulation bugs. Without it, your pixel math will be correct on standard displays but produce garbled results on Retina displays. Always include it.</p>
+      </div>
+
+      <h3>15.6.3 Common Pixel Operations</h3>
+
+      <p>Once you can read and write individual pixels, a wide range of image processing operations become straightforward. The most fundamental is converting a pixel to grayscale. The human eye is not equally sensitive to all colors&mdash;we perceive green as brightest, then red, then blue. The standard luminance formula weights the channels accordingly:</p>
+
+      <p>$$\text{gray} = 0.299 \cdot R + 0.587 \cdot G + 0.114 \cdot B$$</p>
+
+      <p>This formula, known as the ITU-R BT.601 luma formula, is used throughout image processing and appears in this textbook whenever we compute brightness from RGB values.</p>
+
+      <pre><code>// Grayscale: weighted average matching human perception
+let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+// Invert (negative): subtract each channel from 255
+pixels[i] = 255 - pixels[i];
+
+// Threshold (black and white): compare brightness to a cutoff
+let val = gray > threshold ? 255 : 0;
+
+// Brightness: add a constant to each channel
+pixels[i] = constrain(pixels[i] + amount, 0, 255);
+
+// Contrast: stretch values away from the midpoint (128)
+pixels[i] = constrain((pixels[i] - 128) * factor + 128, 0, 255);</code></pre>
+
+      <h3>15.6.4 Working with Images</h3>
+
+      <p>You can load an image and manipulate its pixels. Use <code>preload()</code> to load the image before <code>setup()</code> runs, draw it to the canvas, then access <code>pixels[]</code> to modify it:</p>
+
+      <pre><code>let img;
+
+function preload() {
+  img = loadImage("photo.jpg");
+}
+
+function setup() {
+  createCanvas(img.width, img.height);
+  pixelDensity(1);
+  image(img, 0, 0); // Draw image to canvas
+  noLoop();
+}
+
+function draw() {
+  loadPixels();
+  // Now pixels[] contains the image data
+  // Modify it, then:
+  updatePixels();
+}</code></pre>
+
+      <p>You can also access an image&rsquo;s pixel array directly without drawing it to the canvas first, using <code>img.loadPixels()</code> and <code>img.pixels[]</code>. This is useful when you want to read from the original image while writing to the canvas.</p>
+
+      <h3>15.6.5 Pixel Sorting (Glitch Art)</h3>
+
+      <p><strong>Pixel sorting</strong> is a glitch art technique popularized by artist Kim Asendorf in 2010. The algorithm divides image rows into &ldquo;runs&rdquo; of pixels (defined by a brightness threshold), sorts each run by brightness (or hue, or any other criterion), and writes the sorted pixels back. The result is a striking visual effect where smooth gradients emerge within the sorted runs while the overall composition is preserved.</p>
+
+      <p>Here is the basic algorithm outline for implementing pixel sorting:</p>
+
+      <ol>
+        <li>Load the image and call <code>loadPixels()</code></li>
+        <li>For each row of the image, scan from left to right</li>
+        <li>Find contiguous &ldquo;runs&rdquo; of pixels that meet a brightness threshold (e.g., brightness &gt; 60)</li>
+        <li>Extract the RGBA values for each run into a temporary array</li>
+        <li>Sort the temporary array by brightness (or hue, saturation, or any criterion you choose)</li>
+        <li>Write the sorted pixel values back into the <code>pixels[]</code> array at their original positions</li>
+        <li>Call <code>updatePixels()</code> to display the result</li>
+      </ol>
+
+      <pre><code>// Simplified pixel sorting pseudocode
+loadPixels();
+for (let y = 0; y < height; y++) {
+  let run = [];
+  let runStart = -1;
+  for (let x = 0; x < width; x++) {
+    let idx = (y * width + x) * 4;
+    let b = (pixels[idx] + pixels[idx+1] + pixels[idx+2]) / 3;
+    if (b > 60) {
+      if (runStart === -1) runStart = x;
+      run.push({ r: pixels[idx], g: pixels[idx+1],
+                 b: pixels[idx+2], a: pixels[idx+3], bright: b });
+    } else {
+      if (run.length > 1) {
+        run.sort((a, b) => a.bright - b.bright);
+        for (let i = 0; i < run.length; i++) {
+          let wi = (y * width + runStart + i) * 4;
+          pixels[wi] = run[i].r;
+          pixels[wi+1] = run[i].g;
+          pixels[wi+2] = run[i].b;
+          pixels[wi+3] = run[i].a;
+        }
+      }
+      run = []; runStart = -1;
+    }
+  }
+}
+updatePixels();</code></pre>
+
+      <p>Experiment with different sorting criteria&mdash;sorting by hue produces rainbow streaks, sorting by saturation creates watercolor-like washes, and sorting by red channel alone produces eerie, channel-specific effects. You can also sort columns instead of rows for a rain-like dripping effect, or sort along diagonal lines for even more unusual results.</p>
+
+      <h3>15.6.6 Performance Considerations</h3>
+
+      <p>Direct pixel manipulation on the CPU is slow for large canvases because you are touching every pixel every frame. Some tips for better performance:</p>
+
+      <ul>
+        <li><strong>Use <code>pixelDensity(1)</code></strong> to avoid processing 4&times; the pixels on Retina displays</li>
+        <li><strong>Use smaller canvases</strong> (200&times;200 instead of 800&times;800) for real-time effects</li>
+        <li><strong>Avoid <code>get(x, y)</code></strong> for reading individual pixels&mdash;it is much slower than direct array access</li>
+        <li><strong>Use <code>noLoop()</code> and <code>redraw()</code></strong> for static image processing&mdash;no need to process 60 times per second</li>
+        <li><strong>Move effects to GLSL shaders</strong> for real-time performance&mdash;the GPU processes all pixels in parallel (see Chapters 8&ndash;11)</li>
+      </ul>
+
+      <h3>15.6.7 Interactive Example: Sobel Edge Detection</h3>
+
+      <p>Edge detection highlights boundaries between regions of different brightness. The Sobel filter uses two 3&times;3 kernels to detect horizontal and vertical edges, then combines them into an edge magnitude. In this demo, a colorful pattern is drawn procedurally (no image file required), and edges are detected in real time. Try editing the pattern generation code to see how edges change.</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Sobel Edge Detection &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(300, 300);
+  pixelDensity(1);
+  noLoop();
+}
+
+function draw() {
+  // Draw a colorful pattern to detect edges in
+  background(0);
+  noStroke();
+  for (let i = 0; i < 12; i++) {
+    fill(random(50, 255), random(50, 255), random(50, 255));
+    let x = random(width);
+    let y = random(height);
+    let s = random(30, 100);
+    if (i % 2 === 0) circle(x, y, s);
+    else rect(x - s/2, y - s/2, s, s);
+  }
+
+  // Apply Sobel edge detection
+  loadPixels();
+  let src = pixels.slice(); // Copy original pixels
+
+  let gx = [[-1,0,1],[-2,0,2],[-1,0,1]];
+  let gy = [[-1,-2,-1],[0,0,0],[1,2,1]];
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      let sx = 0, sy = 0;
+      for (let ky = -1; ky <= 1; ky++)
+        for (let kx = -1; kx <= 1; kx++) {
+          let idx = ((y+ky)*width + (x+kx)) * 4;
+          let gray = 0.299*src[idx] + 0.587*src[idx+1]
+                   + 0.114*src[idx+2];
+          sx += gray * gx[ky+1][kx+1];
+          sy += gray * gy[ky+1][kx+1];
+        }
+      let mag = min(sqrt(sx*sx + sy*sy), 255);
+      let i = (y*width + x) * 4;
+      pixels[i] = mag;
+      pixels[i+1] = mag;
+      pixels[i+2] = mag;
+      pixels[i+3] = 255;
+    }
+  }
+  updatePixels();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.7 — TYPES, STRINGS, BINARY
+           =============================================== -->
+      <h2 id="types-strings-binary">15.7 Types, Strings, and Binary Data</h2>
+
+      <p>Understanding JavaScript&rsquo;s type system prevents confusing bugs, string manipulation lets you generate text art and parse data, and typed arrays are essential for audio buffers, image processing, and communicating with the GPU.</p>
+
+      <h3>15.7.1 JavaScript Types</h3>
+
+      <p>JavaScript has seven primitive types. Here they are in a reference table:</p>
+
+      <table>
+        <thead><tr><th>Type</th><th>Example</th><th><code>typeof</code> result</th></tr></thead>
+        <tbody>
+          <tr><td><code>number</code></td><td><code>42</code>, <code>3.14</code>, <code>NaN</code></td><td><code>"number"</code></td></tr>
+          <tr><td><code>string</code></td><td><code>"hello"</code>, <code>'world'</code></td><td><code>"string"</code></td></tr>
+          <tr><td><code>boolean</code></td><td><code>true</code>, <code>false</code></td><td><code>"boolean"</code></td></tr>
+          <tr><td><code>undefined</code></td><td><code>undefined</code></td><td><code>"undefined"</code></td></tr>
+          <tr><td><code>null</code></td><td><code>null</code></td><td><code>"object"</code> (historic bug!)</td></tr>
+          <tr><td><code>bigint</code></td><td><code>42n</code></td><td><code>"bigint"</code></td></tr>
+          <tr><td><code>symbol</code></td><td><code>Symbol()</code></td><td><code>"symbol"</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>15.7.2 Type Coercion Pitfalls</h3>
+
+      <p>JavaScript automatically converts between types in many situations. This is called <strong>type coercion</strong>, and it is one of the most common sources of bugs:</p>
+
+      <pre><code>"5" + 3      // "53" (concatenation, not addition!)
+"5" - 3      // 2 (subtraction coerces string to number)
+5 == "5"     // true (loose equality coerces types)
+5 === "5"    // false (strict equality, no coercion -- ALWAYS USE THIS)</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Always use <code>===</code> (strict equality) instead of <code>==</code> (loose equality).</strong> Loose equality performs type coercion, which leads to surprising results like <code>"" == false</code> being <code>true</code> and <code>null == undefined</code> being <code>true</code>. Strict equality compares both value and type, eliminating these surprises.</p>
+      </div>
+
+      <h3>15.7.3 Explicit Type Conversion</h3>
+
+      <p>When you need to convert between types, do it explicitly rather than relying on JavaScript&rsquo;s implicit coercion. Here are the standard conversion functions:</p>
+
+      <pre><code>// String to number
+let n = Number("42");          // 42
+let n2 = parseInt("42px");     // 42 (ignores non-numeric suffix)
+let n3 = parseFloat("3.14");   // 3.14
+
+// Number to string
+let s = String(42);            // "42"
+let s2 = (42).toString();      // "42"
+let s3 = (255).toString(16);   // "ff" (hexadecimal)
+let s4 = (10).toString(2);     // "1010" (binary)
+
+// To boolean
+let b = Boolean(0);            // false
+let b2 = Boolean("hello");    // true</code></pre>
+
+      <p>A common pattern in creative coding is reading values from HTML inputs (which always return strings) and converting them to numbers: <code>let speed = Number(speedInput.value());</code>. Forgetting this conversion leads to string concatenation bugs that can be very confusing to debug.</p>
+
+      <h3>15.7.4 Truthy and Falsy Values</h3>
+
+      <p>In boolean contexts (like <code>if</code> statements), JavaScript treats certain values as <code>false</code>. These &ldquo;falsy&rdquo; values are: <code>false</code>, <code>0</code>, <code>""</code> (empty string), <code>null</code>, <code>undefined</code>, and <code>NaN</code>. Everything else is &ldquo;truthy&rdquo;&mdash;including empty arrays <code>[]</code> and empty objects <code>{}</code>, which surprises many beginners.</p>
+
+      <pre><code>// These are all falsy:
+if (0) { }          // does not execute
+if ("") { }         // does not execute
+if (null) { }       // does not execute
+
+// These are all truthy (surprising ones):
+if ([]) { }         // EXECUTES -- empty array is truthy!
+if ({}) { }         // EXECUTES -- empty object is truthy!</code></pre>
+
+      <p>This means you cannot use <code>if (myArray)</code> to check if an array has elements&mdash;an empty array <code>[]</code> is truthy, so the condition would always pass. Use <code>if (myArray.length > 0)</code> instead.</p>
+
+      <p>Understanding truthiness is important for defensive programming. A common pattern for providing default values uses the logical OR operator:</p>
+
+      <pre><code>// If config.speed is falsy (undefined, 0, etc.), use 3 as default
+let speed = config.speed || 3;
+
+// Modern JavaScript has the nullish coalescing operator (??)
+// which only triggers for null/undefined, not for 0 or ""
+let speed = config.speed ?? 3;  // Uses 3 only if speed is null/undefined</code></pre>
+
+      <h3>15.7.5 Template Literals and String Methods</h3>
+
+      <p>Template literals (backtick strings) allow embedded expressions and multi-line strings:</p>
+
+      <pre><code>let info = `Canvas: ${width}x${height}, FPS: ${frameRate().toFixed(1)}`;
+
+// Useful string methods
+let s = "hello world";
+s.length;                  // 11
+s.toUpperCase();           // "HELLO WORLD"
+s.split(" ");              // ["hello", "world"]
+s.includes("world");       // true
+s.slice(0, 5);             // "hello"
+s.replace("world", "p5"); // "hello p5"</code></pre>
+
+      <h3>15.7.6 Typed Arrays</h3>
+
+      <p>Regular JavaScript arrays can hold any type of value. <strong>Typed arrays</strong> hold only one type of number, stored as raw binary data. They are used for audio buffers (<code>Float32Array</code>), image pixel data (<code>Uint8ClampedArray</code>&mdash;this is what the <code>pixels[]</code> array actually is), and communication with WebGL shaders.</p>
+
+      <pre><code>let buf = new Float32Array(256); // 256 floats, initialized to 0
+buf[0] = sin(0.1);               // Write a value
+
+let px = new Uint8ClampedArray(4); // Auto-clamps to 0-255
+px[0] = 300;  // Stored as 255 (clamped to maximum)
+px[1] = -50;  // Stored as 0 (clamped to minimum)</code></pre>
+
+      <h3>15.7.7 Bit Operations</h3>
+
+      <p>Bit operations work on the binary representation of numbers. They appear in creative coding for XOR patterns, pixel packing, and fast math tricks:</p>
+
+      <pre><code>let val = (x ^ y) & 0xFF;      // XOR pattern, masked to 0-255
+let r = (packed >> 16) & 0xFF; // Extract red from packed RGBA
+let floored = (3.7) | 0;       // Fast floor: 3</code></pre>
+
+      <h3>15.7.8 Interactive Example: Binary Visualizer</h3>
+
+      <p>This sketch visualizes how a decimal number is represented in binary. Move the slider to change the value and watch the 8 bits flip on and off. Each bit position represents a power of 2, and the decimal value is the sum of those powers.</p>
+
+      <div class="code-runner" data-height="260">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Binary Visualizer &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let slider;
+
+function setup() {
+  createCanvas(420, 200);
+  slider = createSlider(0, 255, 42, 1);
+  slider.position(10, height + 10);
+  slider.style("width", "400px");
+}
+
+function draw() {
+  background(30);
+  let val = slider.value();
+  let binary = val.toString(2).padStart(8, "0");
+
+  textAlign(CENTER, CENTER);
+  fill(255);
+  textSize(18);
+  text("Decimal: " + val + "   Binary: " + binary
+     + "   Hex: 0x" + val.toString(16).toUpperCase().padStart(2, "0"),
+     width / 2, 25);
+
+  // Draw 8 bits as colored squares
+  for (let bit = 7; bit >= 0; bit--) {
+    let x = 50 + (7 - bit) * 45;
+    let isSet = (val >> bit) & 1;
+    fill(isSet ? color(100, 255, 100) : 60);
+    stroke(200);
+    rect(x, 60, 35, 35);
+    fill(isSet ? 0 : 150);
+    noStroke();
+    textSize(18);
+    text(isSet ? "1" : "0", x + 17, 78);
+    fill(150);
+    textSize(10);
+    text(Math.pow(2, bit), x + 17, 110);
+  }
+
+  // Show addition
+  fill(200);
+  textSize(12);
+  let parts = [];
+  for (let bit = 7; bit >= 0; bit--) {
+    if ((val >> bit) & 1) parts.push(Math.pow(2, bit));
+  }
+  text(parts.length > 0 ? parts.join(" + ") + " = " + val : "0",
+       width / 2, 140);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="quiz" data-id="ch15-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the result of <code>"5" + 3</code> in JavaScript?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch15-q3" value="a"> <code>8</code> (number)</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q3" value="b" data-correct> <code>"53"</code> (string)</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q3" value="c"> <code>NaN</code></label></li>
+          <li class="option"><label><input type="radio" name="ch15-q3" value="d"> An error is thrown</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The <code>+</code> operator, when one operand is a string, performs <strong>string concatenation</strong> rather than addition. The number <code>3</code> is coerced to the string <code>"3"</code>, and the result is <code>"53"</code>. To perform addition, explicitly convert the string to a number first: <code>Number("5") + 3</code> gives <code>8</code>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.8 — SOFTWARE LICENSES
+           =============================================== -->
+      <h2 id="software-licenses">15.8 Software Licenses and Copyright</h2>
+
+      <p>Your final project requires you to choose a software license for your code and a Creative Commons license for your creative work. This is not just a bureaucratic checkbox&mdash;it determines who can use your work, how, and under what conditions. As both a creator and a consumer of other people&rsquo;s code, you need to understand these concepts.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Copyright is automatic.</strong> The moment you write code, draw a picture, or compose music, you hold the copyright. You do not need to register it or put a notice on it. A <strong>license</strong> is your permission for others to use your work under specified conditions. Without a license, the default is &ldquo;all rights reserved&rdquo;&mdash;nobody can legally copy, modify, or distribute your code, even if it is publicly visible on GitHub.</p>
+      </div>
+
+      <h3>15.8.1 License Comparison</h3>
+
+      <p>The following table summarizes the most important licenses you will encounter:</p>
+
+      <table>
+        <thead><tr><th>License</th><th>Type</th><th>Key Feature</th></tr></thead>
+        <tbody>
+          <tr><td><strong>MIT</strong></td><td>Permissive</td><td>Do anything; include the license text</td></tr>
+          <tr><td><strong>GPL</strong></td><td>Copyleft</td><td>Derivatives must also be GPL (viral)</td></tr>
+          <tr><td><strong>Apache 2.0</strong></td><td>Permissive</td><td>Like MIT but includes a patent grant</td></tr>
+          <tr><td><strong>CC BY</strong></td><td>Creative Commons</td><td>Attribute the creator; otherwise free to use</td></tr>
+          <tr><td><strong>CC BY-SA</strong></td><td>Creative Commons</td><td>Attribute + derivatives must use same license</td></tr>
+          <tr><td><strong>CC BY-NC</strong></td><td>Creative Commons</td><td>Attribute + non-commercial use only</td></tr>
+          <tr><td><strong>CC0</strong></td><td>Public domain</td><td>No restrictions at all</td></tr>
+        </tbody>
+      </table>
+
+      <p>For most student projects, a reasonable default is <strong>MIT License</strong> for your code (simple, permissive, widely understood) and <strong>CC BY</strong> or <strong>CC BY-SA</strong> for your creative work (allows sharing with credit).</p>
+
+      <p>For your MAT 200C final project, you need both: a <strong>software license</strong> for your code and a <strong>Creative Commons license</strong> for your creative work (images, sounds, documentation). To add a license, create a file called <code>LICENSE</code> (no extension) in your project repository containing the full text of your chosen license. At the top of your main source file, add a license header comment:</p>
+
+      <pre><code>/*
+ * [Project Name]
+ * Copyright (c) 2026 [Your Name]
+ * Licensed under the MIT License
+ * See LICENSE file for details
+ */</code></pre>
+
+      <h3>15.8.2 Common Licensing Mistakes</h3>
+
+      <p>Several misconceptions about copyright and licensing are widespread. Here are the most important ones to avoid:</p>
+
+      <ul>
+        <li><strong>&ldquo;I found it on the internet, so it&rsquo;s free to use.&rdquo;</strong> &mdash; No. Everything on the internet is copyrighted by default. Only works with explicit licenses or public domain dedications are free to use.</li>
+        <li><strong>&ldquo;I changed it enough that it&rsquo;s mine now.&rdquo;</strong> &mdash; This is a legal gray area. Substantial modification creates a &ldquo;derivative work,&rdquo; but you still need permission (a license) to create derivatives of the original.</li>
+        <li><strong>&ldquo;It&rsquo;s for a school project, so fair use applies.&rdquo;</strong> &mdash; Fair use is a defense, not a blanket right, and it is narrower than most people think. Educational use is one factor courts consider, but it does not automatically make all uses fair.</li>
+        <li><strong>Mixing incompatible licenses.</strong> &mdash; You cannot combine GPL code with proprietary code or with code under certain other licenses. Always check license compatibility before mixing code from different sources.</li>
+      </ul>
+
+      <h3>15.8.3 Attribution Requirements</h3>
+
+      <p>From the course syllabus: always credit collaborators, attribute borrowed code, and mark LLM-generated code with the model name and prompts. Here is the proper way to attribute code in your source files:</p>
+
+      <pre><code>// This function adapted from Daniel Shiffman, "The Nature of Code"
+// Licensed under CC BY-NC 3.0
+// https://natureofcode.com
+
+// LLM-generated by Claude (Anthropic, 2026).
+// Prompt: "Write a collision detection function for circles"</code></pre>
+
+      <h3>15.8.4 The Free Culture Movement</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Lawrence Lessig</strong> articulated the Free Culture movement in his 2004 book <em>Free Culture</em>. He argued that culture has always been built on remixing, referencing, and building on the past, but modern copyright law (which has expanded from an original 14-year term to life plus 70 years) stifles creativity and cultural participation. Creative Commons licenses were created as a practical response&mdash;letting creators voluntarily share their work under terms they choose, rather than defaulting to &ldquo;all rights reserved.&rdquo;</p>
+      </div>
+
+      <p>The <strong>Free Software Foundation</strong> focuses on four freedoms: the freedom to run, study, redistribute, and distribute modified versions of software. The GPL was created to protect these freedoms through copyleft. <strong>Open Source</strong> is a related but distinct movement that emphasizes practical benefits (better code quality, collaboration) over philosophical freedoms.</p>
+
+      <p>The tools you have used throughout this course are all openly licensed: <strong>p5.js</strong> is LGPL licensed, <strong>math.js</strong> is Apache 2.0, and <strong>Three.js</strong> is MIT. This means you can freely use them in your projects, but you should be aware of their license terms. The LGPL, for instance, allows you to use p5.js in any project (even proprietary ones) as long as you do not modify the p5.js library itself; if you do modify it, you must release your modifications under the LGPL.</p>
+
+      <p>For your final project, visit <a href="https://choosealicense.com" target="_blank">choosealicense.com</a> and <a href="https://creativecommons.org/choose/" target="_blank">creativecommons.org/choose</a> for interactive tools that help you select the right licenses for your work.</p>
+
+
+      <!-- ===============================================
+           SECTION 15.9 — GAMES AND VISUAL ART
+           =============================================== -->
+      <h2 id="games-visual-art">15.9 Games and Visual Art</h2>
+
+      <p>You have been using a game loop since day one of this course without calling it that. The <code>setup()</code>/<code>draw()</code> pattern in p5.js is structurally identical to the core loop of every video game: initialize, then loop forever through input processing, state updates, and rendering. The difference is in intent: games emphasize rules, goals, and player agency; creative coding emphasizes aesthetics, emergence, and exploration. <strong>Art games</strong> deliberately blur these boundaries.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The boundary between games and art has been explored by many artists and designers. <strong>Jason Rohrer&rsquo;s</strong> <em>Passage</em> (2007) is a 5-minute game about life and death&mdash;you walk right, you age, you die. <strong>thatgamecompany&rsquo;s</strong> <em>Flower</em> (2009) lets you be the wind, guiding petals across landscapes with no enemies, no score, no failure. <strong>Max Bittker&rsquo;s</strong> <em>Sandspiel</em> is a falling-sand simulation in the browser&mdash;not a game (no goals), but deeply playful and interactive. These works challenge us to think about what makes something a &ldquo;game&rdquo; versus an &ldquo;interactive experience.&rdquo;</p>
+      </div>
+
+      <h3>15.9.1 Collision Detection</h3>
+
+      <p>Collision detection answers the fundamental question: &ldquo;Are these two things overlapping?&rdquo; The math is straightforward. For two circles, they collide when the distance between their centers is less than the sum of their radii:</p>
+
+      <p>$$d(c_1, c_2) = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2} < r_1 + r_2$$</p>
+
+      <pre><code>function circlesCollide(x1, y1, r1, x2, y2, r2) {
+  return dist(x1, y1, x2, y2) < r1 + r2;
+}</code></pre>
+
+      <p>For rectangles, the standard approach is <strong>AABB</strong> (Axis-Aligned Bounding Box) collision. Two rectangles overlap when they overlap on <em>both</em> the x-axis and the y-axis simultaneously. This is expressed as four conditions that must all be true:</p>
+
+      <pre><code>// Rectangle-rectangle (AABB: Axis-Aligned Bounding Box)
+function rectsCollide(x1, y1, w1, h1, x2, y2, w2, h2) {
+  return x1 < x2 + w2 && x1 + w1 > x2
+      && y1 < y2 + h2 && y1 + h1 > y2;
+}
+
+// Point in circle: for mouse interaction / hit detection
+function pointInCircle(px, py, cx, cy, r) {
+  return dist(px, py, cx, cy) < r;
+}
+
+// Point in rectangle: for button clicks
+function pointInRect(px, py, rx, ry, rw, rh) {
+  return px > rx && px < rx + rw
+      && py > ry && py < ry + rh;
+}</code></pre>
+
+      <p>Point-in-circle and point-in-rectangle are used constantly for hit detection&mdash;determining whether the mouse cursor is over a shape for interactive buttons, drag-and-drop, and selection. They are the same formulas as circle and rectangle collision, but with one object reduced to a single point.</p>
+
+      <h3>15.9.2 State Machines</h3>
+
+      <p>Most games have multiple <strong>states</strong>: a title screen, gameplay, pause menu, and game over screen. A state machine is a pattern for managing transitions between these states:</p>
+
+      <pre><code>let state = "title";
+
+function draw() {
+  if (state === "title") drawTitle();
+  else if (state === "playing") drawGame();
+  else if (state === "gameover") drawGameOver();
+}
+
+function keyPressed() {
+  if (state === "title" && keyCode === ENTER) state = "playing";
+  if (state === "gameover" && keyCode === ENTER) state = "title";
+}</code></pre>
+
+      <p>The state machine pattern keeps your code organized as complexity grows. Without it, a single <code>draw()</code> function would need to handle all possible game states with tangled <code>if</code> statements. With a state machine, each state has its own dedicated function with its own logic, clearly separated from the others. The state transitions are explicit and easy to follow.</p>
+
+      <p>You can visualize the transitions as a diagram:</p>
+
+      <pre><code>[Title] --ENTER--> [Playing] --collision--> [Game Over]
+                      ^  |                       |
+                      |  P                    ENTER
+                      |  v                       |
+                   [Paused]                   [Title]</code></pre>
+
+      <h3>15.9.3 Game Feel (&ldquo;Juice&rdquo;)</h3>
+
+      <p>Small visual and audio responses to player actions make interactions feel satisfying. These techniques&mdash;collectively called &ldquo;juice&rdquo;&mdash;include screen shake on impact, easing animations for scores, particle bursts on collection events, and color flashes on collision:</p>
+
+      <pre><code>// Screen shake: translate by random offset on impact
+if (shakeAmount > 0) {
+  translate(random(-shakeAmount, shakeAmount),
+            random(-shakeAmount, shakeAmount));
+  shakeAmount *= 0.9; // Decay
+}
+
+// Animated score: smoothly count up to the target
+displayScore = lerp(displayScore, targetScore, 0.1);</code></pre>
+
+      <h3>15.9.4 Timers and Spawning</h3>
+
+      <p>Games need to track time for countdowns, cooldowns, and enemy spawning. There are two approaches. <strong>Frame-based timers</strong> use the <code>frameCount</code> variable:</p>
+
+      <pre><code>// Spawn an enemy every 60 frames (about 1 second at 60 fps)
+if (frameCount % 60 === 0) {
+  spawnEnemy();
+}</code></pre>
+
+      <p><strong>Millisecond-based timers</strong> are more accurate and independent of frame rate, making them better for gameplay timing:</p>
+
+      <pre><code>let lastSpawnTime = 0;
+let spawnDelay = 2000; // 2 seconds
+
+function draw() {
+  let now = millis();
+  if (now - lastSpawnTime > spawnDelay) {
+    spawnEnemy();
+    lastSpawnTime = now;
+  }
+}</code></pre>
+
+      <h3>15.9.5 Design Principles for Art Games</h3>
+
+      <p>If you want to create a game that is also a work of art, consider these principles:</p>
+
+      <ul>
+        <li><strong>Constraint is creative.</strong> Limiting mechanics to one or two actions forces you to make them meaningful. A game where you can only move and collect is more expressive than one with 20 buttons.</li>
+        <li><strong>Juice matters.</strong> Small visual and audio responses to player actions make interactions feel satisfying&mdash;screen shake, particle bursts, color flashes, easing animations.</li>
+        <li><strong>Emergence over scripting.</strong> Simple rules that interact to produce complex behavior are more interesting (and more like art) than heavily scripted sequences. This is the same principle behind cellular automata and agent systems.</li>
+        <li><strong>Let the player interpret.</strong> Games do not need to explain everything. Abstract visuals and ambiguous mechanics invite the player to make their own meaning.</li>
+      </ul>
+
+      <h3>15.9.6 Interactive Example: Simple Collection Game</h3>
+
+      <p>This sketch is a small game where you guide a glowing player toward colorful targets. Move your mouse to control the player. When you touch a target, it is collected, a ripple effect plays, and a new target spawns. The game blurs the line between interactive art and traditional gaming&mdash;there is no win or lose condition, just the satisfaction of collecting and watching ripples expand.</p>
+
+      <div class="code-runner" data-height="440">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Collection Game &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let player, targets, score;
+
+function setup() {
+  createCanvas(400, 380);
+  resetGame();
+}
+
+function resetGame() {
+  player = { x: width/2, y: height/2, size: 15 };
+  targets = [];
+  for (let i = 0; i < 8; i++) spawnTarget();
+  score = 0;
+}
+
+function spawnTarget() {
+  targets.push({
+    x: random(30, width-30),
+    y: random(30, height-30),
+    size: random(8, 18),
+    hue: random(360),
+    pulse: random(TWO_PI)
+  });
+}
+
+function draw() {
+  background(15, 15, 25);
+
+  // Move player toward mouse with easing
+  player.x = lerp(player.x, mouseX, 0.1);
+  player.y = lerp(player.y, mouseY, 0.1);
+
+  // Check collection and draw targets
+  colorMode(HSB, 360, 100, 100, 100);
+  for (let i = targets.length - 1; i >= 0; i--) {
+    let t = targets[i];
+    t.pulse += 0.05;
+    let s = t.size * (1 + sin(t.pulse) * 0.2);
+
+    noStroke();
+    fill(t.hue, 60, 80, 30);
+    circle(t.x, t.y, s * 3);
+    fill(t.hue, 70, 95);
+    circle(t.x, t.y, s);
+
+    if (dist(player.x, player.y, t.x, t.y) < player.size + t.size) {
+      targets.splice(i, 1);
+      spawnTarget();
+      score++;
+    }
+  }
+
+  // Draw player
+  colorMode(RGB);
+  fill(200, 230, 255);
+  noStroke();
+  circle(player.x, player.y, player.size * 2);
+
+  fill(200);
+  textSize(14);
+  textAlign(LEFT, TOP);
+  text("Collected: " + score, 10, 10);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="quiz" data-id="ch15-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In a state machine game with states &ldquo;title&rdquo;, &ldquo;playing&rdquo;, and &ldquo;gameover&rdquo;, where should you put the code that checks for collisions?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch15-q4" value="a"> In the <code>setup()</code> function</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q4" value="b"> In every state&rsquo;s draw function</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q4" value="c" data-correct> Only in the &ldquo;playing&rdquo; state&rsquo;s draw function</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q4" value="d"> In <code>keyPressed()</code></label></li>
+        </ul>
+        <div class="explanation">
+          <p>Collision detection is gameplay logic, which should only run during the &ldquo;playing&rdquo; state. The title screen and game over screen do not need collision checks. This is precisely the benefit of a state machine&mdash;each state has its own logic, cleanly separated from the others.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.10 — SOUND AND AUDIO
+           =============================================== -->
+      <h2 id="sound-audio">15.10 Sound and Audio Programming</h2>
+
+      <p>Sound is a core dimension of computing arts. The p5.sound library (bundled with p5.js) wraps the Web Audio API, providing oscillators, envelopes, filters, FFT analysis, and sound file playback. The most important thing to know before writing any audio code: modern browsers require a <strong>user gesture</strong> (click, tap, or key press) before audio can play. You handle this with <code>userStartAudio()</code>.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>If your audio code produces no sound, the most likely cause is the browser&rsquo;s audio autoplay policy. Always call <code>userStartAudio()</code> inside a user event handler like <code>mousePressed()</code> or <code>keyPressed()</code>. Without this, the browser&rsquo;s AudioContext remains suspended and no sound will play.</p>
+      </div>
+
+      <h3>15.10.1 Oscillators</h3>
+
+      <p>An oscillator generates a periodic waveform&mdash;a repeating signal that produces a tone. p5.sound provides four waveform types: <strong>sine</strong> (pure, smooth), <strong>square</strong> (hollow, buzzy&mdash;retro game sounds), <strong>sawtooth</strong> (bright, rich&mdash;synth leads), and <strong>triangle</strong> (soft, mellow).</p>
+
+      <pre><code>let osc = new p5.Oscillator("sine");
+osc.freq(440);       // Frequency in Hz (A4)
+osc.amp(0.3);        // Amplitude: 0 (silence) to 1 (maximum)
+osc.start();
+osc.amp(0, 0.5);     // Fade out over 0.5 seconds</code></pre>
+
+      <h3>15.10.2 Envelopes (ADSR)</h3>
+
+      <p>An envelope shapes how a sound&rsquo;s amplitude changes over time. The standard model is <strong>ADSR</strong>: Attack (ramp up to peak), Decay (drop to sustain level), Sustain (held level), and Release (fade to silence).</p>
+
+      <pre><code>let env = new p5.Envelope();
+env.setADSR(0.01, 0.2, 0.3, 0.5); // Attack, Decay, Sustain, Release
+env.setRange(0.5, 0);              // Peak amplitude, release amplitude
+env.play(osc);                     // Trigger the envelope on an oscillator</code></pre>
+
+      <p>Think of ADSR like pressing and releasing a piano key. When you press the key, the sound quickly rises to full volume (Attack), then settles to a comfortable level (Decay to Sustain). While you hold the key, the sound stays at the Sustain level. When you release the key, it fades to silence (Release). Different ADSR settings create very different characters: a very short attack and release creates a plucky sound (like a harpsichord), while a slow attack creates a swelling pad sound.</p>
+
+      <h3>15.10.3 Filters</h3>
+
+      <p>A filter removes or emphasizes certain frequencies from a sound. A <strong>low-pass filter</strong> removes frequencies above the cutoff (making the sound darker and more muffled), while a <strong>high-pass filter</strong> removes frequencies below it (making the sound thinner and brighter). A <strong>band-pass filter</strong> keeps only frequencies near the cutoff, creating a nasal or resonant quality. Route an oscillator through a filter by disconnecting it from the default output and connecting it to the filter:</p>
+
+      <pre><code>let filter = new p5.LowPass();
+osc.disconnect();
+osc.connect(filter);
+filter.freq(1000);  // Cutoff frequency in Hz
+filter.res(5);      // Resonance: emphasis at the cutoff</code></pre>
+
+      <h3>15.10.4 FFT Analysis</h3>
+
+      <p>The <strong>FFT</strong> (Fast Fourier Transform) decomposes a sound into its frequency components, enabling audio-reactive visualizations:</p>
+
+      <pre><code>let fft = new p5.FFT(0.8, 256);   // smoothing, number of bins
+let spectrum = fft.analyze();      // frequency amplitudes (0-255)
+let waveform = fft.waveform();     // time-domain values (-1 to 1)
+let bass = fft.getEnergy("bass");  // energy in the bass range</code></pre>
+
+      <p>You can use these values to drive visuals&mdash;spawn particles when the bass hits, change colors with the mid-range, pulse shapes with the treble. This is the foundation of audio-reactive art (see Chapter 12).</p>
+
+      <h3>15.10.5 Playing Sound Files</h3>
+
+      <p>You can load and play audio files (MP3, WAV, OGG) using <code>loadSound()</code> in <code>preload()</code>:</p>
+
+      <pre><code>let sound;
+
+function preload() {
+  sound = loadSound("music.mp3");
+}
+
+function mousePressed() {
+  userStartAudio();
+  if (sound.isPlaying()) {
+    sound.stop();
+  } else {
+    sound.play();
+  }
+}
+
+// Useful sound file methods:
+sound.loop();           // Loop continuously
+sound.setVolume(0.5);   // Volume: 0 to 1
+sound.rate(1.5);        // Playback speed (1 = normal)
+sound.pan(-1);          // Pan: -1 (left) to 1 (right)
+sound.duration();       // Length in seconds</code></pre>
+
+      <h3>15.10.6 Audio-Reactive Visuals</h3>
+
+      <p>Connecting audio analysis to visual output is one of the most compelling applications of sound programming. The basic pattern is: analyze the audio with FFT, extract energy in different frequency bands, and use those values to control visual parameters:</p>
+
+      <pre><code>let spectrum = fft.analyze();
+let bass = fft.getEnergy("bass");       // 20-140 Hz
+let mid = fft.getEnergy("mid");         // 400-2600 Hz
+let treble = fft.getEnergy("treble");   // 2600-5200 Hz
+
+// Use these values to drive visuals
+let bgPulse = map(bass, 0, 255, 0, 30);
+background(bgPulse, 0, bgPulse);
+
+let circleSize = map(mid, 0, 255, 10, 200);
+circle(width/2, height/2, circleSize);</code></pre>
+
+      <p>For a complete audio-reactive project, consider using microphone input (<code>new p5.AudioIn()</code>) so the sketch responds to live sound in the room, or load an MP3 file for a more controlled experience. Either way, call <code>fft.setInput(source)</code> to tell the FFT which audio source to analyze.</p>
+
+      <p>The key to effective audio-reactive visuals is <strong>mapping ranges</strong>. The energy values from FFT range from 0 to 255, but your visual parameters might need completely different ranges. Use p5.js&rsquo;s <code>map()</code> function to convert between them:</p>
+
+      <pre><code>// Map bass energy (0-255) to circle size (10-200)
+let circleSize = map(bass, 0, 255, 10, 200);
+
+// Map mid energy (0-255) to hue (0-360)
+let hue = map(mid, 0, 255, 0, 360);
+
+// Map treble energy (0-255) to stroke weight (0.5-5)
+let weight = map(treble, 0, 255, 0.5, 5);</code></pre>
+
+      <p>Experiment with different mappings to find what looks and feels most natural. Some energy-to-visual mappings feel intuitive (bass = size, because bass is &ldquo;big&rdquo;), while others create surprising and interesting effects (bass = color speed, treble = position offset).</p>
+
+      <h3>15.10.7 The Web Audio API</h3>
+
+      <p>p5.sound is built on the <strong>Web Audio API</strong>, a lower-level browser API that gives you more control. The Web Audio API works by connecting <strong>nodes</strong> in a graph&mdash;conceptually similar to modular synthesis, where you patch cables between modules:</p>
+
+      <pre><code>// [OscillatorNode] --> [GainNode] --> [BiquadFilterNode] --> [speakers]</code></pre>
+
+      <p>For serious audio work, consider exploring the Web Audio API directly or using <strong>Tone.js</strong>, a more modern and fully-featured audio library. But p5.sound is the most accessible starting point and integrates cleanly with p5.js sketches.</p>
+
+      <h3>15.10.8 Interactive Example: Mini Synth Keyboard</h3>
+
+      <p>This sketch creates a playable keyboard synthesizer. Press keys A through K to play notes in the C major scale. Each key triggers an ADSR envelope on an oscillator. Note: this example requires p5.sound, which is included in the p5.js web editor by default but may not be available in the embedded runner below. Copy it to the p5.js web editor if needed.</p>
+
+      <div class="code-runner" data-height="280">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Mini Synth Keyboard &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">// Note: Requires p5.sound. Copy to editor.p5js.org
+// if audio does not work in the embedded runner.
+let keyLabels = ['A','S','D','F','G','H','J','K'];
+let noteNames = ['C','D','E','F','G','A','B','C'];
+let activeKey = -1;
+
+function setup() {
+  createCanvas(400, 200);
+}
+
+function draw() {
+  background(30);
+  let w = width / keyLabels.length;
+
+  for (let i = 0; i < keyLabels.length; i++) {
+    let pressed = (i === activeKey);
+    fill(pressed ? color(100, 200, 255) : 220);
+    stroke(0);
+    rect(i * w, 40, w - 2, 140);
+    fill(80);
+    noStroke();
+    textAlign(CENTER);
+    textSize(16);
+    text(keyLabels[i], i * w + w/2, 165);
+    textSize(12);
+    text(noteNames[i], i * w + w/2, 80);
+  }
+
+  fill(200);
+  textSize(12);
+  textAlign(CENTER);
+  text("Press A-K to play notes (requires p5.sound)", width/2, 25);
+}
+
+function keyPressed() {
+  let k = key.toUpperCase();
+  let idx = keyLabels.indexOf(k);
+  if (idx !== -1) activeKey = idx;
+}
+
+function keyReleased() {
+  activeKey = -1;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <div class="quiz" data-id="ch15-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Why must you call <code>userStartAudio()</code> in a p5.js sketch that uses sound?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch15-q5" value="a"> It loads the p5.sound library into memory</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q5" value="b"> It creates the oscillator objects</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q5" value="c" data-correct> Browsers block audio until a user gesture occurs; this function resumes the AudioContext</label></li>
+          <li class="option"><label><input type="radio" name="ch15-q5" value="d"> It sets the sample rate for audio playback</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Modern browsers enforce an <strong>autoplay policy</strong> that suspends the AudioContext until the user interacts with the page (click, tap, or key press). <code>userStartAudio()</code> resumes the AudioContext after such a gesture, allowing sound to play. Without it, all audio output is silently blocked.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.11 — KNOWLEDGE CHECKS + QUIZ
+           =============================================== -->
+      <h2 id="quick-reference">15.11 Quick Reference</h2>
+
+      <p>This section collects the most commonly referenced patterns from the entire chapter into a single, scannable reference. Keep this page bookmarked.</p>
+
+      <h3>p5.js Lifecycle</h3>
+
+      <pre><code>preload() -> setup() -> draw() [loops at ~60fps]
+                         ^
+                    mousePressed(), keyPressed(), etc. (interrupts)</code></pre>
+
+      <h3>Common Patterns</h3>
+
+      <pre><code>// Particle management
+particles.push(new Particle(x, y));              // Spawn
+particles = particles.filter(p => p.alive);      // Remove dead
+particles.forEach(p => { p.update(); p.display(); }); // Update all
+
+// Pixel access
+pixelDensity(1);
+loadPixels();
+let i = (y * width + x) * 4;
+// pixels[i], pixels[i+1], pixels[i+2], pixels[i+3]
+updatePixels();
+
+// State machine
+let state = "title";
+function draw() {
+  if (state === "title") drawTitle();
+  else if (state === "playing") drawGame();
+  else if (state === "gameover") drawGameOver();
+}
+
+// Responsive canvas
+function setup() { createCanvas(windowWidth, windowHeight); }
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+
+// Collision detection
+let hit = dist(x1, y1, x2, y2) < r1 + r2; // Circle-circle</code></pre>
+
+      <h3>Further Reading</h3>
+
+      <ul>
+        <li>Daniel Shiffman, <em>The Nature of Code</em>: <a href="https://natureofcode.com" target="_blank">natureofcode.com</a></li>
+        <li>MDN JavaScript reference: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">developer.mozilla.org</a></li>
+        <li>p5.js reference: <a href="https://p5js.org/reference/" target="_blank">p5js.org/reference</a></li>
+        <li>Choose a license: <a href="https://choosealicense.com" target="_blank">choosealicense.com</a></li>
+        <li>Creative Commons: <a href="https://creativecommons.org/choose/" target="_blank">creativecommons.org/choose</a></li>
+        <li>Eloquent JavaScript: <a href="https://eloquentjavascript.net" target="_blank">eloquentjavascript.net</a></li>
+        <li>The Coding Train: <a href="https://thecodingtrain.com" target="_blank">thecodingtrain.com</a></li>
+      </ul>
+
+
+      <h2 id="review-quiz">15.12 Knowledge Checks</h2>
+
+      <p>The inline knowledge checks throughout this chapter tested your understanding of individual topics. Now test your ability to apply these concepts in combination with the end-of-chapter review quiz.</p>
+
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 15 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of the supplementary topics covered in this chapter.</p>
+
+        <div class="quiz" data-id="ch15-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">You have an array of 200 particles. You want to remove all particles whose <code>lifespan</code> property is less than or equal to zero. Which approach is correct?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch15-fq1" value="a"> <code>for (let i = 0; i &lt; particles.length; i++) { if (particles[i].lifespan &lt;= 0) particles.splice(i, 1); }</code></label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq1" value="b" data-correct> <code>particles = particles.filter(p => p.lifespan > 0);</code></label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq1" value="c"> <code>particles.map(p => p.lifespan > 0);</code></label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq1" value="d"> <code>particles.reduce((acc, p) => p.lifespan > 0, []);</code></label></li>
+          </ul>
+          <div class="explanation">
+            <p>Option (a) iterates forwards, which causes index-skipping bugs when elements are removed. Option (b) uses <code>filter()</code> to create a new array containing only living particles&mdash;clean, correct, and functional. Option (c) would produce an array of booleans, not particles. Option (d) uses <code>reduce()</code> with incorrect syntax.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch15-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">In a class definition, what does <code>super(x, y)</code> do inside a child class constructor?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch15-fq2" value="a"> It creates a new instance of the child class</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq2" value="b"> It overrides the parent class&rsquo;s constructor</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq2" value="c" data-correct> It calls the parent class&rsquo;s constructor, passing <code>x</code> and <code>y</code> as arguments</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq2" value="d"> It defines new properties on the parent class</label></li>
+          </ul>
+          <div class="explanation">
+            <p><code>super()</code> calls the parent class&rsquo;s constructor. When a child class uses <code>extends</code>, its constructor must call <code>super()</code> before using <code>this</code>. This ensures the parent&rsquo;s initialization logic runs first, setting up any inherited properties. The arguments you pass to <code>super()</code> are forwarded to the parent constructor.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch15-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">What is the pixel index formula for accessing the red channel of the pixel at position $(x, y)$ on a canvas of width $w$?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch15-fq3" value="a"> <code>(x * w + y) * 4</code></label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq3" value="b" data-correct> <code>(y * w + x) * 4</code></label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq3" value="c"> <code>(y * w + x) * 3</code></label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq3" value="d"> <code>y * w + x</code></label></li>
+          </ul>
+          <div class="explanation">
+            <p>Pixels are stored row by row, left to right, top to bottom. <code>y * w</code> skips past $y$ full rows of width $w$, then <code>+ x</code> moves to the correct column. The <code>* 4</code> accounts for the four values per pixel (R, G, B, A). The red channel is at this index, green at <code>index + 1</code>, blue at <code>index + 2</code>, and alpha at <code>index + 3</code>.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch15-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">You publish code on GitHub without adding a LICENSE file. What are other people legally allowed to do with your code?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch15-fq4" value="a"> Anything&mdash;public code is free to use</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq4" value="b"> They can view and fork it, but not use it in their own projects</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq4" value="c" data-correct> View it on GitHub, but they cannot legally copy, modify, or distribute it</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq4" value="d"> They can use it non-commercially under fair use</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Copyright is automatic. Without a license, the default is &ldquo;all rights reserved.&rdquo; GitHub&rsquo;s Terms of Service allow others to view and fork your repository on GitHub itself, but they have no legal right to copy, modify, or distribute the code for their own use. This is why explicitly choosing a license matters&mdash;even something as simple as MIT unlocks the code for everyone.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch15-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">Which data structure is most appropriate for implementing an undo/redo system?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch15-fq5" value="a"> Queue (FIFO)</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq5" value="b" data-correct> Stack (LIFO)</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq5" value="c"> 2D Array</label></li>
+            <li class="option"><label><input type="radio" name="ch15-fq5" value="d"> Set</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Undo/redo follows a Last In, First Out pattern: the most recent action is the first one undone. A <strong>stack</strong> (using <code>push()</code> and <code>pop()</code>) naturally models this. Each action pushes a state onto the undo stack; pressing undo pops it off and pushes it onto a redo stack. A queue (FIFO) would undo the oldest action first, which is not what users expect.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.12 — CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">15.13 Code Challenges</h2>
+
+      <div class="code-challenge" data-id="ch15-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1: Pixel Index Calculator</div>
+        <p class="prompt">Write a function called <code>pixelIndex</code> that takes three parameters (<code>x</code>, <code>y</code>, <code>w</code>) and returns the index into the <code>pixels[]</code> array for the <strong>red</strong> channel of the pixel at position $(x, y)$ on a canvas of width $w$. Use the formula: $\text{index} = (y \times w + x) \times 4$.</p>
+        <textarea class="cm-editor">function pixelIndex(x, y, w) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "pixelIndex(0, 0, 400)", "expected": 0},
+          {"call": "pixelIndex(1, 0, 400)", "expected": 4},
+          {"call": "pixelIndex(0, 1, 400)", "expected": 1600},
+          {"call": "pixelIndex(10, 5, 200)", "expected": 4040},
+          {"call": "pixelIndex(99, 99, 100)", "expected": 39996}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch15-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2: Circle Collision Detector</div>
+        <p class="prompt">Write a function called <code>circlesCollide</code> that takes six parameters (<code>x1</code>, <code>y1</code>, <code>r1</code>, <code>x2</code>, <code>y2</code>, <code>r2</code>) and returns <code>true</code> if two circles overlap, <code>false</code> otherwise. Two circles collide when the distance between their centers is less than the sum of their radii.</p>
+        <textarea class="cm-editor">function circlesCollide(x1, y1, r1, x2, y2, r2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "circlesCollide(0, 0, 10, 5, 0, 10)", "expected": true},
+          {"call": "circlesCollide(0, 0, 5, 20, 0, 5)", "expected": false},
+          {"call": "circlesCollide(0, 0, 10, 0, 0, 10)", "expected": true},
+          {"call": "circlesCollide(0, 0, 1, 3, 4, 1)", "expected": false},
+          {"call": "circlesCollide(10, 10, 15, 20, 10, 15)", "expected": true}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch15-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3: Functional Array Pipeline</div>
+        <p class="prompt">Write a function called <code>pipeline</code> that takes an array of numbers and returns a new array containing only the even numbers, each multiplied by 3, sorted in descending order. Use <code>filter()</code>, <code>map()</code>, and <code>sort()</code> chained together.</p>
+        <textarea class="cm-editor">function pipeline(arr) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "pipeline([1, 2, 3, 4, 5, 6])", "expected": [18, 12, 6]},
+          {"call": "pipeline([10, 7, 4, 1])", "expected": [30, 12]},
+          {"call": "pipeline([1, 3, 5])", "expected": []},
+          {"call": "pipeline([2])", "expected": [6]},
+          {"call": "pipeline([8, 2, 6, 4])", "expected": [24, 18, 12, 6]}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch15-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge 4: Grayscale Conversion</div>
+        <p class="prompt">Write a function called <code>toGray</code> that takes three parameters (<code>r</code>, <code>g</code>, <code>b</code>) and returns the luminance-weighted grayscale value as a rounded integer. Use the standard formula: $\text{gray} = \lfloor 0.299r + 0.587g + 0.114b \rfloor$</p>
+        <textarea class="cm-editor">function toGray(r, g, b) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "toGray(255, 255, 255)", "expected": 255},
+          {"call": "toGray(0, 0, 0)", "expected": 0},
+          {"call": "toGray(255, 0, 0)", "expected": 76},
+          {"call": "toGray(0, 255, 0)", "expected": 149},
+          {"call": "toGray(0, 0, 255)", "expected": 29},
+          {"call": "toGray(128, 128, 128)", "expected": 128}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 15.13 — EXERCISES
+           =============================================== -->
+      <h2 id="exercises">15.14 Exercises</h2>
+
+      <p>These exercises combine concepts from multiple sections of this chapter. Each one provides starter code with <code>TODO</code> comments indicating where you need to add your implementation. A solution is available below each exercise, but try to work through it yourself first&mdash;the learning happens in the struggle, not in reading the answer.</p>
+
+      <p>For the best experience, copy the code to the <a href="https://editor.p5js.org" target="_blank">p5.js web editor</a> where you have access to the full p5.js environment, including the console for debugging.</p>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 15.1 &mdash; Colorful Particle System</div>
+        <p class="prompt">Modify the Particle class so that each particle spawns with a random color (use <code>colorMode(HSB)</code> and store a random hue). As the particle ages, its hue should shift gradually (add a small amount to the hue each frame). The particle should also leave a trail by using a semi-transparent background. Create a particle fountain that demonstrates the effect.</p>
+        <textarea class="cm-editor">let particles = [];
+
+function setup() {
+  createCanvas(400, 380);
+  colorMode(HSB, 360, 100, 100, 100);
+}
+
+function draw() {
+  background(0, 0, 10, 15);
+
+  // Spawn particles at mouse
+  for (let i = 0; i < 3; i++) {
+    particles.push(new Particle(mouseX, mouseY));
+  }
+
+  // Update and display
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update();
+    particles[i].display();
+    if (particles[i].isDead()) particles.splice(i, 1);
+  }
+}
+
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = random(-2, 2);
+    this.vy = random(-4, -1);
+    this.lifespan = 100;
+    this.size = random(4, 12);
+    // TODO: Add hue property with random initial value
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += 0.06;
+    this.lifespan -= 1;
+    // TODO: Shift hue each frame
+  }
+
+  display() {
+    noStroke();
+    // TODO: Use hue and lifespan for color
+    fill(0, 0, 100, this.lifespan);
+    circle(this.x, this.y, this.size);
+  }
+
+  isDead() {
+    return this.lifespan <= 0;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let particles = [];
+
+function setup() {
+  createCanvas(400, 380);
+  colorMode(HSB, 360, 100, 100, 100);
+}
+
+function draw() {
+  background(0, 0, 10, 15);
+
+  for (let i = 0; i < 3; i++) {
+    particles.push(new Particle(mouseX, mouseY));
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update();
+    particles[i].display();
+    if (particles[i].isDead()) particles.splice(i, 1);
+  }
+}
+
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = random(-2, 2);
+    this.vy = random(-4, -1);
+    this.lifespan = 100;
+    this.size = random(4, 12);
+    this.hue = random(360); // Random starting hue
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += 0.06;
+    this.lifespan -= 1;
+    this.hue = (this.hue + 0.5) % 360; // Shift hue each frame
+  }
+
+  display() {
+    noStroke();
+    fill(this.hue, 80, 90, this.lifespan);
+    circle(this.x, this.y, this.size);
+  }
+
+  isDead() {
+    return this.lifespan <= 0;
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 15.2 &mdash; Drag and Drop</div>
+        <p class="prompt">Create a sketch with several circles on the canvas. Implement drag and drop: when the user clicks on a circle, they can drag it to a new position. When they release the mouse, the circle stays in its new location. Use hit detection to determine which circle was clicked. Hint: store a reference to the currently dragged circle, and update its position in <code>mouseDragged()</code>.</p>
+        <textarea class="cm-editor">let circles = [];
+let dragging = null;
+let offsetX, offsetY;
+
+function setup() {
+  createCanvas(400, 380);
+  // Create some circles
+  for (let i = 0; i < 5; i++) {
+    circles.push({
+      x: random(50, width - 50),
+      y: random(50, height - 50),
+      r: random(20, 40),
+      col: color(random(100, 255), random(100, 255), random(100, 255))
+    });
+  }
+}
+
+function draw() {
+  background(30);
+  for (let c of circles) {
+    fill(c.col);
+    stroke(c === dragging ? 255 : 100);
+    strokeWeight(c === dragging ? 3 : 1);
+    circle(c.x, c.y, c.r * 2);
+  }
+  fill(200);
+  noStroke();
+  textSize(12);
+  text("Click and drag circles to move them", 10, 20);
+}
+
+function mousePressed() {
+  // TODO: Find which circle was clicked (check from top/last)
+  // Set dragging to that circle
+  // Store offset between mouse and circle center
+}
+
+function mouseDragged() {
+  // TODO: Update dragging circle's position
+}
+
+function mouseReleased() {
+  dragging = null;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let circles = [];
+let dragging = null;
+let offsetX, offsetY;
+
+function setup() {
+  createCanvas(400, 380);
+  for (let i = 0; i < 5; i++) {
+    circles.push({
+      x: random(50, width - 50),
+      y: random(50, height - 50),
+      r: random(20, 40),
+      col: color(random(100, 255), random(100, 255), random(100, 255))
+    });
+  }
+}
+
+function draw() {
+  background(30);
+  for (let c of circles) {
+    fill(c.col);
+    stroke(c === dragging ? 255 : 100);
+    strokeWeight(c === dragging ? 3 : 1);
+    circle(c.x, c.y, c.r * 2);
+  }
+  fill(200);
+  noStroke();
+  textSize(12);
+  text("Click and drag circles to move them", 10, 20);
+}
+
+function mousePressed() {
+  // Check from last (topmost) to first
+  for (let i = circles.length - 1; i >= 0; i--) {
+    let c = circles[i];
+    if (dist(mouseX, mouseY, c.x, c.y) < c.r) {
+      dragging = c;
+      offsetX = c.x - mouseX;
+      offsetY = c.y - mouseY;
+      break;
+    }
+  }
+}
+
+function mouseDragged() {
+  if (dragging) {
+    dragging.x = mouseX + offsetX;
+    dragging.y = mouseY + offsetY;
+  }
+}
+
+function mouseReleased() {
+  dragging = null;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 15.3 &mdash; State Machine Game</div>
+        <p class="prompt">Add a state machine to the collection game from Section 15.9. Implement three states: <strong>title</strong> (shows game name, press ENTER to start), <strong>playing</strong> (the actual game), and <strong>gameover</strong> (shows final score after a 30-second timer runs out, press ENTER to restart). Display a countdown timer during gameplay. When the timer reaches zero, transition to the game over state.</p>
+        <textarea class="cm-editor">let state = "title";
+let player, targets, score, startTime;
+
+function setup() {
+  createCanvas(400, 380);
+  textAlign(CENTER, CENTER);
+}
+
+function draw() {
+  if (state === "title") drawTitle();
+  else if (state === "playing") drawPlaying();
+  else if (state === "gameover") drawGameOver();
+}
+
+function drawTitle() {
+  background(15, 15, 35);
+  fill(200, 230, 255);
+  textSize(28);
+  text("COLLECTOR", width/2, height/3);
+  textSize(14);
+  fill(150);
+  text("Press ENTER to start", width/2, height/2);
+}
+
+function drawPlaying() {
+  // TODO: Implement gameplay with timer
+  background(15, 15, 25);
+  fill(200);
+  textSize(16);
+  text("Implement gameplay here", width/2, height/2);
+}
+
+function drawGameOver() {
+  // TODO: Show final score
+  background(35, 15, 15);
+  fill(255);
+  textSize(28);
+  text("GAME OVER", width/2, height/3);
+}
+
+function keyPressed() {
+  // TODO: Handle state transitions
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let state = "title";
+let player, targets, score, startTime;
+let GAME_DURATION = 30; // seconds
+
+function setup() {
+  createCanvas(400, 380);
+}
+
+function startGame() {
+  player = { x: width/2, y: height/2, size: 15 };
+  targets = [];
+  for (let i = 0; i < 8; i++) spawnTarget();
+  score = 0;
+  startTime = millis();
+  state = "playing";
+}
+
+function spawnTarget() {
+  targets.push({
+    x: random(30, width-30), y: random(50, height-30),
+    size: random(8, 18), hue: random(360), pulse: random(TWO_PI)
+  });
+}
+
+function draw() {
+  if (state === "title") drawTitle();
+  else if (state === "playing") drawPlaying();
+  else if (state === "gameover") drawGameOver();
+}
+
+function drawTitle() {
+  background(15, 15, 35);
+  fill(200, 230, 255);
+  textAlign(CENTER, CENTER);
+  textSize(28);
+  text("COLLECTOR", width/2, height/3);
+  textSize(14);
+  fill(150);
+  text("Press ENTER to start", width/2, height/2);
+  textSize(11);
+  text("Collect as many orbs as you can in 30 seconds!", width/2, height/2 + 30);
+}
+
+function drawPlaying() {
+  background(15, 15, 25);
+  let elapsed = (millis() - startTime) / 1000;
+  let remaining = max(0, GAME_DURATION - elapsed);
+
+  if (remaining <= 0) {
+    state = "gameover";
+    return;
+  }
+
+  player.x = lerp(player.x, mouseX, 0.1);
+  player.y = lerp(player.y, mouseY, 0.1);
+
+  colorMode(HSB, 360, 100, 100, 100);
+  for (let i = targets.length - 1; i >= 0; i--) {
+    let t = targets[i];
+    t.pulse += 0.05;
+    let s = t.size * (1 + sin(t.pulse) * 0.2);
+    noStroke();
+    fill(t.hue, 60, 80, 30);
+    circle(t.x, t.y, s * 3);
+    fill(t.hue, 70, 95);
+    circle(t.x, t.y, s);
+    if (dist(player.x, player.y, t.x, t.y) < player.size + t.size) {
+      targets.splice(i, 1);
+      spawnTarget();
+      score++;
+    }
+  }
+
+  colorMode(RGB);
+  fill(200, 230, 255);
+  noStroke();
+  circle(player.x, player.y, player.size * 2);
+
+  fill(200);
+  textAlign(LEFT, TOP);
+  textSize(14);
+  text("Score: " + score, 10, 10);
+  textAlign(RIGHT, TOP);
+  text("Time: " + remaining.toFixed(1), width - 10, 10);
+}
+
+function drawGameOver() {
+  background(35, 15, 15);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(28);
+  text("GAME OVER", width/2, height/3);
+  textSize(20);
+  text("Score: " + score, width/2, height/2);
+  textSize(14);
+  fill(150);
+  text("Press ENTER to play again", width/2, height*2/3);
+}
+
+function keyPressed() {
+  if (state === "title" && keyCode === ENTER) startGame();
+  if (state === "gameover" && keyCode === ENTER) state = "title";
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch14/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 14: WebGPU, Vectors &amp; Computation</span>
+        </a>
+        <div class="nav-next" style="visibility: hidden;">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title"></span>
+        </div>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

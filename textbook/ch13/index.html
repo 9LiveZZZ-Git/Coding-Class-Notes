@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 13: Algorithmic Thinking &amp; Shader Porting — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch13">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 13: Algorithmic Thinking &amp; Shader Porting</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 13: Algorithmic Thinking &amp; Shader Porting</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts — Problem-solving strategies, translating ShaderToy shaders to p5.js, blending techniques, and code ethics</p>
+
+      <blockquote>"An algorithm must be seen to be believed." — Donald Knuth, <em>The Art of Computer Programming</em></blockquote>
+
+      <p>This chapter brings together four interconnected topics that represent different facets of computing arts practice. <strong>Algorithmic thinking</strong> provides the conceptual foundation -- the ability to decompose complex problems into solvable steps. <strong>Shader porting</strong> applies these skills to a practical challenge: translating visual effects between platforms. <strong>Fading and blending</strong> introduces essential visual techniques for creating depth and movement. And <strong>code attribution</strong> grounds all of this work in ethical practice.</p>
+
+      <p>Together, these topics prepare you for your final projects and for independent creative coding work beyond this course. By the end of this chapter, you will be able to:</p>
+
+      <ul>
+        <li>Apply computational thinking to break down creative coding challenges</li>
+        <li>Analyze the complexity of algorithms and choose appropriate approaches for real-time applications</li>
+        <li>Translate any single-pass ShaderToy shader into p5.js using a systematic porting process</li>
+        <li>Implement fading effects using both GPU framebuffer feedback and CPU-based aging</li>
+        <li>Apply advanced shader techniques including ray marching, noise, and domain repetition</li>
+        <li>Properly attribute code from external sources, including LLM-generated code</li>
+      </ul>
+
+      <p><strong>Prerequisites:</strong> This chapter assumes familiarity with GLSL fragment shaders (Chapters 9-11), p5.js basics (Chapters 1-4), and framebuffers (Chapter 12). If you have not worked with shaders before, review Chapter 9 first.</p>
+
+      <p><strong>Chapter overview:</strong></p>
+      <ul>
+        <li>Sections 13.1-13.3 cover algorithmic thinking -- the conceptual foundations</li>
+        <li>Sections 13.4-13.5 focus on ShaderToy and porting -- practical shader skills</li>
+        <li>Section 13.6 explores fading and blending -- essential visual techniques</li>
+        <li>Section 13.7 surveys advanced shader techniques -- expanding your creative palette</li>
+        <li>Sections 13.8-13.9 address ethics and professional practice</li>
+      </ul>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.1: ALGORITHMIC THINKING
+           ═══════════════════════════════════════ -->
+      <h2 id="algorithmic-thinking">13.1 Algorithmic Thinking</h2>
+
+      <p>At the heart of every creative coding project lies a fundamental skill that transcends any particular programming language or framework: <strong>algorithmic thinking</strong>. Whether you are writing a particle system, translating a shader from one platform to another, or designing an interactive installation, you are engaged in the process of breaking problems into steps that a computer can execute. This section explores what algorithmic thinking means and why it matters for artists working with code.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Algorithm</strong> — A finite, unambiguous sequence of well-defined instructions for solving a class of problems or performing a computation. An algorithm takes some input, processes it through a series of steps, and produces an output.</p>
+      </div>
+
+      <p>The word "algorithm" comes from the name of the 9th-century Persian mathematician Muhammad ibn Musa al-Khwarizmi, whose work on arithmetic procedures laid the foundation for systematic problem-solving in mathematics. His book <em>Al-Kitab al-Mukhtasar fi Hisab al-Jabr wal-Muqabala</em> (circa 820 CE) also gave us the word "algebra."</p>
+
+      <p>Today, algorithms are everywhere: sorting a list of names, finding the shortest route on a map, compressing an image, or generating a fractal pattern on screen. Every time you write a <code>for</code> loop, define a recursive function, or chain together conditional statements, you are implementing an algorithm.</p>
+
+      <p>What makes an algorithm different from just "some code"? Three properties:</p>
+      <ol>
+        <li><strong>Finiteness:</strong> It must terminate after a finite number of steps. An infinite loop is not an algorithm (though the <code>draw()</code> loop in p5.js deliberately runs indefinitely -- each individual frame computation is finite).</li>
+        <li><strong>Definiteness:</strong> Each step must be precisely defined. "Make it look cool" is not an algorithmic instruction; "multiply each pixel's red channel by 0.8" is.</li>
+        <li><strong>Effectiveness:</strong> Each step must be something a computer can actually execute. "Find the meaning of life" is not effective; "compute the sine of x" is.</li>
+      </ol>
+
+      <h3>13.1.1 The Four Pillars of Computational Thinking</h3>
+
+      <p>Computer scientists identify four core practices that make up <strong>computational thinking</strong>, a framework introduced by Jeannette Wing in 2006. These are not just for programmers; they are thinking strategies applicable to any domain, including art and design.</p>
+
+      <p><strong>1. Decomposition</strong> — Breaking a complex problem into smaller, manageable sub-problems. A large creative coding project such as "build an interactive audio visualizer" becomes tractable when decomposed into: (a) capture audio input, (b) perform FFT analysis, (c) map frequency data to visual parameters, (d) render shapes on screen, (e) handle user interaction.</p>
+
+      <p><strong>2. Pattern Recognition</strong> — Identifying similarities, trends, or regularities in data or processes. When you notice that many ShaderToy shaders begin with the same coordinate normalization step, you recognize a pattern that can be abstracted and reused.</p>
+
+      <p><strong>3. Abstraction</strong> — Filtering out unnecessary details to focus on what matters. When you write a function called <code>fadePixel(color, amount)</code>, you are abstracting the mathematical operation of linear interpolation into a named concept. Users of that function do not need to know the formula; they just need to know what it does.</p>
+
+      <p><strong>4. Algorithm Design</strong> — Creating a step-by-step solution once you understand the sub-problems, patterns, and abstractions. This is where you decide the order of operations, choose data structures, and plan for edge cases.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Algorithmic thinking is not about writing code. It is a way of approaching problems that can be expressed in pseudocode, flowcharts, diagrams, or natural language before any code is written. The best programmers spend more time thinking than typing.</p>
+      </div>
+
+      <h3>13.1.2 Expressing Algorithms</h3>
+
+      <p>Before writing code, algorithms can be expressed in several ways:</p>
+
+      <p><strong>Natural Language:</strong> Describe the steps in plain English. "For each pixel in the image, compute its distance from the center. If the distance is less than the radius, color it red; otherwise, color it black." This is easy to understand but can be ambiguous.</p>
+
+      <p><strong>Pseudocode:</strong> A structured, code-like notation that avoids the syntax details of any particular language:</p>
+
+      <pre><code>FOR each pixel (x, y) in the image:
+    distance = sqrt((x - centerX)^2 + (y - centerY)^2)
+    IF distance < radius:
+        setColor(x, y, RED)
+    ELSE:
+        setColor(x, y, BLACK)</code></pre>
+
+      <p><strong>Flowcharts:</strong> Visual diagrams showing decision points and flow of control. Useful for complex branching logic.</p>
+
+      <p><strong>Mathematical notation:</strong> For algorithms rooted in mathematics, formulas can be the most precise expression:</p>
+
+      <p>$$\text{color}(x, y) = \begin{cases} \text{red} & \text{if } \sqrt{(x - c_x)^2 + (y - c_y)^2} < r \\ \text{black} & \text{otherwise} \end{cases}$$</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The idea that any computable function can be expressed as a mechanical procedure was formalized independently by Alan Turing (Turing machines, 1936) and Alonzo Church (lambda calculus, 1936). The Church-Turing thesis states that these two formulations, and all equivalent ones, capture exactly the same class of computable functions. Every algorithm you write in JavaScript, GLSL, or any other language is a specific instance of this universal idea.</p>
+      </div>
+
+      <h3>13.1.3 Algorithms in Creative Coding</h3>
+
+      <p>In the arts, algorithms are not just utilitarian tools; they are expressive media. Consider these examples:</p>
+
+      <ul>
+        <li><strong>Sorting algorithms</strong> visualized as animations reveal the hidden beauty of computational logic. Different sorting methods produce distinct visual rhythms and patterns.</li>
+        <li><strong>Pathfinding algorithms</strong> like A* can drive the behavior of agents in generative art, creating organic-looking movement patterns.</li>
+        <li><strong>Recursive algorithms</strong> naturally produce fractal structures, from branching trees to Sierpinski triangles.</li>
+        <li><strong>Cellular automata</strong> like Conway's Game of Life demonstrate how simple algorithmic rules generate complex emergent behavior.</li>
+      </ul>
+
+      <p>The following interactive example visualizes a simple sorting algorithm. Watch how the bars rearrange themselves step by step:</p>
+
+      <!-- Interactive: Sorting Visualization -->
+      <div class="code-runner" data-height="450">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Sorting Visualization</span>
+        </div>
+        <textarea class="cm-editor">let arr = [];
+let i = 0;
+let j = 0;
+let sorting = true;
+let n = 60;
+
+function setup() {
+  createCanvas(400, 400);
+  frameRate(30);
+  resetArray();
+}
+
+function resetArray() {
+  arr = [];
+  for (let k = 0; k < n; k++) {
+    arr.push(random(20, height - 20));
+  }
+  i = 0;
+  j = 0;
+  sorting = true;
+}
+
+function draw() {
+  background(20);
+
+  // Bubble sort step
+  if (sorting) {
+    if (i < n - 1) {
+      if (j < n - i - 1) {
+        if (arr[j] > arr[j + 1]) {
+          let temp = arr[j];
+          arr[j] = arr[j + 1];
+          arr[j + 1] = temp;
+        }
+        j++;
+      } else {
+        j = 0;
+        i++;
+      }
+    } else {
+      sorting = false;
+    }
+  }
+
+  // Draw bars
+  let w = width / n;
+  for (let k = 0; k < n; k++) {
+    if (sorting && k === j) {
+      fill(255, 80, 80);
+    } else if (!sorting) {
+      fill(80, 220, 120);
+    } else {
+      let hue = map(k, 0, n, 150, 255);
+      fill(80, hue, 220);
+    }
+    noStroke();
+    rect(k * w, height - arr[k], w - 1, arr[k]);
+  }
+
+  // Label
+  fill(255);
+  textSize(14);
+  textAlign(LEFT);
+  text("Bubble Sort", 10, 20);
+  if (!sorting) text("Sorted!", 10, 40);
+}
+
+function mousePressed() {
+  resetArray();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Click inside the canvas to shuffle and re-sort. Notice how bubble sort repeatedly compares adjacent elements, producing a characteristic "wave" pattern as the largest unsorted element bubbles to its correct position each pass.</p>
+
+      <h3>13.1.4 The Role of Constraints</h3>
+
+      <p>In art, constraints are often generative rather than restrictive. Algorithmic constraints -- the rules you set for your system -- determine the aesthetic space your code can explore:</p>
+
+      <ul>
+        <li><strong>Rule-based drawing:</strong> "Every line must connect to the nearest unconnected point." This single rule can generate surprisingly complex and beautiful networks.</li>
+        <li><strong>Parameter spaces:</strong> A shader with five tunable parameters creates a five-dimensional space of possible images. Exploring this space algorithmically (e.g., random sampling, gradient descent, or systematic sweeps) can reveal unexpected visual territories.</li>
+        <li><strong>Emergent complexity:</strong> Simple rules applied iteratively often produce complex results. This is the central insight of cellular automata, L-systems, and agent-based models.</li>
+      </ul>
+
+      <p>The artist Sol LeWitt famously created works defined entirely by written instructions (algorithms) that others would execute. His wall drawings demonstrate that the algorithm itself is the artwork, and the physical rendering is one of many possible executions. In his own words: "The idea becomes a machine that makes the art."</p>
+
+      <p>Other artists working algorithmically include Vera Molnar, one of the earliest computer art pioneers, who used plotters to explore geometric variations; Manfred Mohr, who has explored hypercube geometry through algorithms since the 1970s; and Casey Reas, co-creator of Processing, whose work demonstrates how simple algorithmic rules generate complex visual systems.</p>
+
+      <p>In your own work, think of algorithms not as constraints but as collaborators. The algorithm brings computational power, infinite patience, and mathematical precision. You bring aesthetic judgment, conceptual framing, and the ability to select meaningful parameters from an infinite space of possibilities.</p>
+
+      <h3>13.1.5 Pseudocode as a Creative Tool</h3>
+
+      <p>Before diving into code, writing pseudocode helps you think through the structure of your algorithm without worrying about syntax. Here is an example for a simple particle system:</p>
+
+      <pre><code>CREATE empty list of particles
+
+EVERY FRAME:
+    FOR each particle in list:
+        UPDATE position using velocity
+        UPDATE velocity using acceleration (gravity)
+        DECREASE lifetime by 1
+        IF lifetime <= 0: REMOVE particle from list
+
+    IF mouse is pressed:
+        CREATE new particle at mouse position
+            with random velocity
+            and lifetime = 120 frames
+
+    FOR each particle in list:
+        SET opacity = lifetime / maxLifetime * 255
+        DRAW circle at particle position with opacity</code></pre>
+
+      <p>This pseudocode clearly communicates the algorithm without any JavaScript or GLSL syntax. Translating it to code becomes a mechanical process once the logic is clear.</p>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.2: PROBLEM-SOLVING STRATEGIES
+           ═══════════════════════════════════════ -->
+      <h2 id="problem-solving">13.2 Problem-Solving Strategies</h2>
+
+      <p>Professional programmers and creative coders draw on a repertoire of general-purpose strategies when approaching new problems. These strategies are not specific to any language; they are thinking tools that guide you from "I have no idea how to do this" to a working solution.</p>
+
+      <h3>13.2.1 Divide and Conquer</h3>
+
+      <p>The <strong>divide-and-conquer</strong> strategy splits a problem into independent sub-problems, solves each one separately, and combines the results. This is the logic behind merge sort, the fast Fourier transform (FFT), and many graphics algorithms.</p>
+
+      <p><strong>Creative coding example:</strong> Suppose you want to create a mosaic effect on an image. Divide the canvas into a grid of tiles. For each tile, compute the average color of the pixels within it. Fill the tile with that color. Each tile is an independent sub-problem, making the algorithm easy to parallelize.</p>
+
+      <p>$$T(n) = 2T\left(\frac{n}{2}\right) + O(n) \implies T(n) = O(n \log n)$$</p>
+
+      <p>This recurrence relation describes the time complexity of merge sort and other divide-and-conquer algorithms. The $O(n \log n)$ result is dramatically faster than $O(n^2)$ for large inputs.</p>
+
+      <h3>13.2.2 Greedy Approach</h3>
+
+      <p>A <strong>greedy algorithm</strong> makes the locally optimal choice at each step, hoping this leads to a globally optimal solution. Greedy algorithms are fast and simple but do not always produce the best answer.</p>
+
+      <p><strong>Creative coding example:</strong> Packing circles into a canvas. A greedy approach places each new circle at the position where it fits best (e.g., largest possible radius without overlapping existing circles). This gives a reasonable result quickly, even though it may not be the mathematically optimal packing.</p>
+
+      <p>Another example: when choosing colors for a generative palette, a greedy algorithm might select the next color to maximize the minimum distance from all previously chosen colors in color space. This tends to produce well-distributed, visually distinct palettes.</p>
+
+      <h3>13.2.3 Brute Force</h3>
+
+      <p>The <strong>brute force</strong> strategy tries all possible solutions and picks the best one. It is the simplest approach and always correct, but often too slow for large inputs.</p>
+
+      <p><strong>Creative coding example:</strong> Finding the closest pair of points among $n$ agents. The brute force approach checks all $\binom{n}{2} = \frac{n(n-1)}{2}$ pairs, which is $O(n^2)$. For 100 agents, that is 4,950 comparisons per frame -- manageable. For 10,000 agents, it is nearly 50 million -- too slow for real-time rendering at 60 fps.</p>
+
+      <p>Despite its inefficiency, brute force has an important role in creative coding:</p>
+      <ul>
+        <li>It serves as a <strong>baseline implementation</strong> that you can verify is correct before optimizing.</li>
+        <li>For small inputs, it is often <strong>fast enough</strong> and much simpler to debug.</li>
+        <li>It helps you understand the <strong>problem structure</strong> before applying more sophisticated techniques.</li>
+        <li>In shader code, brute force loops are sometimes the only option because shaders lack dynamic data structures like hash maps.</li>
+      </ul>
+
+      <h3>13.2.4 Working Backwards</h3>
+
+      <p><strong>Working backwards</strong> starts from the desired output and reasons about what inputs or steps would produce it. This is especially useful when debugging shaders.</p>
+
+      <p><strong>Creative coding example:</strong> You see a black screen when running a shader. Working backwards: the output is <code>gl_FragColor</code>. Is it being set? Yes, to <code>vec4(col, 1.0)</code>. Is <code>col</code> always zero? Check how <code>col</code> is computed. Trace back through the math to find where the logic fails.</p>
+
+      <p>Working backwards is also useful for design: "I want the final image to show a mandala pattern. What does that require? Rotational symmetry. How do I achieve that? Polar coordinates with <code>mod()</code> on the angle. What pattern fills each segment? A combination of sine waves in the radial direction." Starting from the desired result and working backwards to the implementation often reveals the clearest path forward.</p>
+
+      <h3>13.2.5 Analogical Reasoning</h3>
+
+      <p><strong>Analogical reasoning</strong> applies a solution from a known problem to a new, structurally similar problem. Much of shader porting relies on this: "I know how to normalize coordinates in ShaderToy, so I can adapt that logic for p5.js."</p>
+
+      <p><strong>Creative coding example:</strong> You want to create a ripple effect on a 2D canvas. You recall that the wave equation produces circular waves in physics. By analogy, you compute the distance from each pixel to the wave source and use a sine function with that distance as input: <code>sin(dist * freq - time * speed)</code>. The physics analogy gives you both the approach and the intuition for how the parameters affect the result.</p>
+
+      <p>Analogical reasoning is particularly powerful in creative coding because visual patterns often recur across different contexts. A flocking algorithm is analogous to magnetic field lines. A reaction-diffusion system produces patterns analogous to animal markings. A spring-mass simulation behaves analogously to musical vibration. Recognizing these connections lets you transfer solutions across domains.</p>
+
+      <h3>13.2.6 Incremental Development</h3>
+
+      <p><strong>Incremental development</strong> builds a solution in small, testable steps rather than trying to write the complete solution at once. This is especially valuable in creative coding where visual feedback is immediate.</p>
+
+      <p><strong>Example workflow for building a shader:</strong></p>
+
+      <ol>
+        <li>Start with a flat color to confirm the shader compiles and renders.</li>
+        <li>Add UV coordinate visualization (red = x, green = y) to verify coordinate space.</li>
+        <li>Add a single geometric element (e.g., a circle using <code>length(uv - center)</code>).</li>
+        <li>Add animation by incorporating <code>u_time</code>.</li>
+        <li>Add color using sine-based palettes.</li>
+        <li>Add complexity: more shapes, domain repetition, noise.</li>
+        <li>Polish: anti-aliasing, vignette, color grading.</li>
+      </ol>
+
+      <p>At each step, you can see the result immediately and catch errors before they compound.</p>
+
+      <h3>13.2.7 The Egg Drop Puzzle: A Case Study</h3>
+
+      <p>To illustrate algorithmic thinking in action, consider a classic puzzle: You have 2 eggs and a 100-story building. You want to find the highest safe floor -- the highest floor from which you can drop an egg without it breaking. How do you minimize the worst-case number of drops?</p>
+
+      <p><strong>Brute force approach (1 egg):</strong> Start at floor 1, test each floor sequentially. Worst case: 100 drops. This is $O(n)$.</p>
+
+      <p><strong>Divide and conquer (2 eggs):</strong> With 2 eggs, you can be smarter. Drop the first egg from floor 50. If it breaks, test floors 1-49 with the second egg (linear search). If it survives, test floors 51-100 with the same strategy. Worst case: 50 drops.</p>
+
+      <p><strong>Optimal strategy:</strong> Use decreasing intervals. Drop the first egg from floor 14, then 27, then 39, etc. If it breaks, use the second egg to search the interval. With this strategy, the worst case is 14 drops.</p>
+
+      <p>The optimal solution uses dynamic programming. Let $dp[n][e]$ be the minimum worst-case drops for $n$ floors with $e$ eggs:</p>
+
+      <p>$$dp[n][e] = 1 + \min_{k=1}^{n} \max(dp[k-1][e-1], \; dp[n-k][e])$$</p>
+
+      <p>The key insight: when you drop from floor $k$, either the egg breaks (search $k-1$ floors below with $e-1$ eggs) or it survives (search $n-k$ floors above with $e$ eggs). You take the max (worst case) and minimize over all choices of $k$.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>No single strategy works for every problem. Expert programmers unconsciously switch between strategies as they work. Start with the simplest approach (often brute force), verify it works, then optimize if needed.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.3: ALGORITHM COMPLEXITY
+           ═══════════════════════════════════════ -->
+      <h2 id="complexity">13.3 Algorithm Complexity</h2>
+
+      <p>When writing code that runs in real time -- as all creative coding does -- performance matters. <strong>Algorithm complexity</strong> gives us a language for describing how an algorithm's running time or memory usage grows as the input size increases.</p>
+
+      <h3>13.3.1 Big-O Notation (Intuitive)</h3>
+
+      <p>Big-O notation describes the <em>worst-case growth rate</em> of an algorithm's resource usage. It answers the question: "As my input doubles in size, how much more work does my algorithm do?" This is a simplification that ignores constant factors and lower-order terms, focusing only on the dominant behavior for large inputs.</p>
+
+      <p>Think of it like measuring travel time: we say "it is a 3-hour drive" rather than "it is 2 hours, 47 minutes, and 23 seconds." The exact number depends on traffic, speed, and route, but the order of magnitude -- hours, not minutes or days -- is what matters for planning.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Big-O Notation</strong> — We write $f(n) = O(g(n))$ if there exist constants $c > 0$ and $n_0$ such that $f(n) \le c \cdot g(n)$ for all $n \ge n_0$. Informally, $f$ grows no faster than $g$ for large inputs.</p>
+      </div>
+
+      <p>Here are the most common complexity classes, ordered from fastest to slowest:</p>
+
+      <table>
+        <thead>
+          <tr><th>Complexity</th><th>Name</th><th>Example</th><th>n=1000</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>$O(1)$</td><td>Constant</td><td>Array index lookup</td><td>1 operation</td></tr>
+          <tr><td>$O(\log n)$</td><td>Logarithmic</td><td>Binary search</td><td>~10 operations</td></tr>
+          <tr><td>$O(n)$</td><td>Linear</td><td>Find max in array</td><td>1,000 operations</td></tr>
+          <tr><td>$O(n \log n)$</td><td>Linearithmic</td><td>Merge sort</td><td>~10,000 operations</td></tr>
+          <tr><td>$O(n^2)$</td><td>Quadratic</td><td>Check all pairs</td><td>1,000,000 operations</td></tr>
+          <tr><td>$O(2^n)$</td><td>Exponential</td><td>All subsets</td><td>~$10^{301}$ operations</td></tr>
+        </tbody>
+      </table>
+
+      <h3>13.3.2 Why Complexity Matters for Real-Time Graphics</h3>
+
+      <p>At 60 frames per second, your <code>draw()</code> function has approximately <strong>16.7 milliseconds</strong> to complete all its work. On a modern machine, JavaScript can execute roughly 100 million simple operations per second. That gives you about 1.5 million operations per frame.</p>
+
+      <p>Consider a flocking simulation with $n$ boids where each boid checks every other boid for neighbors:</p>
+
+      <ul>
+        <li>$n = 100$: $100^2 = 10{,}000$ checks per frame. No problem.</li>
+        <li>$n = 1{,}000$: $1{,}000^2 = 1{,}000{,}000$ checks per frame. Getting tight.</li>
+        <li>$n = 10{,}000$: $10{,}000^2 = 100{,}000{,}000$ checks per frame. Far too slow.</li>
+      </ul>
+
+      <h3>13.3.3 Spatial Data Structures</h3>
+
+      <p>The solution to the quadratic neighbor-search problem is to use <strong>spatial data structures</strong> that organize objects by their position, allowing you to skip distant objects entirely.</p>
+
+      <p><strong>Uniform Grid:</strong> Divide the canvas into a grid of cells. Each object registers in the cell containing its position. To find neighbors of an object, only check objects in the same cell and adjacent cells. If the cell size matches the neighbor radius, this reduces the check from $O(n^2)$ to roughly $O(n)$ for uniformly distributed objects.</p>
+
+      <pre><code>// Simple spatial grid in JavaScript
+function buildGrid(particles, cellSize) {
+    let grid = {};
+    for (let p of particles) {
+        let key = Math.floor(p.x / cellSize)
+                + "," + Math.floor(p.y / cellSize);
+        if (!grid[key]) grid[key] = [];
+        grid[key].push(p);
+    }
+    return grid;
+}
+
+function getNeighbors(grid, x, y, cellSize) {
+    let neighbors = [];
+    let cx = Math.floor(x / cellSize);
+    let cy = Math.floor(y / cellSize);
+    // Check 3x3 neighborhood of cells
+    for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+            let key = (cx + dx) + "," + (cy + dy);
+            if (grid[key]) {
+                neighbors.push(...grid[key]);
+            }
+        }
+    }
+    return neighbors;
+}</code></pre>
+
+      <p><strong>Quadtree:</strong> A tree data structure that recursively subdivides 2D space into four quadrants. When a region contains too many objects, it splits. Neighbor queries walk the tree and only visit relevant branches. Average complexity: $O(n \log n)$.</p>
+
+      <p>The choice between a uniform grid and a quadtree depends on how your objects are distributed:</p>
+
+      <ul>
+        <li><strong>Uniform grid:</strong> Best when objects are roughly evenly distributed. Simple to implement. Cell size should match the interaction radius.</li>
+        <li><strong>Quadtree:</strong> Best when objects are unevenly distributed (e.g., clustered in some regions). Adapts automatically to local density. More complex to implement.</li>
+      </ul>
+
+      <h3>13.3.4 Amortized Analysis and Frame Budgets</h3>
+
+      <p>Not all frames need to do the same amount of work. <strong>Amortized analysis</strong> considers the average cost over a sequence of operations. In creative coding, you can spread expensive computations across multiple frames:</p>
+
+      <pre><code>// Instead of rebuilding the spatial grid every frame:
+let frameCount = 0;
+
+function draw() {
+    if (frameCount % 3 === 0) {
+        rebuildSpatialGrid(); // expensive, but only every 3rd frame
+    }
+    updateParticles();  // uses the grid from the last rebuild
+    renderParticles();
+    frameCount++;
+}</code></pre>
+
+      <p>This technique is called <strong>temporal amortization</strong>. The grid is slightly stale on 2 out of 3 frames, but for most visual applications, this is imperceptible. Other examples of temporal amortization in creative coding:</p>
+
+      <ul>
+        <li>Rebuilding a quadtree only every few frames</li>
+        <li>Performing collision detection on a subset of objects each frame, cycling through all objects over several frames</li>
+        <li>Updating distant particles at a lower rate than nearby ones (level-of-detail for computation)</li>
+        <li>Rendering complex backgrounds to a texture once and reusing the texture for many frames</li>
+      </ul>
+
+      <h3>13.3.5 Space Complexity</h3>
+
+      <p>In addition to time complexity, <strong>space complexity</strong> describes how much memory an algorithm uses. This matters for creative coding because:</p>
+
+      <ul>
+        <li>A full-screen framebuffer at 1920x1080 with 4 color channels (RGBA) uses $1920 \times 1080 \times 4 = 8{,}294{,}400$ bytes, or about 8 MB.</li>
+        <li>Storing 10,000 particle objects with 10 properties each requires $10{,}000 \times 10 \times 8 = 800{,}000$ bytes (about 800 KB for 64-bit floats).</li>
+        <li>A quadtree for those particles uses additional memory for the tree structure itself.</li>
+      </ul>
+
+      <p>On modern hardware, memory is rarely the bottleneck for creative coding projects, but it can matter on mobile devices or when working with very large datasets (e.g., high-resolution video textures, large point clouds, or volumetric data). When memory is constrained, consider using lower-precision data types (e.g., <code>Uint8Array</code> instead of <code>Float64Array</code>) or streaming data rather than loading everything at once.</p>
+
+      <h3>13.3.6 Practical Complexity Examples</h3>
+
+      <table>
+        <thead>
+          <tr><th>Operation</th><th>Complexity</th><th>Creative Coding Context</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Set a pixel color</td><td>$O(1)$</td><td>Fragment shader: each pixel runs independently</td></tr>
+          <tr><td>Draw $n$ particles</td><td>$O(n)$</td><td>Linear loop through particle array</td></tr>
+          <tr><td>Sort particles by depth</td><td>$O(n \log n)$</td><td>Required for correct transparency rendering</td></tr>
+          <tr><td>All-pairs distance check</td><td>$O(n^2)$</td><td>Flocking, collision detection (brute force)</td></tr>
+          <tr><td>FFT for audio analysis</td><td>$O(n \log n)$</td><td>Where $n$ is the number of audio samples</td></tr>
+          <tr><td>Render a fractal tree</td><td>$O(2^d)$</td><td>Where $d$ is the recursion depth</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Do not optimize prematurely. If your sketch runs at 60 fps with 200 particles using brute-force $O(n^2)$ checks, there is no need for a quadtree. Add complexity only when performance demands it. Profile first, optimize second.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 1: BIG-O
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch13-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">A function loops through an array of $n$ elements, and for each element, performs a binary search on a sorted array of $n$ elements. What is the overall time complexity?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch13-q1" value="a"> $O(n)$</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q1" value="b"> $O(n^2)$</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q1" value="c" data-correct> $O(n \log n)$</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q1" value="d"> $O(\log n)$</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The outer loop runs $n$ times. Each iteration performs a binary search, which is $O(\log n)$. Multiplying gives $O(n \log n)$. This is the same complexity class as efficient sorting algorithms like merge sort.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.4: UNDERSTANDING SHADERTOY
+           ═══════════════════════════════════════ -->
+      <h2 id="shadertoy">13.4 Understanding ShaderToy</h2>
+
+      <p><a href="https://www.shadertoy.com" target="_blank">ShaderToy</a> is an online platform created by Inigo Quilez and Pol Jeremias that hosts thousands of GLSL fragment shaders. It provides a simplified environment where you write only the fragment shader; the platform handles the vertex shader, full-screen quad setup, uniform passing, and rendering loop automatically.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>ShaderToy launched in 2013 and quickly became the de facto platform for shader experimentation and sharing. Inigo Quilez, one of its creators, is also known for pioneering signed distance function (SDF) techniques used extensively in ray marching. His website <a href="https://iquilezles.org" target="_blank">iquilezles.org</a> is an essential resource for shader artists.</p>
+      </div>
+
+      <h3>13.4.1 The mainImage Signature</h3>
+
+      <p>Every ShaderToy shader defines a single entry function:</p>
+
+      <pre><code>void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    // your shader code here
+    fragColor = vec4(1.0, 0.0, 0.0, 1.0); // output: red
+}</code></pre>
+
+      <p>The two parameters are:</p>
+      <ul>
+        <li><code>fragCoord</code> (input) — The pixel coordinate of the current fragment. Origin is at the <strong>bottom-left</strong>, with $x$ increasing rightward and $y$ increasing upward. Units are in pixels (e.g., for a 800x600 canvas, $x$ ranges from 0.5 to 799.5).</li>
+        <li><code>fragColor</code> (output) — The RGBA color you assign to this pixel. Each component ranges from 0.0 to 1.0.</li>
+      </ul>
+
+      <h3>13.4.2 Built-in Uniforms</h3>
+
+      <p>ShaderToy automatically provides these uniform variables:</p>
+
+      <table>
+        <thead>
+          <tr><th>Uniform</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>iResolution</code></td><td><code>vec3</code></td><td>Canvas width and height in pixels (z is pixel aspect ratio, usually 1.0)</td></tr>
+          <tr><td><code>iTime</code></td><td><code>float</code></td><td>Elapsed time in seconds since shader started</td></tr>
+          <tr><td><code>iTimeDelta</code></td><td><code>float</code></td><td>Time between current and previous frame in seconds</td></tr>
+          <tr><td><code>iFrame</code></td><td><code>int</code></td><td>Current frame number (starts at 0)</td></tr>
+          <tr><td><code>iMouse</code></td><td><code>vec4</code></td><td>Mouse state: xy = current position when clicked, zw = click position</td></tr>
+          <tr><td><code>iChannel0..3</code></td><td><code>sampler2D</code></td><td>Input textures (images, videos, audio, or buffer outputs)</td></tr>
+          <tr><td><code>iChannelResolution[4]</code></td><td><code>vec3</code></td><td>Resolution of each input channel</td></tr>
+          <tr><td><code>iDate</code></td><td><code>vec4</code></td><td>Year, month, day, time in seconds</td></tr>
+        </tbody>
+      </table>
+
+      <h3>13.4.3 Common ShaderToy Patterns</h3>
+
+      <p>Nearly every ShaderToy shader begins with coordinate normalization:</p>
+
+      <pre><code>// Normalize to [0, 1]
+vec2 uv = fragCoord / iResolution.xy;
+
+// Or normalize to [-1, 1] with aspect ratio correction
+vec2 uv = (2.0 * fragCoord - iResolution.xy) / iResolution.y;</code></pre>
+
+      <p>The second form centers the origin, accounts for non-square canvases, and is preferred for effects that should look the same regardless of window size.</p>
+
+      <h3>13.4.4 Understanding iMouse</h3>
+
+      <p>The <code>iMouse</code> uniform deserves special attention because its behavior is more complex than the other uniforms:</p>
+
+      <ul>
+        <li><code>iMouse.xy</code> — Current mouse position (in pixels) while the mouse button is held down. When the button is released, these values freeze at the last click position.</li>
+        <li><code>iMouse.zw</code> — The position where the mouse button was last pressed down. The sign of <code>z</code> indicates whether the button is currently held (positive) or released (negative).</li>
+      </ul>
+
+      <p>This means <code>iMouse</code> is <strong>not</strong> a continuous mouse tracker. It only updates during click-drag interactions. Many shaders use a pattern like:</p>
+
+      <pre><code>// Only use mouse if button has been clicked
+if (iMouse.z > 0.0) {
+    vec2 mouseUV = iMouse.xy / iResolution.xy;
+    // use mouseUV for interaction
+}</code></pre>
+
+      <h3>13.4.5 Texture Inputs (iChannel)</h3>
+
+      <p>ShaderToy supports four texture input channels (<code>iChannel0</code> through <code>iChannel3</code>), each of which can be:</p>
+
+      <ul>
+        <li><strong>An image:</strong> A static texture loaded from ShaderToy's built-in library (noise textures, organic textures, abstract patterns).</li>
+        <li><strong>A video:</strong> A webcam feed or video file.</li>
+        <li><strong>Audio:</strong> Microphone input or a music track, represented as a texture where the x-axis is frequency and the y-axis encodes the waveform (row 0) and FFT spectrum (row 1).</li>
+        <li><strong>A buffer:</strong> The output of another render pass (Buffer A, B, C, or D), enabling feedback and multi-pass effects.</li>
+        <li><strong>A cubemap:</strong> An environment map for reflection effects.</li>
+      </ul>
+
+      <p>When porting to p5.js, each texture channel becomes a uniform sampler that you pass via <code>setUniform()</code>.</p>
+
+      <h3>13.4.6 ShaderToy vs. GLSL Standards</h3>
+
+      <p>It is important to understand that ShaderToy uses a slightly non-standard GLSL environment:</p>
+
+      <ul>
+        <li>ShaderToy wraps your code inside its own <code>main()</code> function. You never write <code>void main()</code> or set <code>gl_FragColor</code> directly -- the platform handles that using the <code>mainImage</code> signature.</li>
+        <li>ShaderToy supports GLSL ES 3.0 features (like <code>texture()</code> instead of <code>texture2D()</code>) that may not work in WebGL 1.0 environments.</li>
+        <li>Some ShaderToy shaders use features specific to the platform (like buffer self-feedback) that require careful translation.</li>
+      </ul>
+
+      <p>Here is a ShaderToy-style shader running in our textbook environment. Note that our engine uses <code>u_resolution</code> and <code>u_time</code> instead of <code>iResolution</code> and <code>iTime</code>:</p>
+
+      <!-- Interactive: ShaderToy-style shader -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>ShaderToy-Style Color Gradient</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+    // Normalize coordinates to [0, 1]
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+
+    // Classic ShaderToy color pattern
+    vec3 col = 0.5 + 0.5 * cos(
+        u_time + uv.xyx + vec3(0.0, 2.0, 4.0)
+    );
+
+    gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 2: SHADERTOY VARIABLE MAPPING
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch13-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In ShaderToy, what does <code>iResolution.xy</code> represent?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch13-q2" value="a"> The mouse position in pixels</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q2" value="b" data-correct> The canvas width and height in pixels</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q2" value="c"> The normalized UV coordinates of the current fragment</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q2" value="d"> The elapsed time and frame delta</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>iResolution</code> is a <code>vec3</code> containing the canvas dimensions. The <code>.xy</code> swizzle extracts width (x) and height (y) in pixels. The z component is the pixel aspect ratio, which is almost always 1.0. In p5.js, the equivalent uniform is typically declared as <code>uniform vec2 u_resolution</code>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.5: PORTING SHADERTOY TO P5.JS
+           ═══════════════════════════════════════ -->
+      <h2 id="porting">13.5 Porting ShaderToy to p5.js</h2>
+
+      <p>Translating a ShaderToy shader to run in p5.js is a practical skill that gives you access to thousands of visual effects for your projects. The process is systematic: once you learn the translation rules, you can port most single-pass shaders in minutes.</p>
+
+      <h3>13.5.1 Step-by-Step Translation Guide</h3>
+
+      <p><strong>Step 1: Set up the p5.js vertex shader.</strong> Every p5.js WEBGL shader needs a vertex shader. Use this standard boilerplate for full-screen effects:</p>
+
+      <pre><code>attribute vec3 aPosition;
+attribute vec2 aTexCoord;
+varying vec2 vTexCoord;
+
+void main() {
+    vTexCoord = aTexCoord;
+    vec4 positionVec4 = vec4(aPosition, 1.0);
+    positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+    gl_Position = positionVec4;
+}</code></pre>
+
+      <p><strong>Step 2: Create the fragment shader header.</strong> Declare your own uniforms to replace ShaderToy's built-ins:</p>
+
+      <pre><code>precision mediump float;
+varying vec2 vTexCoord;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+// Add more uniforms as needed</code></pre>
+
+      <p><strong>Step 3: Reconstruct fragCoord.</strong> ShaderToy provides <code>fragCoord</code> as a parameter. In p5.js, compute it from the varying texture coordinate:</p>
+
+      <pre><code>void main() {
+    vec2 fragCoord = vTexCoord * u_resolution;
+    fragCoord.y = u_resolution.y - fragCoord.y; // flip Y axis
+    // ... rest of shader code ...
+}</code></pre>
+
+      <p><strong>Step 4: Replace variable names.</strong> Apply this mapping throughout the shader code:</p>
+
+      <table>
+        <thead>
+          <tr><th>ShaderToy</th><th>p5.js Equivalent</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>fragColor = ...</code></td><td><code>gl_FragColor = ...</code></td><td>Output variable name changes</td></tr>
+          <tr><td><code>iResolution</code></td><td><code>u_resolution</code></td><td>Declare as <code>uniform vec2</code> (not vec3)</td></tr>
+          <tr><td><code>iTime</code></td><td><code>u_time</code></td><td>Declare as <code>uniform float</code></td></tr>
+          <tr><td><code>iMouse</code></td><td><code>u_mouse</code></td><td>Declare as <code>uniform vec2</code>; flip Y on the JS side</td></tr>
+          <tr><td><code>texture(iChannel0, uv)</code></td><td><code>texture2D(u_tex0, uv)</code></td><td>WebGL 1 uses <code>texture2D</code></td></tr>
+          <tr><td><code>iResolution.xy</code></td><td><code>u_resolution</code></td><td>Already a vec2, no swizzle needed</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Step 5: Set up the JavaScript side.</strong> In your p5.js sketch, create the shader, set uniforms each frame, and render a full-screen quad:</p>
+
+      <pre><code>let myShader;
+
+function setup() {
+    createCanvas(800, 600, WEBGL);
+    noStroke();
+    myShader = createShader(vertSrc, fragSrc);
+}
+
+function draw() {
+    shader(myShader);
+    myShader.setUniform("u_resolution", [width, height]);
+    myShader.setUniform("u_time", millis() / 1000.0);
+    myShader.setUniform("u_mouse", [mouseX, height - mouseY]);
+    rect(0, 0, width, height);
+}</code></pre>
+
+      <h3>13.5.2 Complete Ported Example: Plasma Shader</h3>
+
+      <p>Here is a classic plasma shader, fully ported to our textbook GLSL runner (which uses the same conventions as p5.js fragment shaders):</p>
+
+      <!-- Interactive: Ported ShaderToy Plasma -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Plasma Shader (Ported from ShaderToy)</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+    float t = u_time;
+
+    // Four overlapping sine waves
+    float v = sin(uv.x * 10.0 + t);
+    v += sin(uv.y * 10.0 + t);
+    v += sin(uv.x * 10.0 + uv.y * 10.0 + t);
+    v += sin(length(uv - 0.5) * 20.0 - t * 2.0);
+    v /= 4.0;
+
+    // Map to RGB using phase-shifted cosines
+    vec3 col;
+    col.r = sin(v * 3.14159) * 0.5 + 0.5;
+    col.g = sin(v * 3.14159 + 2.094) * 0.5 + 0.5;
+    col.b = sin(v * 3.14159 + 4.188) * 0.5 + 0.5;
+
+    gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <h3>13.5.3 Variable Name Mapping Cheat Sheet</h3>
+
+      <p>When porting, it can help to do a systematic find-and-replace. Here is a comprehensive mapping of common names:</p>
+
+      <table>
+        <thead>
+          <tr><th>Find (ShaderToy)</th><th>Replace With (p5.js)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>iResolution.xy</code></td><td><code>u_resolution</code></td></tr>
+          <tr><td><code>iResolution.x</code></td><td><code>u_resolution.x</code></td></tr>
+          <tr><td><code>iResolution.y</code></td><td><code>u_resolution.y</code></td></tr>
+          <tr><td><code>iTime</code></td><td><code>u_time</code></td></tr>
+          <tr><td><code>iTimeDelta</code></td><td><code>u_timeDelta</code> (must pass from JS)</td></tr>
+          <tr><td><code>iFrame</code></td><td><code>u_frame</code> (must pass from JS)</td></tr>
+          <tr><td><code>iMouse</code></td><td><code>u_mouse</code></td></tr>
+          <tr><td><code>iChannel0</code></td><td><code>u_tex0</code></td></tr>
+          <tr><td><code>texture(</code></td><td><code>texture2D(</code> (for WebGL 1)</td></tr>
+          <tr><td><code>fragColor</code></td><td><code>gl_FragColor</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Translation Recipe</div>
+        <p>For any single-pass ShaderToy shader, the porting process follows a predictable recipe: (1) Add the precision and uniform declarations. (2) Change <code>mainImage</code> to <code>main</code>. (3) Compute <code>fragCoord</code> from <code>vTexCoord</code>. (4) Flip Y. (5) Find-and-replace uniform names. (6) Replace <code>fragColor</code> with <code>gl_FragColor</code>. (7) Replace <code>texture()</code> with <code>texture2D()</code> if using WebGL 1. These seven steps handle the vast majority of single-pass shaders.</p>
+      </div>
+
+      <h3>13.5.4 Common Pitfalls</h3>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Forgetting to flip Y.</strong> ShaderToy's origin is bottom-left; p5.js/canvas origin is top-left. If your ported shader appears upside down, add <code>fragCoord.y = u_resolution.y - fragCoord.y;</code> after computing fragCoord.</p>
+      </div>
+
+      <p>Other common issues when porting:</p>
+      <ul>
+        <li><strong>iResolution.xy vs u_resolution:</strong> ShaderToy's <code>iResolution</code> is a <code>vec3</code>. If you declared <code>u_resolution</code> as <code>vec2</code>, remove any <code>.xy</code> swizzles on it. Similarly, <code>iResolution.x</code> becomes <code>u_resolution.x</code>.</li>
+        <li><strong>texture vs texture2D:</strong> WebGL 1 (used by p5.js) requires <code>texture2D()</code>. WebGL 2 and ShaderToy use <code>texture()</code>. This is one of the most common compilation errors when porting.</li>
+        <li><strong>Multipass shaders:</strong> ShaderToy's Buffer A/B/C/D tabs require <code>createFramebuffer()</code> in p5.js. Each buffer becomes a separate render target with its own shader.</li>
+        <li><strong>Missing precision statement:</strong> Always include <code>precision mediump float;</code> at the top of your fragment shader. Desktop browsers may tolerate its absence, but mobile GPUs require it.</li>
+        <li><strong>Integer division:</strong> GLSL has no implicit type conversion. Use <code>2.0</code> instead of <code>2</code> when dividing floats. The expression <code>1/2</code> evaluates to <code>0</code> in GLSL, not <code>0.5</code>.</li>
+        <li><strong>Uninitialized variables:</strong> GLSL does not guarantee default values. Always initialize your variables, especially <code>vec3 col = vec3(0.0);</code> before accumulating into it.</li>
+        <li><strong>Loop limits:</strong> Some WebGL implementations require loop bounds to be compile-time constants. If a ShaderToy shader uses a uniform as a loop limit, you may need to use a constant instead and break early.</li>
+        <li><strong>Out parameters:</strong> ShaderToy's <code>mainImage</code> uses an <code>out</code> parameter for the output color. In the p5.js <code>main()</code> function, you write to <code>gl_FragColor</code> instead. There is no equivalent of <code>out</code> parameters in the main function.</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The difference between <code>texture()</code> and <code>texture2D()</code> stems from the evolution of the GLSL specification. In GLSL ES 1.0 (WebGL 1), there were separate functions for each texture type: <code>texture2D()</code>, <code>textureCube()</code>, etc. GLSL ES 3.0 (WebGL 2) unified these into a single overloaded <code>texture()</code> function. ShaderToy uses the newer convention.</p>
+      </div>
+
+      <h3>13.5.5 Multipass Shaders</h3>
+
+      <p>ShaderToy supports multiple render passes through its Buffer system. Each buffer (A through D) has its own shader that writes to an offscreen texture. The "Image" tab is the final pass that composites everything to screen.</p>
+
+      <p>In p5.js, you replicate this pattern with <code>createFramebuffer()</code>:</p>
+
+      <pre><code>let bufferA, shaderA, shaderFinal;
+
+function setup() {
+    createCanvas(800, 600, WEBGL);
+    bufferA = createFramebuffer({ format: FLOAT });
+    shaderA = createShader(vertSrc, fragSrcA);
+    shaderFinal = createShader(vertSrc, fragSrcFinal);
+}
+
+function draw() {
+    // Pass 1: render to buffer A
+    bufferA.begin();
+    shader(shaderA);
+    shaderA.setUniform("u_prev", bufferA); // self-feedback
+    shaderA.setUniform("u_resolution", [width, height]);
+    shaderA.setUniform("u_time", millis() / 1000.0);
+    rect(0, 0, width, height);
+    bufferA.end();
+
+    // Final pass: render to screen
+    shader(shaderFinal);
+    shaderFinal.setUniform("u_buffer", bufferA);
+    shaderFinal.setUniform("u_resolution", [width, height]);
+    rect(0, 0, width, height);
+}</code></pre>
+
+      <h3>13.5.6 Debugging Ported Shaders</h3>
+
+      <p>When a ported shader does not work as expected, use these systematic debugging techniques:</p>
+
+      <p><strong>1. Color debugging:</strong> Output intermediate values as colors to visualize what the shader is computing:</p>
+
+      <pre><code>// Debug: visualize UV coordinates
+gl_FragColor = vec4(uv, 0.0, 1.0); // red = x, green = y
+
+// Debug: visualize a distance field
+gl_FragColor = vec4(vec3(d), 1.0); // grayscale = distance
+
+// Debug: visualize normals
+gl_FragColor = vec4(normal * 0.5 + 0.5, 1.0); // map [-1,1] to [0,1]</code></pre>
+
+      <p><strong>2. Isolate the problem:</strong> Comment out most of the shader and add features back one at a time until the error appears.</p>
+
+      <p><strong>3. Check coordinate ranges:</strong> Print or visualize the range of your UV coordinates. Are they in [0,1]? [-1,1]? Something unexpected?</p>
+
+      <p><strong>4. Verify uniforms:</strong> Add a visual indicator that uniforms are being received. For example, draw a circle at the mouse position to confirm <code>u_mouse</code> is being passed correctly.</p>
+
+      <p><strong>5. Compare side by side:</strong> Keep the original ShaderToy shader running in one browser tab and your ported version in another. Spot differences frame by frame.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>GLSL does not have <code>console.log()</code>. The only way to inspect values in a shader is to output them as colors. This is a fundamental debugging technique that you will use constantly. Red channel for x-values, green channel for y-values, and blue channel for whatever else you want to inspect.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.6: FADING AND BLENDING
+           ═══════════════════════════════════════ -->
+      <h2 id="fading-blending">13.6 Fading and Blending Techniques</h2>
+
+      <p>Fading and blending are fundamental techniques in creative coding. They enable motion trails, ghosting effects, smooth transitions, painting tools, and audio visualizers. This section covers the major approaches and the math behind them.</p>
+
+      <h3>13.6.1 Alpha Fading</h3>
+
+      <p>The simplest fading technique: draw a semi-transparent rectangle over the entire canvas each frame. Old content gradually disappears as new layers of semi-transparent background accumulate.</p>
+
+      <p>$$\text{brightness after } n \text{ frames} = (1 - \alpha)^n$$</p>
+
+      <p>where $\alpha$ is the opacity of the background overlay (e.g., 0.05 for a slow fade). After $n$ frames, content that has not been redrawn has been multiplied by $(1 - \alpha)^n$. For $\alpha = 0.05$:</p>
+      <ul>
+        <li>After 10 frames: $(0.95)^{10} \approx 0.60$ (60% brightness)</li>
+        <li>After 50 frames: $(0.95)^{50} \approx 0.08$ (8% brightness)</li>
+        <li>After 100 frames: $(0.95)^{100} \approx 0.006$ (essentially gone)</li>
+      </ul>
+
+      <!-- Interactive: Fading Techniques Comparison -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Fading Techniques Comparison</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  background(20);
+}
+
+function draw() {
+  // Semi-transparent background for trail effect
+  // Try changing the alpha value (last parameter):
+  //   5 = very long trails
+  //   30 = medium trails
+  //   100 = short trails
+  //   255 = no trails
+  fill(20, 20, 20, 15);
+  noStroke();
+  rect(0, 0, width, height);
+
+  // Draw a circle at the mouse position
+  let t = millis() / 1000.0;
+  let hue = (t * 40) % 360;
+
+  // Convert HSB-like values to RGB
+  let r = 127 + 127 * sin(hue * 0.0174);
+  let g = 127 + 127 * sin(hue * 0.0174 + 2.094);
+  let b = 127 + 127 * sin(hue * 0.0174 + 4.188);
+
+  fill(r, g, b);
+  noStroke();
+  ellipse(mouseX, mouseY, 30, 30);
+
+  // Also draw an orbiting circle
+  let cx = width/2 + cos(t * 2.0) * 120;
+  let cy = height/2 + sin(t * 3.0) * 120;
+  fill(255, 200, 100);
+  ellipse(cx, cy, 20, 20);
+
+  // Label
+  fill(255);
+  textSize(12);
+  text("Move mouse to paint trails", 10, 20);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>13.6.2 Blend Modes</h3>
+
+      <p>Blend modes define how a new color $S$ (source) combines with an existing color $D$ (destination) on the canvas. Here are the most important ones for creative coding:</p>
+
+      <p><strong>Normal (Alpha) Blending:</strong></p>
+      <p>$$C_{\text{out}} = \alpha_S \cdot C_S + (1 - \alpha_S) \cdot C_D$$</p>
+
+      <p><strong>Additive Blending:</strong></p>
+      <p>$$C_{\text{out}} = C_S + C_D$$</p>
+      <p>Colors accumulate and become brighter. Used for glowing effects, fire, light beams. Clamps at 1.0 (white).</p>
+
+      <p><strong>Multiplicative Blending:</strong></p>
+      <p>$$C_{\text{out}} = C_S \times C_D$$</p>
+      <p>Colors darken. White is the identity (does nothing). Used for shadows, darkening filters.</p>
+
+      <p><strong>Screen Blending:</strong></p>
+      <p>$$C_{\text{out}} = 1 - (1 - C_S)(1 - C_D)$$</p>
+      <p>The complement of multiply. Colors lighten. Black is the identity. Used for highlights and soft light effects.</p>
+
+      <!-- Interactive: Alpha Blending Demo -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Alpha Blending Demo</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(20);
+
+  // Additive blending simulation
+  // Draw overlapping circles with ADD blend
+
+  blendMode(BLEND);
+  fill(255);
+  textSize(14);
+  textAlign(CENTER);
+  text("Additive Blending (ADD)", 100, 30);
+  text("Normal Blending", 300, 30);
+
+  // Left side: Additive
+  blendMode(ADD);
+  noStroke();
+  fill(255, 0, 0, 180);
+  ellipse(80, 160, 120, 120);
+  fill(0, 255, 0, 180);
+  ellipse(120, 160, 120, 120);
+  fill(0, 0, 255, 180);
+  ellipse(100, 200, 120, 120);
+
+  // Right side: Normal
+  blendMode(BLEND);
+  noStroke();
+  fill(255, 0, 0, 180);
+  ellipse(280, 160, 120, 120);
+  fill(0, 255, 0, 180);
+  ellipse(320, 160, 120, 120);
+  fill(0, 0, 255, 180);
+  ellipse(300, 200, 120, 120);
+
+  // Multiply on bottom
+  blendMode(BLEND);
+  fill(255);
+  text("Multiply", 100, 290);
+  text("Screen", 300, 290);
+
+  blendMode(MULTIPLY);
+  fill(255, 100, 100);
+  ellipse(80, 340, 100, 100);
+  fill(100, 100, 255);
+  ellipse(120, 340, 100, 100);
+
+  blendMode(SCREEN);
+  fill(255, 100, 100);
+  ellipse(280, 340, 100, 100);
+  fill(100, 100, 255);
+  ellipse(320, 340, 100, 100);
+
+  blendMode(BLEND);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>13.6.3 GPU Fading with Framebuffer Feedback</h3>
+
+      <p>The most powerful fading technique uses a <strong>framebuffer</strong> (also called an FBO or render target) that reads its own previous contents each frame. The algorithm is:</p>
+
+      <ol>
+        <li>Bind the framebuffer as the render target.</li>
+        <li>Draw the framebuffer's previous contents back into itself with reduced opacity (e.g., 96%).</li>
+        <li>Draw new content on top at full opacity.</li>
+        <li>Unbind the framebuffer and display it to the screen.</li>
+      </ol>
+
+      <p>Over time, old content fades exponentially. After $n$ frames at opacity $\alpha$:</p>
+
+      <p>$$\text{brightness}(n) = \alpha^n$$</p>
+
+      <p>At $\alpha = 0.96$: content is half-faded after about 17 frames ($0.96^{17} \approx 0.50$) and essentially invisible after 100 frames ($0.96^{100} \approx 0.017$).</p>
+
+      <p>In p5.js WEBGL mode, the framebuffer approach looks like:</p>
+
+      <pre><code>let fbo;
+
+function setup() {
+    createCanvas(600, 600, WEBGL);
+    fbo = createFramebuffer();
+}
+
+function draw() {
+    background(0);
+    fbo.begin();
+
+    // Draw previous frame with slight fade
+    push();
+    tint(255, 245); // 245/255 ≈ 0.96 opacity
+    texture(fbo);
+    noStroke();
+    plane(width, height);
+    pop();
+
+    // Draw new content at full opacity
+    if (mouseIsPressed) {
+        fill(255, 100, 50);
+        noStroke();
+        circle(mouseX - width/2, mouseY - height/2, 30);
+    }
+
+    fbo.end();
+
+    // Display the framebuffer
+    texture(fbo);
+    noStroke();
+    plane(width, height);
+}</code></pre>
+
+      <h3>13.6.4 Custom Shader Fading</h3>
+
+      <p>For fading toward a specific color (not just black), use a shader with <code>mix()</code>:</p>
+
+      <pre><code>precision mediump float;
+varying vec2 vTexCoord;
+uniform sampler2D u_prev;
+uniform vec3 u_bgColor;
+uniform float u_fadeAmount;
+
+void main() {
+    vec4 prev = texture2D(u_prev, vTexCoord);
+    vec3 faded = mix(prev.rgb, u_bgColor, u_fadeAmount);
+    gl_FragColor = vec4(faded, 1.0);
+}</code></pre>
+
+      <p>Each frame, every pixel moves <code>u_fadeAmount</code> (e.g., 0.02 or 2%) closer to the background color. This allows fading to any color, not just black.</p>
+
+      <h3>13.6.5 CPU-Based Fading with Aging Data Structures</h3>
+
+      <p>The CPU approach stores each visual element as an object with a lifetime. This gives you per-element control over fade rate, color, and behavior:</p>
+
+      <pre><code>let strokes = [];
+
+function draw() {
+    background(20);
+
+    if (mouseIsPressed) {
+        strokes.push({
+            x: mouseX, y: mouseY,
+            size: random(10, 40),
+            r: random(100, 255), g: random(50, 200), b: random(150, 255),
+            age: 0, maxAge: 120
+        });
+    }
+
+    for (let i = strokes.length - 1; i >= 0; i--) {
+        let s = strokes[i];
+        s.age++;
+        let life = 1.0 - s.age / s.maxAge;
+        fill(s.r, s.g, s.b, life * 255);
+        noStroke();
+        circle(s.x, s.y, s.size * life);
+        if (s.age >= s.maxAge) strokes.splice(i, 1);
+    }
+}</code></pre>
+
+      <p><strong>Advantages of CPU fading:</strong> Works in 2D mode. Each element can have its own fade rate, color, and behavior. Easy to understand and debug.</p>
+
+      <p><strong>Disadvantages:</strong> Performance degrades with many objects. Each object takes memory. Removing from the middle of an array is $O(n)$.</p>
+
+      <h3>13.6.6 Lerp-Based Fading</h3>
+
+      <p>Linear interpolation (<code>lerp</code>) is one of the most useful functions in creative coding. The formula is:</p>
+
+      <p>$$\text{lerp}(a, b, t) = a \cdot (1 - t) + b \cdot t = a + t \cdot (b - a)$$</p>
+
+      <p>where $t \in [0, 1]$ controls the blend: $t = 0$ gives $a$, $t = 1$ gives $b$, and values in between give a weighted average. In GLSL, this function is called <code>mix()</code>.</p>
+
+      <p>For fading, lerp can be applied per-pixel each frame to move colors toward a target:</p>
+
+      <pre><code>// GLSL: fade each pixel toward background color
+vec3 faded = mix(currentColor, backgroundColor, 0.02);
+// Each frame, the pixel moves 2% closer to the background</code></pre>
+
+      <p>Lerp is also fundamental to many other operations:</p>
+
+      <ul>
+        <li><strong>Color transitions:</strong> <code>mix(colorA, colorB, t)</code> where $t$ varies over time.</li>
+        <li><strong>Smooth movement:</strong> <code>position = lerp(position, target, 0.1)</code> creates an easing effect where the object moves quickly at first and slows as it approaches the target.</li>
+        <li><strong>Cross-fading:</strong> Blend between two textures or effects by varying $t$ from 0 to 1.</li>
+        <li><strong>Terrain blending:</strong> Mix between grass and rock textures based on slope angle.</li>
+      </ul>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Mathematical Property</div>
+        <p>Repeatedly applying <code>x = lerp(x, target, t)</code> each frame produces exponential easing. After $n$ frames: $x_n = \text{target} - (\text{target} - x_0)(1-t)^n$. The value approaches the target asymptotically -- quickly at first, then ever more slowly. This is the same math behind the frame accumulation fade.</p>
+      </div>
+
+      <h3>13.6.7 Smoothstep: Non-Linear Interpolation</h3>
+
+      <p>While <code>lerp()</code>/<code>mix()</code> creates linear transitions, <code>smoothstep()</code> creates smooth, ease-in-ease-out transitions:</p>
+
+      <p>$$\text{smoothstep}(a, b, t) = \begin{cases} 0 & t \le a \\ 3s^2 - 2s^3 & a < t < b, \; s = \frac{t-a}{b-a} \\ 1 & t \ge b \end{cases}$$</p>
+
+      <p>The cubic polynomial $3s^2 - 2s^3$ (called the Hermite interpolant) has zero derivatives at both endpoints, creating smooth transitions. In shaders, <code>smoothstep</code> is used for:</p>
+
+      <ul>
+        <li>Anti-aliased edges on shapes</li>
+        <li>Smooth color transitions</li>
+        <li>Vignette effects (darkening edges of the frame)</li>
+        <li>Fog and distance fading</li>
+      </ul>
+
+      <pre><code>// Vignette effect
+vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+float vignette = smoothstep(0.8, 0.3, length(uv - 0.5));
+col *= vignette;</code></pre>
+
+      <h3>13.6.8 Frame Accumulation / Motion Blur</h3>
+
+      <p>Motion blur is achieved by blending the current frame with previous frames. The framebuffer feedback technique draws the previous frame's contents back with slight transparency, then draws new content on top. Over multiple frames, moving objects leave smooth trails.</p>
+
+      <p>The mathematical model: if $F_n$ is the framebuffer at frame $n$ and $C_n$ is the new content drawn at frame $n$:</p>
+
+      <p>$$F_n = \alpha \cdot F_{n-1} + C_n$$</p>
+
+      <p>where $\alpha \in [0, 1)$ is the decay factor (e.g., 0.96). This is an exponential moving average, giving more weight to recent frames.</p>
+
+      <p>Expanding the recurrence shows why this is called exponential decay:</p>
+
+      <p>$$F_n = C_n + \alpha C_{n-1} + \alpha^2 C_{n-2} + \alpha^3 C_{n-3} + \ldots$$</p>
+
+      <p>Each previous frame's contribution is weighted by a decreasing power of $\alpha$. The most recent frame has weight 1, the frame before has weight $\alpha$, two frames ago has weight $\alpha^2$, and so on.</p>
+
+      <h3>13.6.9 Choosing Fade Parameters</h3>
+
+      <p>The fade rate $\alpha$ controls the visual character of the trail:</p>
+
+      <table>
+        <thead>
+          <tr><th>$\alpha$ value</th><th>Trail Length</th><th>Visual Character</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>0.99</td><td>Very long (>200 frames)</td><td>Ghostly, ethereal</td><td>Painting tools, generative textures</td></tr>
+          <tr><td>0.96</td><td>Long (~100 frames)</td><td>Smooth trails, light echoes</td><td>Audio visualizers, particle trails</td></tr>
+          <tr><td>0.90</td><td>Medium (~40 frames)</td><td>Clear motion blur</td><td>Moving objects, animations</td></tr>
+          <tr><td>0.80</td><td>Short (~15 frames)</td><td>Subtle afterimage</td><td>Responsive UI effects</td></tr>
+          <tr><td>0.50</td><td>Very short (~3 frames)</td><td>Brief flash</td><td>Hit effects, notifications</td></tr>
+        </tbody>
+      </table>
+
+      <p>You can calculate the number of frames for content to fade to a given threshold:</p>
+
+      <p>$$n = \frac{\ln(\text{threshold})}{\ln(\alpha)}$$</p>
+
+      <p>For example, to find when content fades to 1% brightness with $\alpha = 0.96$: $n = \frac{\ln(0.01)}{\ln(0.96)} = \frac{-4.605}{-0.0408} \approx 113$ frames, or about 1.9 seconds at 60 fps.</p>
+
+      <h3>13.6.10 When to Use Each Technique</h3>
+
+      <p>Here is a decision guide for choosing the right fading approach:</p>
+
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Recommended Technique</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Full-screen paint tool</td><td>GPU framebuffer feedback</td><td>Every pixel fades uniformly</td></tr>
+          <tr><td>Particle trails</td><td>GPU framebuffer or CPU aging</td><td>Either works; GPU for quantity, CPU for control</td></tr>
+          <tr><td>Different fade rates per element</td><td>CPU aging data structures</td><td>GPU approach fades everything at the same rate</td></tr>
+          <tr><td>Fade to non-black color</td><td>Custom shader with mix()</td><td>Alpha overlay only fades toward black</td></tr>
+          <tr><td>Interactive brush with undo</td><td>CPU with explicit history</td><td>GPU framebuffer is destructive; cannot undo</td></tr>
+          <tr><td>Maximum performance</td><td>GPU framebuffer</td><td>Handles millions of pixels with no per-object overhead</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>GPU-based fading (framebuffer feedback) is ideal for full-screen effects and handles millions of pixels effortlessly. CPU-based fading (aging data structures with per-object lifetimes) gives you per-element control over fade rate, color, and behavior. For maximum flexibility, combine both: CPU-managed particles drawn into a GPU-faded framebuffer.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 3: BLEND MODES
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch13-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In additive blending, what happens when you draw a red circle <code>(1, 0, 0)</code> on top of a green circle <code>(0, 1, 0)</code>?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch13-q3" value="a"> The result is red (the source overwrites the destination)</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q3" value="b" data-correct> The result is yellow <code>(1, 1, 0)</code> -- the colors add together</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q3" value="c"> The result is black <code>(0, 0, 0)</code> -- the colors cancel out</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q3" value="d"> The result is a 50/50 mix of red and green</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Additive blending computes $C_{\text{out}} = C_S + C_D = (1,0,0) + (0,1,0) = (1,1,0)$, which is yellow. This is why additive blending creates bright, glowing effects where colors overlap -- they accumulate toward white.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.7: SHADER TECHNIQUES
+           ═══════════════════════════════════════ -->
+      <h2 id="shader-techniques">13.7 Shader Techniques Compendium</h2>
+
+      <p>This section surveys several powerful shader techniques commonly found on ShaderToy. Each can be ported to p5.js using the translation rules from Section 13.5.</p>
+
+      <h3>13.7.1 Ray Marching Basics</h3>
+
+      <p><strong>Ray marching</strong> is a technique for rendering 3D scenes defined by mathematical functions rather than polygon meshes. Instead of tracing rays to find triangle intersections (as in traditional ray tracing), ray marching steps along each ray in small increments, querying a <strong>signed distance function (SDF)</strong> at each step.</p>
+
+      <p>An SDF returns the distance from a point to the nearest surface. If the distance is positive, the point is outside all objects. If negative, it is inside an object. If zero, it is on the surface.</p>
+
+      <p>The basic algorithm:</p>
+      <ol>
+        <li>For each pixel, cast a ray from the camera through the pixel into the scene.</li>
+        <li>Start at the ray origin. Query the SDF to get the distance $d$ to the nearest surface.</li>
+        <li>Advance along the ray by $d$ (this is safe because nothing is closer than $d$).</li>
+        <li>Repeat until $d$ is very small (hit) or the ray has traveled very far (miss).</li>
+      </ol>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Signed Distance Function (SDF)</strong> — A function $f: \mathbb{R}^3 \to \mathbb{R}$ that returns the shortest distance from a point $p$ to the nearest surface. The sign indicates inside (negative) vs. outside (positive). The zero-level set $\{p : f(p) = 0\}$ defines the surface.</p>
+      </div>
+
+      <p>The key insight of ray marching is called <strong>sphere tracing</strong>: at each step, the SDF tells you the maximum safe distance to travel. Since nothing is closer than $d$, advancing by exactly $d$ guarantees you will not pass through any surface. This makes the algorithm adaptive -- it takes large steps in empty space and tiny steps near surfaces.</p>
+
+      <p>Common SDF primitives:</p>
+      <pre><code>// Sphere centered at origin with radius r
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+// Box centered at origin with half-size b
+float sdBox(vec3 p, vec3 b) {
+    vec3 q = abs(p) - b;
+    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
+// Plane at y = 0
+float sdPlane(vec3 p) {
+    return p.y;
+}
+
+// Torus (ring) with major radius R and minor radius r
+float sdTorus(vec3 p, vec2 t) {
+    vec2 q = vec2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+
+// Cylinder along the Y axis
+float sdCylinder(vec3 p, float r, float h) {
+    vec2 d = abs(vec2(length(p.xz), p.y)) - vec2(r, h);
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}</code></pre>
+
+      <p>Computing surface normals for lighting requires evaluating the SDF at six nearby points (the <strong>central difference gradient</strong>):</p>
+
+      <p>$$\vec{n}(p) = \text{normalize}\left(\begin{bmatrix} f(p + \epsilon\hat{x}) - f(p - \epsilon\hat{x}) \\ f(p + \epsilon\hat{y}) - f(p - \epsilon\hat{y}) \\ f(p + \epsilon\hat{z}) - f(p - \epsilon\hat{z}) \end{bmatrix}\right)$$</p>
+
+      <p>where $\epsilon$ is a small value (typically 0.001). This is expensive (6 SDF evaluations), but it works for any SDF without needing to derive the gradient analytically.</p>
+
+      <!-- Interactive: Ray Marching Simple Scene -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Simple Ray Marching Scene</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+float sdSphere(vec3 p, float r) {
+    return length(p) - r;
+}
+
+float sdPlane(vec3 p) {
+    return p.y + 1.0;
+}
+
+float scene(vec3 p) {
+    // Animated sphere
+    vec3 spherePos = vec3(
+        sin(u_time) * 1.5,
+        0.0,
+        cos(u_time) * 1.5
+    );
+    float d1 = sdSphere(p - spherePos, 0.8);
+    float d2 = sdPlane(p);
+    return min(d1, d2);
+}
+
+vec3 getNormal(vec3 p) {
+    float e = 0.001;
+    return normalize(vec3(
+        scene(vec3(p.x+e,p.y,p.z)) - scene(vec3(p.x-e,p.y,p.z)),
+        scene(vec3(p.x,p.y+e,p.z)) - scene(vec3(p.x,p.y-e,p.z)),
+        scene(vec3(p.x,p.y,p.z+e)) - scene(vec3(p.x,p.y,p.z-e))
+    ));
+}
+
+void main() {
+    vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / u_resolution.y;
+
+    // Camera
+    vec3 ro = vec3(0.0, 1.0, -4.0);
+    vec3 rd = normalize(vec3(uv, 1.5));
+
+    // Ray march
+    float t = 0.0;
+    for (int i = 0; i < 80; i++) {
+        vec3 p = ro + rd * t;
+        float d = scene(p);
+        if (d < 0.001) break;
+        t += d;
+        if (t > 50.0) break;
+    }
+
+    vec3 col = vec3(0.1, 0.1, 0.15);
+    if (t < 50.0) {
+        vec3 p = ro + rd * t;
+        vec3 n = getNormal(p);
+        vec3 light = normalize(vec3(1.0, 2.0, -1.0));
+        float diff = max(dot(n, light), 0.0);
+        float amb = 0.15;
+        col = vec3(0.4, 0.6, 0.9) * (diff + amb);
+
+        // Simple shadow
+        float fog = exp(-0.04 * t * t);
+        col *= fog;
+    }
+
+    gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <h3>13.7.2 Noise in Shaders</h3>
+
+      <p>Noise functions add organic randomness to shaders. Unlike <code>random()</code> which gives uncorrelated values, noise functions produce smooth, continuous randomness where nearby inputs give similar outputs. This property, called <strong>coherence</strong>, is what makes noise look natural rather than static-like.</p>
+
+      <p>The most common types in shaders:</p>
+      <ul>
+        <li><strong>Value noise:</strong> Random values at integer grid points, interpolated between them. Simple but can show grid-aligned artifacts.</li>
+        <li><strong>Gradient noise (Perlin):</strong> Random gradients at grid points, producing smoother results than value noise. Invented by Ken Perlin in 1983 for the movie <em>Tron</em>, for which he won an Academy Award for Technical Achievement.</li>
+        <li><strong>Simplex noise:</strong> A more efficient variant of Perlin noise with fewer directional artifacts. Also invented by Perlin (2001). Uses a simplex grid (triangles in 2D, tetrahedra in 3D) instead of a square/cubic grid.</li>
+        <li><strong>Worley/Cellular noise:</strong> Computes distance to randomly placed feature points. Creates cell-like, organic patterns. Used for water caustics, stone textures, and biological patterns.</li>
+        <li><strong>Fractal Brownian Motion (fBm):</strong> Multiple octaves of noise layered together at different frequencies and amplitudes. Each octave doubles the frequency and halves the amplitude:
+        $$\text{fBm}(p) = \sum_{i=0}^{n-1} \frac{\text{noise}(p \cdot 2^i)}{2^i}$$
+        The result has detail at multiple scales, similar to natural textures like clouds, terrain, and wood grain.</li>
+      </ul>
+
+      <p>Noise can be used for many effects in shaders:</p>
+      <ul>
+        <li><strong>Terrain generation:</strong> fBm noise as a heightfield</li>
+        <li><strong>Cloud rendering:</strong> Volume rendering with noise density fields</li>
+        <li><strong>Texture variation:</strong> Break up uniform surfaces with subtle noise</li>
+        <li><strong>Animation:</strong> Use time as an additional noise dimension for smooth, organic motion</li>
+        <li><strong>Distortion:</strong> Add noise to UV coordinates before sampling a pattern</li>
+      </ul>
+
+      <p>A simple hash-based noise function commonly used in shaders:</p>
+
+      <pre><code>// Hash function for pseudo-random values
+float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+// 2D value noise
+float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f); // smooth interpolation
+
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+// Fractal Brownian Motion
+float fbm(vec2 p) {
+    float sum = 0.0;
+    float amp = 0.5;
+    for (int i = 0; i < 5; i++) {
+        sum += amp * noise(p);
+        p *= 2.0;
+        amp *= 0.5;
+    }
+    return sum;
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>The hash function <code>fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453)</code> is widely used but not mathematically rigorous. It produces acceptable randomness for visual effects but should not be used for cryptography or scientific simulation. On some GPUs, precision issues can cause visible patterns at extreme coordinates.</p>
+      </div>
+
+      <h3>13.7.3 Domain Repetition</h3>
+
+      <p><strong>Domain repetition</strong> uses the modulo operation to tile a pattern infinitely. By applying <code>mod()</code> to the input coordinates before evaluating an SDF or pattern, a single shape is repeated across space:</p>
+
+      <pre><code>// Repeat space with period s
+vec3 rep(vec3 p, float s) {
+    return mod(p + s * 0.5, s) - s * 0.5;
+}</code></pre>
+
+      <p>This transforms a single sphere into an infinite grid of spheres with just one line of code. The <code>mod()</code> function wraps the coordinates so that every point in space maps back to a single "cell," and the subtraction centers the origin within each cell.</p>
+
+      <p>Domain repetition is computationally free -- it does not create more geometry. The SDF is still evaluated once per ray march step, but the coordinate space wraps around. You can also repeat in only one or two dimensions:</p>
+
+      <pre><code>// Repeat only in X and Z (creates columns)
+p.xz = mod(p.xz + s * 0.5, s) - s * 0.5;
+
+// Repeat only in X (creates walls)
+p.x = mod(p.x + s * 0.5, s) - s * 0.5;</code></pre>
+
+      <p>Combining domain repetition with animated offsets creates mesmerizing patterns of infinite movement.</p>
+
+      <!-- Interactive: Domain Repetition Pattern -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Domain Repetition Pattern</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+
+void main() {
+    vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / u_resolution.y;
+
+    // Apply domain repetition with mod
+    float cellSize = 0.4;
+    vec2 cell = mod(uv + cellSize * 0.5, cellSize) - cellSize * 0.5;
+
+    // Distance to circle in each cell
+    float d = length(cell) - 0.12;
+
+    // Animate with time
+    float pulse = sin(u_time * 3.0 + uv.x * 5.0 + uv.y * 5.0) * 0.05;
+    d += pulse;
+
+    // Color based on original (non-repeated) coordinates
+    vec3 col1 = 0.5 + 0.5 * cos(u_time + uv.xyx * 3.0 + vec3(0,2,4));
+    vec3 col2 = vec3(0.02);
+
+    // Smooth edge
+    float edge = smoothstep(0.01, -0.01, d);
+    vec3 col = mix(col2, col1, edge);
+
+    // Add grid lines
+    vec2 gridLines = abs(mod(uv + cellSize * 0.5, cellSize) - cellSize * 0.5);
+    float line = min(gridLines.x, gridLines.y);
+    col += vec3(0.08) * (1.0 - smoothstep(0.0, 0.005, line));
+
+    gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <h3>13.7.4 Polar Coordinates in Shaders</h3>
+
+      <p>Converting Cartesian coordinates $(x, y)$ to polar coordinates $(r, \theta)$ enables radial and rotational effects:</p>
+
+      <p>$$r = \sqrt{x^2 + y^2}, \quad \theta = \text{atan2}(y, x)$$</p>
+
+      <pre><code>vec2 toPolar(vec2 uv) {
+    return vec2(length(uv), atan(uv.y, uv.x));
+}</code></pre>
+
+      <p>Polar coordinates are the foundation of many shader effects:</p>
+
+      <ul>
+        <li><strong>Radial gradients:</strong> Color based on $r$ (distance from center).</li>
+        <li><strong>Spiral patterns:</strong> Use $r + \theta$ or $r + k\theta$ as input to a periodic function.</li>
+        <li><strong>Rotation:</strong> Add a time-varying offset to $\theta$ to rotate the entire pattern.</li>
+        <li><strong>Flower patterns:</strong> Use $r = a + b \cdot \cos(n\theta)$ to define petal-like shapes.</li>
+        <li><strong>Kaleidoscope:</strong> Mirror the angle within repeated segments (see below).</li>
+      </ul>
+
+      <p>A common technique converts back from polar to Cartesian after modifying the coordinates:</p>
+
+      <pre><code>// Convert to polar, modify, convert back
+float r = length(uv);
+float a = atan(uv.y, uv.x);
+a += u_time; // rotate the pattern
+vec2 modifiedUV = r * vec2(cos(a), sin(a));</code></pre>
+
+      <h3>13.7.5 Kaleidoscope Effect</h3>
+
+      <p>A kaleidoscope shader divides the angular coordinate into segments and mirrors alternating ones, creating symmetric patterns. The real-world kaleidoscope works by using angled mirrors to create multiple reflections. We can simulate this digitally using modular arithmetic on the angle coordinate.</p>
+
+      <p>The key operation uses <code>mod()</code> on the angle and <code>abs()</code> for the mirror:</p>
+
+      <pre><code>float segments = 6.0;
+float segAngle = 3.14159 * 2.0 / segments;
+angle = mod(angle, segAngle);
+angle = abs(angle - segAngle * 0.5);</code></pre>
+
+      <!-- Interactive: Kaleidoscope Shader -->
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Kaleidoscope Shader</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+
+void main() {
+    vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / u_resolution.y;
+
+    // Convert to polar
+    float r = length(uv);
+    float angle = atan(uv.y, uv.x);
+
+    // Kaleidoscope: mirror into segments
+    float segments = 8.0;
+    float segAngle = 3.14159265 * 2.0 / segments;
+    angle = mod(angle, segAngle);
+    angle = abs(angle - segAngle * 0.5);
+
+    // Convert back to Cartesian
+    vec2 kUV = r * vec2(cos(angle), sin(angle));
+
+    // Create a pattern in the kaleidoscoped space
+    float t = u_time * 0.5;
+    float pattern = sin(kUV.x * 15.0 + t) *
+                    cos(kUV.y * 15.0 - t);
+    pattern += sin(r * 10.0 - t * 2.0);
+    pattern *= 0.5;
+
+    // Color
+    vec3 col;
+    col.r = sin(pattern * 3.0 + 0.0) * 0.5 + 0.5;
+    col.g = sin(pattern * 3.0 + 2.1) * 0.5 + 0.5;
+    col.b = sin(pattern * 3.0 + 4.2) * 0.5 + 0.5;
+
+    // Vignette
+    col *= 1.0 - r * 0.5;
+
+    gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+
+      <p>Try changing the number of segments in the shader above. Powers of 2 (4, 8, 16) and multiples of 3 (6, 9, 12) produce particularly pleasing symmetries. You can also try adding time to the angle before the kaleidoscope operation to create a rotating pattern, or multiplying the angle after mirroring to create nested repetitions.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The kaleidoscope technique is a special case of a more general principle: <strong>symmetry through coordinate manipulation.</strong> By modifying the UV coordinates before computing the pattern, you can create any symmetry group. Mirroring on one axis gives bilateral symmetry. Modular arithmetic on the angle gives rotational symmetry. Combining both gives dihedral symmetry (the symmetry of regular polygons).</p>
+      </div>
+
+      <h3>13.7.6 Color Palettes in Shaders</h3>
+
+      <p>Creating beautiful colors in shaders is an art in itself. The most common approach uses cosine-based palettes, invented by Inigo Quilez:</p>
+
+      <p>$$\text{color}(t) = a + b \cdot \cos(2\pi(c \cdot t + d))$$</p>
+
+      <p>where $a$, $b$, $c$, and $d$ are <code>vec3</code> parameters that control the palette, and $t$ is a scalar (usually derived from distance, angle, or time).</p>
+
+      <pre><code>vec3 palette(float t) {
+    vec3 a = vec3(0.5, 0.5, 0.5);
+    vec3 b = vec3(0.5, 0.5, 0.5);
+    vec3 c = vec3(1.0, 1.0, 1.0);
+    vec3 d = vec3(0.263, 0.416, 0.557);
+    return a + b * cos(6.28318 * (c * t + d));
+}</code></pre>
+
+      <p>By changing the four parameter vectors, you can create an enormous variety of color schemes. Quilez provides an interactive palette generator at <a href="https://iquilezles.org/articles/palettes/" target="_blank">iquilezles.org/articles/palettes/</a>.</p>
+
+      <h3>13.7.7 SDF Operations</h3>
+
+      <p>Signed distance functions can be combined using simple operations to create complex shapes from simple primitives:</p>
+
+      <table>
+        <thead>
+          <tr><th>Operation</th><th>GLSL Code</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Union</td><td><code>min(d1, d2)</code></td><td>Combines two shapes</td></tr>
+          <tr><td>Intersection</td><td><code>max(d1, d2)</code></td><td>Keeps only the overlap</td></tr>
+          <tr><td>Subtraction</td><td><code>max(d1, -d2)</code></td><td>Cuts d2 out of d1</td></tr>
+          <tr><td>Smooth union</td><td><code>smin(d1, d2, k)</code></td><td>Blends shapes together smoothly</td></tr>
+        </tbody>
+      </table>
+
+      <p>The smooth minimum function creates organic-looking blends between shapes:</p>
+
+      <pre><code>float smin(float a, float b, float k) {
+    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+    return mix(b, a, h) - k * h * (1.0 - h);
+}</code></pre>
+
+      <p>This is the foundation of techniques like metaballs and organic modeling in ray marching shaders.</p>
+
+      <h3>13.7.8 Anti-Aliasing in Shaders</h3>
+
+      <p>Hard edges in shaders appear jagged (aliased). The <code>smoothstep()</code> function is the standard tool for anti-aliasing:</p>
+
+      <pre><code>// Hard edge (aliased)
+float circle = step(0.5, length(uv));
+
+// Soft edge (anti-aliased)
+float pixelSize = 1.0 / u_resolution.y;
+float circle = smoothstep(0.5, 0.5 - pixelSize * 2.0, length(uv));</code></pre>
+
+      <p>The width of the transition zone should be proportional to the pixel size. Using <code>fwidth()</code> (available in some GLSL versions) provides an even more robust approach by computing the screen-space rate of change of the distance field.</p>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.8: CODE ATTRIBUTION AND ETHICS
+           ═══════════════════════════════════════ -->
+      <h2 id="attribution-ethics">13.8 Code Attribution and Ethics</h2>
+
+      <p>As artists who work with code, we stand on the shoulders of an enormous open-source community. ShaderToy alone hosts over 80,000 public shaders, each representing someone's creative and technical effort. Using this shared knowledge responsibly requires understanding attribution, licenses, and academic honesty.</p>
+
+      <h3>13.8.1 Why Attribution Matters</h3>
+
+      <p>Attribution serves multiple purposes:</p>
+      <ul>
+        <li><strong>Ethical:</strong> Recognizing the labor and creativity of others is a moral obligation. Code is creative expression, and using it without credit is a form of plagiarism.</li>
+        <li><strong>Legal:</strong> Most code has a license that specifies conditions for use. Ignoring the license can have legal consequences.</li>
+        <li><strong>Professional:</strong> The creative coding community is small. Your reputation depends on being known as someone who gives credit generously.</li>
+        <li><strong>Educational:</strong> Attribution creates a trail that helps others (and your future self) understand where code came from and how it was modified.</li>
+      </ul>
+
+      <h3>13.8.2 Academic Honesty in Computing Arts</h3>
+
+      <p>In an academic setting, the stakes for attribution are especially high. Course policies on code sharing vary, but the general principles are universal:</p>
+
+      <ul>
+        <li><strong>Individual work is individual:</strong> If an assignment requires individual submission, the code you write must be your own. You may discuss concepts and approaches with classmates, but the implementation must be independently written.</li>
+        <li><strong>Collaboration must be declared:</strong> If you worked with a partner or received significant help, say so explicitly in your submission comments. This includes casual conversations where a classmate explained an approach or helped you debug a problem.</li>
+        <li><strong>External code must be attributed:</strong> Any code from tutorials, Stack Overflow, GitHub, ShaderToy, or LLMs must be clearly marked with its source.</li>
+        <li><strong>Understanding is required:</strong> Submitting code you do not understand, regardless of its source, is academically dishonest. If you use external code, be prepared to explain how it works.</li>
+      </ul>
+
+      <p>The MAT 200C course syllabus states: "You may not share your code publicly... If you use code from an external source, you must cite it explicitly." This applies to ShaderToy shaders, tutorial code, and LLM-generated code equally.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Students sometimes believe that modifying code "enough" makes it their own. This is not true. If your work is derived from someone else's code, you must credit the source regardless of how much you changed. The test is not "how different is my code?" but rather "did I start from scratch or build on existing work?"</p>
+      </div>
+
+      <h3>13.8.3 How to Attribute Code</h3>
+
+      <p>A good attribution comment includes:</p>
+
+      <pre><code>// Based on "Warp Speed" by Dave Hoskins
+// Original: https://www.shadertoy.com/view/Msl3WH
+// License: CC BY-NC-SA 3.0
+// Modified: changed color palette, added mouse interaction
+// Date accessed: March 2026</code></pre>
+
+      <p>For code from tutorials, Stack Overflow, or documentation:</p>
+
+      <pre><code>// Perlin noise implementation adapted from
+// The Book of Shaders, Ch. 11 by Patricio Gonzalez Vivo
+// https://thebookofshaders.com/11/
+// Modified to accept 3D input</code></pre>
+
+      <p>For ShaderToy shaders specifically, always include:</p>
+      <ol>
+        <li>The shader name and author</li>
+        <li>The ShaderToy URL</li>
+        <li>The license (shown on the shader's page)</li>
+        <li>A brief description of what you modified</li>
+        <li>The date you accessed the shader</li>
+      </ol>
+
+      <h3>13.8.4 Creative Commons Licenses</h3>
+
+      <p>Many ShaderToy shaders use Creative Commons licenses. Understanding the abbreviations is essential:</p>
+
+      <table>
+        <thead>
+          <tr><th>Abbreviation</th><th>Meaning</th><th>What It Requires</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CC BY</td><td>Attribution</td><td>Credit the author. Otherwise, do anything.</td></tr>
+          <tr><td>CC BY-SA</td><td>Attribution + ShareAlike</td><td>Credit the author. Derivative works must use the same license.</td></tr>
+          <tr><td>CC BY-NC</td><td>Attribution + NonCommercial</td><td>Credit the author. No commercial use.</td></tr>
+          <tr><td>CC BY-NC-SA</td><td>All three</td><td>Credit, non-commercial, same license for derivatives.</td></tr>
+          <tr><td>CC0</td><td>Public Domain</td><td>No restrictions. No attribution required (but still good practice).</td></tr>
+        </tbody>
+      </table>
+
+      <h3>13.8.5 Software Licenses</h3>
+
+      <p>Software libraries and frameworks use different licenses than creative works:</p>
+
+      <ul>
+        <li><strong>MIT License:</strong> The most permissive. Do anything with the code; just keep the copyright notice. Used by p5.js (via LGPL for the library itself) and many npm packages.</li>
+        <li><strong>Apache 2.0:</strong> Similar to MIT, but includes explicit patent protection. Used by TensorFlow and many Google projects.</li>
+        <li><strong>LGPL:</strong> You can use the library in any project, but modifications to the library itself must be shared. p5.js uses this license.</li>
+        <li><strong>GPL:</strong> Strong copyleft. If you use GPL code, your entire project must also be GPL. Used by Linux and WordPress.</li>
+        <li><strong>No License:</strong> All rights reserved by default. You cannot legally use, copy, or modify the code without explicit permission.</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Code on GitHub without a LICENSE file is <strong>not</strong> open source. "Public" and "open source" are not the same thing. If you see code on GitHub or ShaderToy with no license, you should contact the author for permission before using it.</p>
+      </div>
+
+      <h3>13.8.6 Crediting LLM-Generated Code</h3>
+
+      <p>Large Language Models (LLMs) such as ChatGPT, Claude, and Copilot are increasingly used in creative coding. Per the MAT 200C course policy, LLM-generated code must be clearly marked:</p>
+
+      <pre><code>// --- BEGIN LLM-GENERATED CODE ---
+// Generated by: Claude 3.5 Sonnet (Anthropic), March 2026
+// Prompt: "Write a GLSL function that creates a 2D rotation matrix"
+mat2 rotate2D(float angle) {
+    float s = sin(angle);
+    float c = cos(angle);
+    return mat2(c, -s, s, c);
+}
+// --- END LLM-GENERATED CODE ---</code></pre>
+
+      <p>Key principles for using LLM-generated code:</p>
+      <ol>
+        <li>Mark the code clearly with begin/end comments.</li>
+        <li>Name the LLM and version used.</li>
+        <li>Include your prompts so others can understand the generation context.</li>
+        <li><strong>Understand every line.</strong> You are responsible for the code, including bugs.</li>
+        <li>Do not submit LLM-generated code as your own original work.</li>
+      </ol>
+
+      <h3>13.8.7 The Golden Rule of Attribution</h3>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>When in doubt, over-attribute.</strong> No one has ever been penalized for giving too much credit. If you are unsure whether something counts as borrowing, cite it anyway. Attribution is free, and it builds trust and community.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 4: ATTRIBUTION
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch13-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">You find a ShaderToy shader with the license "CC BY-NC-SA 3.0". Which of the following uses is <strong>NOT</strong> allowed?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch13-q4" value="a"> Using the shader in a class assignment with proper credit</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q4" value="b"> Modifying the shader and sharing your version under the same license</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q4" value="c" data-correct> Using the shader in a commercial product you sell online</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q4" value="d"> Posting your modified version on your personal portfolio with attribution</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The "NC" (NonCommercial) restriction prohibits commercial use. You cannot sell a product that incorporates CC BY-NC-SA code. All other options are permitted: academic use with credit, modification with same license (SA), and portfolio display with attribution (BY).</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.9: BUILDING A SHADER PORTFOLIO
+           ═══════════════════════════════════════ -->
+      <h2 id="portfolio">13.9 Building a Shader Portfolio</h2>
+
+      <p>As a creative coder, your portfolio is your most important professional asset. A well-curated collection of shader work demonstrates both technical skill and artistic vision.</p>
+
+      <h3>13.9.1 Documenting Your Process</h3>
+
+      <p>The creative process is as valuable as the final result. Document your work as you go:</p>
+
+      <ul>
+        <li><strong>Screenshots at each major stage:</strong> Show the evolution from early experiments to polished output.</li>
+        <li><strong>Code comments:</strong> Explain not just <em>what</em> the code does but <em>why</em> you made each design choice.</li>
+        <li><strong>Version control:</strong> Use Git to track changes. Your commit history tells the story of your creative process.</li>
+        <li><strong>Sketches and notes:</strong> Scan or photograph hand-drawn diagrams, math derivations, and conceptual sketches.</li>
+      </ul>
+
+      <h3>13.9.2 Capturing Shader Output</h3>
+
+      <p>Screenshots and video recordings are essential for sharing shader work:</p>
+
+      <ul>
+        <li><strong>Screenshots:</strong> Use browser dev tools or a screenshot tool. Capture at high resolution (at least 1920x1080).</li>
+        <li><strong>Video:</strong> Use OBS Studio or screen recording tools. Record at 60 fps to preserve the smoothness of animation.</li>
+        <li><strong>GIFs:</strong> Short loops work well for social media. Tools like FFmpeg can convert video to optimized GIFs.</li>
+        <li><strong>Live demos:</strong> Host interactive versions on GitHub Pages, Netlify, or the p5.js web editor.</li>
+      </ul>
+
+      <p>When capturing shader output, remember that compression artifacts (especially in JPEG and low-bitrate video) can destroy the subtle gradients and fine details that make shaders beautiful. Use PNG for screenshots and high-bitrate settings (or lossless codecs) for video recording.</p>
+
+      <h3>13.9.3 Writing Artist Statements</h3>
+
+      <p>An artist statement for a computational artwork should address:</p>
+
+      <ul>
+        <li><strong>Concept:</strong> What idea or question drove the work?</li>
+        <li><strong>Process:</strong> What tools, techniques, and algorithms did you use?</li>
+        <li><strong>Context:</strong> How does this work relate to existing art, research, or cultural themes?</li>
+        <li><strong>Technical details:</strong> Mention specific techniques (ray marching, fBm noise, domain repetition) that will interest technically-minded viewers.</li>
+      </ul>
+
+      <h3>13.9.4 Online Presence</h3>
+
+      <p>Platforms for sharing shader and creative coding work:</p>
+
+      <ul>
+        <li><a href="https://www.shadertoy.com" target="_blank">ShaderToy</a> — The primary community for GLSL shaders.</li>
+        <li><a href="https://editor.p5js.org" target="_blank">p5.js Web Editor</a> — Share complete p5.js sketches with one link.</li>
+        <li><a href="https://www.openprocessing.org" target="_blank">OpenProcessing</a> — Community gallery for Processing and p5.js sketches.</li>
+        <li><strong>GitHub Pages</strong> — Host interactive web projects for free.</li>
+        <li><strong>Personal website</strong> — Maximum control over presentation and branding.</li>
+      </ul>
+
+
+      <h3>13.9.5 Presenting Technical Work to Non-Technical Audiences</h3>
+
+      <p>When showing shader work to curators, galleries, or general audiences, focus on the experience rather than the implementation:</p>
+
+      <ul>
+        <li>Lead with the visual or interactive experience. Let the artwork speak first.</li>
+        <li>Describe the concept in accessible terms: "This piece uses mathematical functions to simulate infinite space" rather than "This uses domain repetition with SDFs."</li>
+        <li>Connect to broader themes: nature, perception, infinity, emergence, order and chaos.</li>
+        <li>Save technical details for an appendix, GitHub README, or technical blog post.</li>
+      </ul>
+
+      <h3>13.9.6 Contributing Back to the Community</h3>
+
+      <p>The creative coding community thrives on sharing. Ways to contribute:</p>
+
+      <ul>
+        <li><strong>Publish your shaders on ShaderToy</strong> with clear comments and a permissive license.</li>
+        <li><strong>Write tutorials</strong> explaining techniques you have learned.</li>
+        <li><strong>Share your process</strong> on social media -- works-in-progress are often more educational than finished pieces.</li>
+        <li><strong>Contribute to open-source projects</strong> like p5.js, Processing, or shader libraries.</li>
+        <li><strong>Mentor others:</strong> Answer questions in forums, participate in creative coding communities (Reddit r/creativecoding, creative coding Discord servers, Processing forums).</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Your portfolio is not just a collection of finished works. It is a living document that shows your growth, your thinking process, and your engagement with the creative coding community. Quality and thoughtfulness matter more than quantity.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           QUIZ 5: ALGORITHM CLASSIFICATION
+           ═══════════════════════════════════════ -->
+      <div class="quiz" data-id="ch13-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">A p5.js sketch needs to find the nearest neighbor for each of 5,000 particles every frame. Which approach would best maintain real-time performance?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch13-q5" value="a"> Brute force: compare every pair of particles</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q5" value="b" data-correct> Use a spatial grid or quadtree to limit neighbor checks to nearby cells</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q5" value="c"> Sort all particles by x-coordinate and search linearly</label></li>
+          <li class="option"><label><input type="radio" name="ch13-q5" value="d"> Reduce the frame rate to give more time per frame</label></li>
+        </ul>
+        <div class="explanation">
+          <p>With 5,000 particles, brute force requires $5000^2 = 25{,}000{,}000$ comparisons per frame, which is too slow for 60 fps. A spatial data structure (grid or quadtree) reduces this to roughly $O(n)$ for uniformly distributed particles, making real-time performance achievable. Reducing frame rate is a workaround, not a solution.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.10: SUMMARY
+           ═══════════════════════════════════════ -->
+      <h2 id="summary">13.10 Summary</h2>
+
+      <p>This chapter brought together several important threads that connect algorithmic thinking to creative practice. Let us review the key takeaways from each section:</p>
+
+      <ul>
+        <li><strong>Algorithmic thinking</strong> (Section 13.1) is a structured approach to problem-solving built on four pillars: decomposition, pattern recognition, abstraction, and algorithm design. These skills transcend any specific programming language and are equally applicable to visual art, music, and interactive design.</li>
+        <li><strong>Problem-solving strategies</strong> (Section 13.2) -- divide and conquer, greedy, brute force, working backwards, analogical reasoning, and incremental development -- give you a versatile toolbox for tackling unfamiliar coding challenges. The egg drop puzzle illustrated how different strategies yield dramatically different solutions to the same problem.</li>
+        <li><strong>Algorithm complexity</strong> (Section 13.3) and Big-O notation help you predict whether your code will run fast enough for real-time graphics at 60 fps. Spatial data structures like uniform grids and quadtrees can turn $O(n^2)$ problems into manageable $O(n)$ or $O(n \log n)$ ones. Remember: profile first, optimize second.</li>
+        <li><strong>ShaderToy</strong> (Section 13.4) provides a simplified GLSL environment with built-in uniforms (<code>iResolution</code>, <code>iTime</code>, <code>iMouse</code>, <code>iChannel0-3</code>) and the <code>mainImage</code> entry point. Understanding these conventions, including the bottom-left origin and the iMouse behavior, is the first step to porting shaders.</li>
+        <li><strong>Porting shaders from ShaderToy to p5.js</strong> (Section 13.5) follows a systematic seven-step recipe: add declarations, change the entry point, compute fragCoord, flip Y, rename uniforms, change the output variable, and replace texture functions. Debugging techniques like color visualization are essential when things go wrong.</li>
+        <li><strong>Fading and blending techniques</strong> (Section 13.6) include alpha fading, additive/multiplicative/screen blending, lerp-based fading, and framebuffer feedback. GPU approaches handle full-screen effects efficiently; CPU approaches with aging data structures give per-element control. Combining both provides maximum flexibility.</li>
+        <li><strong>Advanced shader techniques</strong> (Section 13.7) -- ray marching, noise (value, Perlin, fBm), domain repetition, polar coordinates, kaleidoscope effects, cosine color palettes, SDF operations, and anti-aliasing -- are building blocks that can be combined to create complex, beautiful visual experiences.</li>
+        <li><strong>Code attribution and ethics</strong> (Section 13.8) are professional obligations. Always credit sources, understand licenses (MIT, GPL, CC BY, CC BY-NC-SA), and clearly mark LLM-generated code with begin/end markers, the model name, and your prompts.</li>
+        <li><strong>Building a shader portfolio</strong> (Section 13.9) requires documenting your process, capturing high-quality screenshots and video, writing thoughtful artist statements, and engaging with the creative coding community.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The topics in this chapter are deeply interconnected. Algorithmic thinking guides how you decompose a shader porting task. Complexity analysis tells you whether your fading technique will run in real time. Attribution ethics ensure the community that produces ShaderToy shaders continues to thrive. And your portfolio documents the intersection of all these skills.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           SECTION 13.11: REFERENCES
+           ═══════════════════════════════════════ -->
+      <h2 id="references">13.11 References</h2>
+
+      <ol>
+        <li>Quilez, I. "Inigo Quilez :: articles." <a href="https://iquilezles.org/articles/" target="_blank">iquilezles.org/articles/</a></li>
+        <li>Gonzalez Vivo, P. &amp; Lowe, J. <em>The Book of Shaders.</em> <a href="https://thebookofshaders.com" target="_blank">thebookofshaders.com</a></li>
+        <li>ShaderToy. <a href="https://www.shadertoy.com" target="_blank">shadertoy.com</a></li>
+        <li>p5.js Reference: <code>createShader()</code>. <a href="https://p5js.org/reference/p5/createShader/" target="_blank">p5js.org/reference/p5/createShader/</a></li>
+        <li>p5.js Reference: <code>createFramebuffer()</code>. <a href="https://p5js.org/reference/p5/createFramebuffer/" target="_blank">p5js.org/reference/p5/createFramebuffer/</a></li>
+        <li>Wing, J. M. "Computational Thinking." <em>Communications of the ACM</em>, 49(3), 33-35 (2006).</li>
+        <li>Cormen, T. H. et al. <em>Introduction to Algorithms</em>, 4th ed. MIT Press, 2022.</li>
+        <li>Choose a License. <a href="https://choosealicense.com" target="_blank">choosealicense.com</a></li>
+        <li>Creative Commons. "About The Licenses." <a href="https://creativecommons.org/licenses/" target="_blank">creativecommons.org/licenses/</a></li>
+        <li>Wikipedia. "Dynamic Programming." <a href="https://en.wikipedia.org/wiki/Dynamic_programming" target="_blank">en.wikipedia.org/wiki/Dynamic_programming</a></li>
+        <li>p5.js AI Usage Policy. <a href="https://github.com/processing/p5.js/blob/dev-2.0/AI_USAGE_POLICY.md" target="_blank">github.com/processing/p5.js</a></li>
+      </ol>
+
+      <h3>13.11.1 Further Reading</h3>
+
+      <p>To deepen your understanding of the topics in this chapter, explore these additional resources:</p>
+
+      <p><strong>Algorithmic Thinking:</strong></p>
+      <ul>
+        <li>Wing, J. M. "Computational Thinking and Thinking about Computing." <em>Philosophical Transactions of the Royal Society A</em>, 366(1881), 3717-3725 (2008). The foundational paper that popularized the concept.</li>
+        <li>Cormen, T. H. et al. <em>Introduction to Algorithms</em>, 4th ed. MIT Press, 2022. The standard textbook, affectionately known as "CLRS."</li>
+      </ul>
+
+      <p><strong>Shaders and Graphics:</strong></p>
+      <ul>
+        <li>Gonzalez Vivo, P. &amp; Lowe, J. <em>The Book of Shaders.</em> <a href="https://thebookofshaders.com" target="_blank">thebookofshaders.com</a> -- An interactive, chapter-by-chapter guide to GLSL.</li>
+        <li>Quilez, I. "Inigo Quilez :: articles." <a href="https://iquilezles.org/articles/" target="_blank">iquilezles.org/articles/</a> -- Essential articles on SDFs, ray marching, noise, and more.</li>
+        <li>Scratchapixel. <a href="https://www.scratchapixel.com" target="_blank">scratchapixel.com</a> -- In-depth tutorials on computer graphics fundamentals.</li>
+      </ul>
+
+      <p><strong>Licensing and Ethics:</strong></p>
+      <ul>
+        <li>Choose a License: <a href="https://choosealicense.com" target="_blank">choosealicense.com</a> -- Simple guide to open-source licenses.</li>
+        <li>Creative Commons. <a href="https://creativecommons.org/choose/" target="_blank">creativecommons.org/choose/</a> -- Interactive license chooser for creative works.</li>
+        <li>p5.js AI Usage Policy: <a href="https://github.com/processing/p5.js/blob/dev-2.0/AI_USAGE_POLICY.md" target="_blank">github.com/processing/p5.js</a></li>
+      </ul>
+
+      <p><strong>Creative Coding Communities:</strong></p>
+      <ul>
+        <li><a href="https://www.shadertoy.com" target="_blank">ShaderToy</a> — The primary community for GLSL shaders</li>
+        <li><a href="https://www.openprocessing.org" target="_blank">OpenProcessing</a> — Community gallery for Processing and p5.js</li>
+        <li><a href="https://editor.p5js.org" target="_blank">p5.js Web Editor</a> — Share complete p5.js sketches</li>
+      </ul>
+
+      <hr>
+
+      <!-- ═══════════════════════════════════════
+           CODE CHALLENGES
+           ═══════════════════════════════════════ -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <!-- Challenge 1: binarySearch -->
+      <div class="code-challenge" data-id="ch13-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 13.1</div>
+        <p class="prompt">Write a function called <code>binarySearch(arr, target)</code> that takes a sorted array of numbers and a target value, and returns the index of the target if found, or <code>-1</code> if not found. Use the binary search algorithm: repeatedly divide the search range in half by comparing the target to the middle element. Binary search has $O(\log n)$ time complexity.</p>
+        <textarea class="cm-editor">function binarySearch(arr, target) {
+  // Your code here
+  // Hint: use two pointers (low, high) and a while loop
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "binarySearch([1, 3, 5, 7, 9, 11], 7)", "expected": 3},
+          {"call": "binarySearch([1, 3, 5, 7, 9, 11], 1)", "expected": 0},
+          {"call": "binarySearch([1, 3, 5, 7, 9, 11], 11)", "expected": 5},
+          {"call": "binarySearch([1, 3, 5, 7, 9, 11], 4)", "expected": -1},
+          {"call": "binarySearch([2, 4, 6, 8], 6)", "expected": 2},
+          {"call": "binarySearch([], 5)", "expected": -1}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2: lerp -->
+      <div class="code-challenge" data-id="ch13-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 13.2</div>
+        <p class="prompt">Write a function called <code>lerp(a, b, t)</code> that performs linear interpolation between values <code>a</code> and <code>b</code> using parameter <code>t</code>. The formula is: $\text{lerp}(a, b, t) = a + t \cdot (b - a)$. When $t = 0$, return $a$. When $t = 1$, return $b$. When $t = 0.5$, return the midpoint. This is the same as the GLSL <code>mix()</code> function.</p>
+        <textarea class="cm-editor">function lerp(a, b, t) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "lerp(0, 10, 0.5)", "expected": 5},
+          {"call": "lerp(0, 10, 0)", "expected": 0},
+          {"call": "lerp(0, 10, 1)", "expected": 10},
+          {"call": "lerp(100, 200, 0.25)", "expected": 125},
+          {"call": "lerp(-10, 10, 0.5)", "expected": 0},
+          {"call": "lerp(5, 5, 0.7)", "expected": 5}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3: remapShaderToyCoords -->
+      <div class="code-challenge" data-id="ch13-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 13.3</div>
+        <p class="prompt">Write a function called <code>remapShaderToyCoords(fragCoordX, fragCoordY, iResolutionX, iResolutionY)</code> that converts ShaderToy pixel coordinates to normalized UV coordinates in the range $[0, 1]$. Return an object <code>{x, y}</code> where <code>x = fragCoordX / iResolutionX</code> and <code>y = fragCoordY / iResolutionY</code>. This is the JavaScript equivalent of <code>vec2 uv = fragCoord / iResolution.xy</code> in GLSL.</p>
+        <textarea class="cm-editor">function remapShaderToyCoords(fragCoordX, fragCoordY, iResolutionX, iResolutionY) {
+  // Your code here
+  // Return an object with x and y properties
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "remapShaderToyCoords(400, 300, 800, 600)", "expected": {"x": 0.5, "y": 0.5}},
+          {"call": "remapShaderToyCoords(0, 0, 800, 600)", "expected": {"x": 0, "y": 0}},
+          {"call": "remapShaderToyCoords(800, 600, 800, 600)", "expected": {"x": 1, "y": 1}},
+          {"call": "remapShaderToyCoords(200, 150, 400, 300)", "expected": {"x": 0.5, "y": 0.5}},
+          {"call": "remapShaderToyCoords(100, 0, 1000, 500)", "expected": {"x": 0.1, "y": 0}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <hr>
+
+      <!-- ═══════════════════════════════════════
+           OPEN-ENDED EXERCISES
+           ═══════════════════════════════════════ -->
+      <h2 id="exercises">Exercises</h2>
+
+      <p>These exercises give you the opportunity to apply the techniques from this chapter in open-ended creative contexts. There is no single correct answer -- the goal is to practice the skills and produce something visually interesting.</p>
+
+      <!-- Exercise 1: Port a ShaderToy Effect -->
+      <div class="exercise" data-mode="glsl">
+        <div class="exercise-header">&#9998; Exercise 13.1 — Port a ShaderToy Effect to p5.js GLSL</div>
+        <p class="prompt">Port the following ShaderToy-style effect to our GLSL runner. The original uses <code>iTime</code> and <code>iResolution</code>. Replace them with <code>u_time</code> and <code>u_resolution</code>, change the entry point from <code>mainImage</code> to <code>main</code>, and use <code>gl_FragColor</code> for output. The effect creates a rippling water pattern using sine waves. Remember the seven-step porting recipe from Section 13.5.</p>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+    // TODO: Port the following ShaderToy code:
+    // vec2 uv = fragCoord / iResolution.xy;
+    // uv = uv * 2.0 - 1.0;
+    // uv.x *= iResolution.x / iResolution.y;
+    // float d = length(uv);
+    // float wave = sin(d * 20.0 - iTime * 4.0) * 0.5 + 0.5;
+    // wave *= smoothstep(1.5, 0.0, d);
+    // vec3 col = mix(vec3(0.0, 0.1, 0.3), vec3(0.2, 0.6, 1.0), wave);
+    // fragColor = vec4(col, 1.0);
+
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" data-mode="glsl" readonly>precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+    uv = uv * 2.0 - 1.0;
+    uv.x *= u_resolution.x / u_resolution.y;
+
+    float d = length(uv);
+    float wave = sin(d * 20.0 - u_time * 4.0) * 0.5 + 0.5;
+    wave *= smoothstep(1.5, 0.0, d);
+
+    vec3 col = mix(
+        vec3(0.0, 0.1, 0.3),
+        vec3(0.2, 0.6, 1.0),
+        wave
+    );
+
+    gl_FragColor = vec4(col, 1.0);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: Create a Kaleidoscope Shader -->
+      <div class="exercise" data-mode="glsl">
+        <div class="exercise-header">&#9998; Exercise 13.2 — Create a Kaleidoscope Shader</div>
+        <p class="prompt">Create a kaleidoscope shader with <strong>12 segments</strong> (instead of the 8 in the example). Use polar coordinates to divide the angle, mirror alternating segments, and create a pattern of your choice in the mirrored space. Add time-based animation so the pattern moves. Experiment with the inner pattern -- try using <code>sin()</code>, <code>cos()</code>, and distance functions to create interesting shapes.</p>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+    vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / u_resolution.y;
+
+    // TODO:
+    // 1. Convert to polar coordinates (r, angle)
+    // 2. Divide angle into 12 segments using mod()
+    // 3. Mirror with abs()
+    // 4. Convert back to Cartesian
+    // 5. Create a pattern using sin/cos
+    // 6. Animate with u_time
+
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" data-mode="glsl" readonly>precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+    vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / u_resolution.y;
+
+    // Polar coordinates
+    float r = length(uv);
+    float angle = atan(uv.y, uv.x);
+
+    // Kaleidoscope: 12 segments
+    float segments = 12.0;
+    float segAngle = 3.14159265 * 2.0 / segments;
+    angle = mod(angle + u_time * 0.3, segAngle);
+    angle = abs(angle - segAngle * 0.5);
+
+    // Convert back to Cartesian
+    vec2 kUV = r * vec2(cos(angle), sin(angle));
+
+    // Animated pattern
+    float t = u_time;
+    float p1 = sin(kUV.x * 20.0 + t * 2.0) * cos(kUV.y * 20.0 - t);
+    float p2 = sin(r * 12.0 - t * 3.0);
+    float pattern = (p1 + p2) * 0.5;
+
+    // Color mapping
+    vec3 col;
+    col.r = sin(pattern * 3.14 + 0.0) * 0.5 + 0.5;
+    col.g = sin(pattern * 3.14 + 2.0) * 0.5 + 0.5;
+    col.b = sin(pattern * 3.14 + 4.0) * 0.5 + 0.5;
+
+    // Darken edges
+    col *= smoothstep(1.5, 0.2, r);
+
+    gl_FragColor = vec4(col, 1.0);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3: Motion Blur with Frame Accumulation -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 13.3 — Motion Blur Effect Using Frame Accumulation</div>
+        <p class="prompt">Create a p5.js sketch that demonstrates motion blur using the alpha-fading technique. Draw several circles orbiting around the center of the canvas at different speeds and radii. Use a semi-transparent background (<code>background(0, 0, 0, fadeAmount)</code>) to create trails. The <code>fadeAmount</code> controls how quickly old frames disappear. Experiment with different fade amounts: try values between 5 and 50.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  background(0);
+}
+
+function draw() {
+  // TODO:
+  // 1. Draw a semi-transparent black rectangle for fading
+  //    fill(0, 0, 0, fadeAmount); rect(0, 0, width, height);
+  // 2. Calculate positions for 3+ orbiting circles
+  //    using sin/cos with different speeds and radii
+  // 3. Draw each circle with a distinct color
+  // 4. The trails should create a beautiful motion blur
+
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(400, 400);
+  background(0);
+}
+
+function draw() {
+  // Semi-transparent background for motion blur
+  // Lower alpha = longer trails
+  fill(0, 0, 0, 20);
+  noStroke();
+  rect(0, 0, width, height);
+
+  let t = millis() / 1000.0;
+  let cx = width / 2;
+  let cy = height / 2;
+
+  // Orbiting circle 1: fast, small radius
+  let x1 = cx + cos(t * 3.0) * 80;
+  let y1 = cy + sin(t * 3.0) * 80;
+  fill(255, 80, 80);
+  noStroke();
+  ellipse(x1, y1, 20, 20);
+
+  // Orbiting circle 2: medium speed, medium radius
+  let x2 = cx + cos(t * 2.0) * 130;
+  let y2 = cy + sin(t * 2.0) * 130;
+  fill(80, 200, 255);
+  ellipse(x2, y2, 25, 25);
+
+  // Orbiting circle 3: slow, large radius
+  let x3 = cx + cos(t * 1.0) * 170;
+  let y3 = cy + sin(t * 1.5) * 170;
+  fill(120, 255, 100);
+  ellipse(x3, y3, 18, 18);
+
+  // Orbiting circle 4: figure-8 pattern
+  let x4 = cx + cos(t * 2.5) * 100;
+  let y4 = cy + sin(t * 5.0) * 60;
+  fill(255, 200, 50);
+  ellipse(x4, y4, 15, 15);
+
+  // Center dot
+  fill(255, 255, 255, 100);
+  ellipse(cx, cy, 6, 6);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <hr>
+
+      <!-- ═══════════════════════════════════════
+           CHAPTER END QUIZ
+           ═══════════════════════════════════════ -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 13 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of the concepts covered in this chapter.</p>
+
+        <div class="quiz" data-id="ch13-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">Which of the four pillars of computational thinking involves filtering out unnecessary details to focus on what is essential?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch13-fq1" value="a"> Decomposition</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq1" value="b"> Pattern Recognition</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq1" value="c" data-correct> Abstraction</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq1" value="d"> Algorithm Design</label></li>
+          </ul>
+          <div class="explanation"><p>Abstraction is the process of ignoring irrelevant details to focus on what matters. When you create a function like <code>fadePixel()</code>, you abstract away the math so users can think at a higher level. Decomposition breaks problems into parts; pattern recognition finds regularities; algorithm design creates step-by-step solutions.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch13-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">When porting a ShaderToy shader to p5.js, what must you do to account for the different coordinate system origins?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch13-fq2" value="a"> Swap the x and y coordinates</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq2" value="b" data-correct> Flip the Y axis: <code>fragCoord.y = u_resolution.y - fragCoord.y</code></label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq2" value="c"> Multiply both coordinates by 2.0</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq2" value="d"> No changes are needed; the coordinate systems are the same</label></li>
+          </ul>
+          <div class="explanation"><p>ShaderToy places the origin at the bottom-left (Y increases upward), while p5.js/canvas places the origin at the top-left (Y increases downward). Subtracting the y coordinate from the resolution height flips it to match the expected orientation.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch13-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">What is the GLSL equivalent of the JavaScript <code>lerp(a, b, t)</code> function?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch13-fq3" value="a"> <code>blend(a, b, t)</code></label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq3" value="b"> <code>interpolate(a, b, t)</code></label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq3" value="c" data-correct> <code>mix(a, b, t)</code></label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq3" value="d"> <code>smoothstep(a, b, t)</code></label></li>
+          </ul>
+          <div class="explanation"><p>In GLSL, <code>mix(a, b, t)</code> computes $a \cdot (1-t) + b \cdot t$, which is linear interpolation. <code>smoothstep()</code> performs a smooth (Hermite) interpolation with clamping, which is a different operation. The other options are not built-in GLSL functions.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch13-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">In a ray marching shader, what does the signed distance function (SDF) return?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch13-fq4" value="a"> The color of the nearest surface</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq4" value="b"> The normal vector of the nearest surface</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq4" value="c" data-correct> The distance from the query point to the nearest surface</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq4" value="d"> The index of the nearest triangle in the mesh</label></li>
+          </ul>
+          <div class="explanation"><p>An SDF returns the distance from a point in space to the nearest surface. If positive, the point is outside all objects. If negative, it is inside. If zero, it is on the surface. This distance tells the ray marcher how far it can safely step along the ray without missing any geometry.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch13-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">According to the course policy, when using LLM-generated code in an assignment, which of the following is required?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch13-fq5" value="a"> Only mention the LLM in the README file</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq5" value="b"> Use the code as-is without modification</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq5" value="c" data-correct> Mark the code with begin/end comments, name the LLM, include prompts, and understand every line</label></li>
+            <li class="option"><label><input type="radio" name="ch13-fq5" value="d"> LLM-generated code is not allowed in any assignment</label></li>
+          </ul>
+          <div class="explanation"><p>The course policy requires full transparency: clearly delimit the LLM-generated code with begin/end markers, identify the specific LLM and version, include the prompts used, and demonstrate understanding of every line. You are fully responsible for any bugs or issues in LLM-generated code you submit.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════
+           CHAPTER NAVIGATION
+           ═══════════════════════════════════════ -->
+      <nav class="chapter-nav">
+        <a href="../ch12/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 12</span>
+        </a>
+        <a href="../ch14/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 14: WebGPU, Vectors &amp; Computation</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

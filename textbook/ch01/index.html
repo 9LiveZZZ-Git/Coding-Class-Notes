@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 1: Introduction to Creative Coding — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror (shader chapters) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch01">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 1: Introduction to Creative Coding</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 1: Introduction to Creative Coding</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; From zero to ballistics: your first day of computing arts</p>
+
+
+      <!-- ===============================================
+           SECTION 1.1 — WHAT IS PROGRAMMING?
+           =============================================== -->
+      <h2 id="what-is-programming">1.1 What Is Programming?</h2>
+
+      <p>Programming is the act of writing instructions for a computer to follow. That is it. There is no magic, no special talent required. If you can write a recipe, you can write a program.</p>
+
+      <p>A recipe says: &ldquo;Preheat oven to 350 degrees. Mix flour and sugar. Add eggs. Stir until smooth. Pour into pan. Bake for 30 minutes.&rdquo; A program says: &ldquo;Create a canvas 600 pixels wide. Set the background to gray. Draw a circle at position (300, 200) with diameter 50.&rdquo;</p>
+
+      <p>The difference between a recipe and a program is <strong>precision</strong>. A human reading a recipe understands &ldquo;stir until smooth&rdquo; through experience and common sense. A computer has no common sense. It needs every step spelled out explicitly. This is sometimes frustrating, but it is also liberating&mdash;once you learn to express your ideas with the required precision, the computer will execute them tirelessly, exactly, and at incredible speed.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Program</strong> &mdash; A precise sequence of instructions that a computer can execute to accomplish a specific task. Programs are written in a <em>programming language</em> that both humans and machines can interpret.</p>
+      </div>
+
+      <h3>1.1.1 A Brief History of Computing in the Arts</h3>
+
+      <p>The idea that computation and art might intersect is not new. It stretches back to the very origins of computing itself.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Ada Lovelace</strong> (1815&ndash;1852) is widely regarded as the first computer programmer. Working with Charles Babbage's Analytical Engine in the 1840s, she wrote the first published algorithm intended for machine execution. Remarkably, Lovelace speculated that the Engine &ldquo;might compose elaborate and scientific pieces of music of any degree of complexity or extent&rdquo;&mdash;anticipating by over a century the use of computers in the arts.</p>
+      </div>
+
+      <p><strong>Alan Turing</strong> (1912&ndash;1954) formalized the concept of computation itself with his theoretical Turing machine. Though primarily a mathematician and logician, Turing also pondered whether machines could exhibit creativity. In his landmark 1950 paper <em>&ldquo;Computing Machinery and Intelligence,&rdquo;</em> he asked whether a machine could ever be said to think&mdash;a question that remains central to discussions of computational art and AI-generated creativity today.</p>
+
+      <p>In the early 1960s, the first true computer artworks appeared. Pioneers like <strong>A. Michael Noll</strong> at Bell Labs created algorithmically generated visual patterns using plotters connected to mainframe computers. Noll's <em>Gaussian-Quadratic</em> (1963) was one of the first artworks to be exhibited publicly as computer-generated art. Around the same time, <strong>Frieder Nake</strong> and <strong>Georg Nees</strong> in Germany independently developed computer-generated drawings using mathematical rules and randomness.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>In February 1965, two of the first exhibitions of computer art opened almost simultaneously: Georg Nees exhibited at the Studiengalerie of the University of Stuttgart, and A. Michael Noll exhibited at the Howard Wise Gallery in New York. These exhibitions mark the public birth of computer art as a recognized artistic practice.</p>
+      </div>
+
+      <p>The arrival of personal computers in the late 1970s and 1980s democratized computational art. Artists no longer needed access to expensive mainframes. By the mid-1990s, the World Wide Web offered a global platform for distributing and experiencing interactive digital art.</p>
+
+      <p>In 2001, <strong>Casey Reas</strong> and <strong>Ben Fry</strong> created <strong>Processing</strong>, a programming language and environment designed specifically for visual artists. Processing made code-based art accessible to people without computer science backgrounds, and it spawned a vibrant community of creative coders. <strong>p5.js</strong>&mdash;the tool we use in this course&mdash;is a JavaScript library that brings Processing's philosophy to the web browser, created by <strong>Lauren Lee McCarthy</strong> beginning in 2013.</p>
+
+      <h3>1.1.2 Computational Thinking</h3>
+
+      <p>Programming is not just about learning syntax&mdash;it is about developing a way of thinking. <strong>Computational thinking</strong> involves several key skills:</p>
+
+      <ul>
+        <li><strong>Decomposition</strong>: Breaking a complex problem into smaller, manageable pieces. Instead of &ldquo;draw a face,&rdquo; think: draw a head circle, draw two eye circles, draw a mouth arc.</li>
+        <li><strong>Pattern recognition</strong>: Noticing that a row of 10 circles is really one circle drawn 10 times with a changing x-position. This leads to using loops.</li>
+        <li><strong>Abstraction</strong>: Focusing on the essential features of a problem and ignoring irrelevant details. A &ldquo;ball&rdquo; in our simulation is just an (x, y) coordinate with velocity&mdash;we do not model its molecular structure.</li>
+        <li><strong>Algorithmic design</strong>: Expressing a solution as a step-by-step procedure that a computer can execute.</li>
+      </ul>
+
+      <p>These skills transfer far beyond programming. They are tools for analyzing and solving problems in any domain.</p>
+
+      <h3>1.1.3 Why JavaScript and p5.js?</h3>
+
+      <p>In this course, we program in <strong>JavaScript</strong> using a library called <strong>p5.js</strong>. JavaScript is the programming language of the web. p5.js extends JavaScript with functions designed for drawing, animating, and creating interactive graphics. Everything you make will run directly in a web browser&mdash;no installation, no compilation, no special hardware.</p>
+
+      <p>This matters. The web is the most accessible platform in history. A sketch you create today can be shared with anyone in the world via a URL. p5.js inherits this universality while providing an artist-friendly vocabulary of drawing commands.</p>
+
+      <p>Beyond p5.js, the JavaScript ecosystem offers access to powerful APIs: WebGL for 3D graphics, WebAudio for sound synthesis, WebRTC for real-time video, and WebGPU for GPU compute. Later in this course, we will explore GLSL shaders and the seagulls WebGPU library, which open the door to massively parallel visual computation. But everything starts here, with p5.js and the fundamentals of programming.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Creative coding</strong> is the practice of writing code as a medium of artistic expression rather than purely for functional or commercial purposes. The goal is not to solve an engineering problem but to explore aesthetics, generate visual or sonic experiences, and push the boundaries of what computation can express.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.2 — SETTING UP
+           =============================================== -->
+      <h2 id="setting-up">1.2 Setting Up: The p5.js Editor</h2>
+
+      <p>You will write and run your code in the <strong>p5.js Web Editor</strong>:</p>
+
+      <p><strong><a href="https://editor.p5js.org" target="_blank">https://editor.p5js.org</a></strong></p>
+
+      <p>Open this URL in your browser (Chrome or Firefox recommended). You will see a screen divided into panels:</p>
+
+      <ul>
+        <li><strong>Left panel</strong>: your code</li>
+        <li><strong>Right panel</strong>: the preview (where your sketch appears)</li>
+        <li><strong>Top</strong>: a Play button (triangle) and Stop button (square)</li>
+        <li><strong>Bottom</strong>: the console (for error messages and debugging output)</li>
+      </ul>
+
+      <p>You do not need to install anything. You do not need to create an account (though creating one lets you save your work). Just start typing code and click Play.</p>
+
+      <p>When the editor opens, you will see this default code:</p>
+
+      <pre><code>function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(220);
+}</code></pre>
+
+      <p>Click the Play button. A gray square appears in the preview panel. That is your <strong>canvas</strong>&mdash;a 400-by-400 pixel drawing surface. Everything you create will appear on this canvas.</p>
+
+      <h3>1.2.1 Editor Tips</h3>
+
+      <p>A few practical tips for working in the p5.js editor:</p>
+
+      <ul>
+        <li><strong>Auto-save</strong>: If you are logged in, your sketches save automatically. If not, copy your code to a text file periodically.</li>
+        <li><strong>Keyboard shortcut</strong>: Press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> (or <kbd>Cmd</kbd>+<kbd>Enter</kbd> on Mac) to run your sketch without clicking the Play button.</li>
+        <li><strong>Console output</strong>: Use <code>console.log("hello")</code> to print messages to the console panel. This is invaluable for debugging&mdash;you can print variable values to see what your code is doing.</li>
+        <li><strong>File management</strong>: Click the arrow next to &ldquo;sketch.js&rdquo; to see the file panel. You can add images, sounds, and additional JavaScript files here.</li>
+        <li><strong>Sharing</strong>: Use File &rarr; Share to get a direct link to your sketch&mdash;useful for submitting assignments.</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>If your sketch does not appear, check the console at the bottom of the editor for red error messages. The most common mistakes for beginners are missing semicolons, mismatched curly braces <code>{}</code>, and misspelled function names (e.g., <code>createcanvas</code> instead of <code>createCanvas</code>&mdash;capitalization matters!).</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.3 — ANATOMY OF A SKETCH
+           =============================================== -->
+      <h2 id="anatomy-of-a-sketch">1.3 Anatomy of a Sketch</h2>
+
+      <p>Let us go through the default code carefully, line by line.</p>
+
+      <pre><code>function setup() {
+  createCanvas(400, 400);
+}</code></pre>
+
+      <p><strong>Line 1: <code>function setup() {</code></strong></p>
+
+      <p>This creates a <strong>function</strong> named <code>setup</code>. A function is a named block of code that performs a specific task. The word <code>function</code> tells JavaScript you are defining one. The name <code>setup</code> is special to p5.js&mdash;p5.js knows to look for a function with this exact name and call it automatically when the sketch starts.</p>
+
+      <p><strong>Line 2: <code>createCanvas(400, 400);</code></strong></p>
+
+      <p>This calls the function <code>createCanvas</code> with two <strong>arguments</strong>: <code>400</code> and <code>400</code>. An argument is a value you pass to a function to tell it what to do. Here, we are telling <code>createCanvas</code> to create a drawing surface that is 400 pixels wide and 400 pixels tall. The semicolon <code>;</code> at the end marks the end of this instruction (called a <strong>statement</strong>).</p>
+
+      <pre><code>function draw() {
+  background(220);
+}</code></pre>
+
+      <p><strong><code>function draw() {</code></strong> creates another special function named <code>draw</code>. The critical difference: <code>setup</code> runs <strong>once</strong>; <code>draw</code> runs <strong>repeatedly</strong>, about 60 times per second. This is what makes animation possible.</p>
+
+      <p><strong><code>background(220);</code></strong> fills the entire canvas with a single color. The number <code>220</code> is a shade of gray&mdash;0 is black, 255 is white, and 220 is a light gray.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The p5.js Lifecycle:</strong> Every p5.js sketch follows the same execution pattern:</p>
+        <ol>
+          <li>p5.js loads and looks for your <code>setup()</code> function</li>
+          <li>p5.js calls <code>setup()</code> exactly <strong>once</strong>. The canvas is created.</li>
+          <li>p5.js starts calling <code>draw()</code> over and over, approximately <strong>60 times per second</strong></li>
+          <li>Each call to <code>draw()</code> produces one <strong>frame</strong> of your sketch</li>
+        </ol>
+        <p>Think of it like a flip-book animation: <code>setup()</code> prepares the book, and each call to <code>draw()</code> draws one page.</p>
+      </div>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Frame</strong> &mdash; A single execution of the <code>draw()</code> function. At 60 frames per second (fps), <code>draw()</code> runs 60 times each second, producing 60 individual images that, shown in rapid succession, create the illusion of smooth animation.</p>
+      </div>
+
+      <p>Since the only thing <code>draw()</code> does in the default sketch is paint the background gray, every frame looks the same, and you see a static gray square. But the machinery of animation is already running beneath the surface.</p>
+
+      <p>Try modifying the sketch below to see the lifecycle in action. Change the background color, or add a shape inside <code>draw()</code>:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Your First Sketch &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 300);
+}
+
+function draw() {
+  background(220);
+
+  // Try adding shapes here!
+  // For example:
+  fill(255, 0, 0);
+  circle(200, 150, 80);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz after 1.3 -->
+      <div class="quiz" data-id="ch01-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does the <code>draw()</code> function do in p5.js?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q1" value="a"> It runs once when the sketch starts</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q1" value="b" data-correct> It runs repeatedly, about 60 times per second</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q1" value="c"> It draws a single shape to the canvas</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q1" value="d"> It saves the canvas as an image file</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The <code>draw()</code> function is p5.js's animation loop. It executes continuously at the frame rate (default 60 fps), allowing you to create animations and respond to user input in real time. The function that runs only once at the start is <code>setup()</code>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.4 — THE COORDINATE SYSTEM
+           =============================================== -->
+      <h2 id="coordinate-system">1.4 The Coordinate System</h2>
+
+      <p>Before you can draw anything meaningful, you need to understand how p5.js locates points on the canvas.</p>
+
+      <p>The canvas is a grid of pixels. Each pixel has an $(x, y)$ coordinate. The coordinate system works as follows:</p>
+
+      <ul>
+        <li>The <strong>origin $(0, 0)$</strong> is at the <strong>top-left corner</strong> of the canvas</li>
+        <li>The <strong>$x$-axis</strong> increases to the <strong>right</strong></li>
+        <li>The <strong>$y$-axis</strong> increases <strong>downward</strong></li>
+      </ul>
+
+      <p>This is different from the mathematical convention where $y$ increases upward. In computer graphics, $y$ increases downward. This is a historical convention from the days of CRT monitors, which drew scanlines from top to bottom.</p>
+
+      <pre><code>  (0,0) ---------> x
+    |
+    |
+    |
+    v
+    y</code></pre>
+
+      <p>On a 400 &times; 400 canvas:</p>
+
+      <table>
+        <thead><tr><th>Location</th><th>Coordinates</th></tr></thead>
+        <tbody>
+          <tr><td>Top-left corner</td><td>$(0, 0)$</td></tr>
+          <tr><td>Top-right corner</td><td>$(400, 0)$</td></tr>
+          <tr><td>Bottom-left corner</td><td>$(0, 400)$</td></tr>
+          <tr><td>Bottom-right corner</td><td>$(400, 400)$</td></tr>
+          <tr><td>Center</td><td>$(200, 200)$</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>The most common coordinate mistake for beginners is forgetting that <strong>y increases downward</strong>. If you want to move something &ldquo;up&rdquo; on the screen, you must <em>decrease</em> its y-value, not increase it. This feels backwards at first but becomes natural with practice.</p>
+      </div>
+
+      <h3>1.4.1 Pixels and Resolution</h3>
+
+      <p>A <strong>pixel</strong> (short for &ldquo;picture element&rdquo;) is the smallest addressable unit on the canvas. When you call <code>createCanvas(400, 400)</code>, you create a grid of 400 &times; 400 = 160,000 pixels. Each pixel can be independently colored.</p>
+
+      <p>On high-DPI (Retina) screens, a single CSS pixel may correspond to 2 or more physical screen pixels. p5.js handles this automatically using <code>pixelDensity()</code>. For most purposes, you can work in the logical coordinate system without worrying about physical pixels.</p>
+
+      <h3>1.4.2 Useful Math Functions</h3>
+
+      <p>p5.js provides utility functions that work with coordinates:</p>
+
+      <ul>
+        <li><code>dist(x1, y1, x2, y2)</code> &mdash; Returns the Euclidean distance between two points: $\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$</li>
+        <li><code>map(value, start1, stop1, start2, stop2)</code> &mdash; Re-maps a number from one range to another. For example, <code>map(mouseX, 0, width, 0, 255)</code> converts the mouse x-position to a color value.</li>
+        <li><code>constrain(value, low, high)</code> &mdash; Clamps a value to stay within a range.</li>
+        <li><code>lerp(start, stop, amount)</code> &mdash; Linearly interpolates between two values. <code>lerp(0, 100, 0.5)</code> returns 50.</li>
+      </ul>
+
+      <p>These functions are used constantly in creative coding and will appear throughout this textbook.</p>
+
+      <p>Try the interactive demo below. It draws crosshairs at the center and labels the four corners so you can see the coordinate system in action. Move your mouse over the canvas to see the coordinates update in real time:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Coordinate System Demo &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  textFont('monospace');
+}
+
+function draw() {
+  background(240);
+
+  // Draw grid lines
+  stroke(200);
+  strokeWeight(1);
+  for (let i = 0; i <= 400; i += 50) {
+    line(i, 0, i, 400);
+    line(0, i, 400, i);
+  }
+
+  // Label corners
+  fill(80);
+  noStroke();
+  textSize(12);
+  textAlign(LEFT, TOP);
+  text("(0, 0)", 4, 4);
+  textAlign(RIGHT, TOP);
+  text("(400, 0)", 396, 4);
+  textAlign(LEFT, BOTTOM);
+  text("(0, 400)", 4, 396);
+  textAlign(RIGHT, BOTTOM);
+  text("(400, 400)", 396, 396);
+
+  // Crosshairs at mouse position
+  stroke(255, 0, 0);
+  strokeWeight(1);
+  line(mouseX, 0, mouseX, height);
+  line(0, mouseY, width, mouseY);
+
+  // Coordinate label at mouse
+  noStroke();
+  fill(255, 0, 0);
+  textAlign(LEFT, BOTTOM);
+  textSize(14);
+  let label = "(" + mouseX + ", " + mouseY + ")";
+  let tx = mouseX + 10;
+  let ty = mouseY - 10;
+  if (tx > 320) tx = mouseX - 10 - textWidth(label);
+  if (ty < 20) ty = mouseY + 20;
+  text(label, tx, ty);
+
+  // Red dot at mouse
+  fill(255, 0, 0);
+  circle(mouseX, mouseY, 8);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz after 1.4 -->
+      <div class="quiz" data-id="ch01-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In the p5.js coordinate system, where is the origin $(0, 0)$?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q2" value="a"> Center of the canvas</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q2" value="b"> Bottom-left corner</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q2" value="c" data-correct> Top-left corner</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q2" value="d"> Top-right corner</label></li>
+        </ul>
+        <div class="explanation">
+          <p>In p5.js (and most computer graphics systems), the origin $(0, 0)$ is at the <strong>top-left corner</strong> of the canvas. The $x$-axis increases to the right and the $y$-axis increases downward. This convention comes from the way CRT displays drew scanlines from top to bottom.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.5 — DRAWING PRIMITIVES
+           =============================================== -->
+      <h2 id="drawing-primitives">1.5 Drawing Primitives</h2>
+
+      <p>p5.js provides functions for common geometric shapes. These are the building blocks of everything you will draw.</p>
+
+      <h3>1.5.1 Points</h3>
+
+      <pre><code>point(x, y);</code></pre>
+
+      <p>Draws a single point. Points are very small by default (1 pixel). Use <code>strokeWeight()</code> to make them visible.</p>
+
+      <h3>1.5.2 Lines</h3>
+
+      <pre><code>line(x1, y1, x2, y2);</code></pre>
+
+      <p>Draws a straight line from point $(x_1, y_1)$ to point $(x_2, y_2)$.</p>
+
+      <h3>1.5.3 Circles and Ellipses</h3>
+
+      <pre><code>circle(x, y, diameter);
+ellipse(x, y, width, height);</code></pre>
+
+      <p>Both are centered at $(x, y)$. <code>circle()</code> takes a single diameter; <code>ellipse()</code> takes separate width and height values for ovals.</p>
+
+      <h3>1.5.4 Rectangles and Squares</h3>
+
+      <pre><code>rect(x, y, width, height);
+square(x, y, size);</code></pre>
+
+      <p>By default, <code>rect()</code> places the <strong>top-left corner</strong> at $(x, y)$. You can change this behavior with <code>rectMode(CENTER)</code>, which makes $(x, y)$ the center instead.</p>
+
+      <h3>1.5.5 Triangles</h3>
+
+      <pre><code>triangle(x1, y1, x2, y2, x3, y3);</code></pre>
+
+      <p>Draws a triangle by specifying its three corner points.</p>
+
+      <h3>1.5.6 Arcs and Curves</h3>
+
+      <pre><code>arc(x, y, w, h, startAngle, stopAngle);
+quad(x1, y1, x2, y2, x3, y3, x4, y4);</code></pre>
+
+      <p><code>arc()</code> draws a portion of an ellipse. Angles are in radians by default (where $\pi$ = half turn, $2\pi$ = full turn). <code>quad()</code> draws a four-sided polygon with four corner points. p5.js also provides constants like <code>PI</code>, <code>HALF_PI</code>, <code>QUARTER_PI</code>, and <code>TWO_PI</code> so you do not need to remember decimal values.</p>
+
+      <h3>1.5.7 Custom Shapes with <code>beginShape()</code></h3>
+
+      <p>For shapes beyond the built-in primitives, you can define custom polygons vertex by vertex:</p>
+
+      <pre><code>beginShape();
+vertex(100, 50);
+vertex(150, 100);
+vertex(130, 160);
+vertex(70, 160);
+vertex(50, 100);
+endShape(CLOSE);  // CLOSE connects last vertex to first</code></pre>
+
+      <p>This technique is used extensively for drawing trails, custom polygons, and organic shapes. You will see it in the cannon simulation where we draw projectile trajectories.</p>
+
+      <p>Try editing the interactive demo below to experiment with different shapes:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Drawing Shapes &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(240);
+
+  // Point
+  strokeWeight(8);
+  stroke(0);
+  point(30, 30);
+
+  // Line
+  strokeWeight(2);
+  stroke(0, 0, 200);
+  line(60, 20, 180, 60);
+
+  // Circle
+  fill(255, 100, 100);
+  stroke(0);
+  strokeWeight(2);
+  circle(100, 150, 80);
+
+  // Ellipse
+  fill(100, 200, 100);
+  ellipse(260, 150, 120, 60);
+
+  // Rectangle
+  fill(100, 150, 255);
+  rect(40, 230, 120, 70);
+
+  // Square
+  fill(255, 200, 50);
+  square(200, 230, 70);
+
+  // Triangle
+  fill(200, 100, 255);
+  triangle(320, 230, 280, 320, 370, 320);
+
+  // Arc (half circle)
+  fill(255, 150, 50);
+  arc(100, 360, 80, 80, PI, TWO_PI);
+
+  // Quad
+  fill(100, 220, 200);
+  quad(220, 340, 300, 330, 320, 390, 240, 390);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.6 — COLOR THEORY
+           =============================================== -->
+      <h2 id="color-theory">1.6 Color Theory: RGB, HSB, and Alpha</h2>
+
+      <p>Color is one of the most powerful tools in visual art, and understanding how computers represent color is essential for creative coding. Every pixel on your screen is produced by mixing light, and the way we describe that mixture to the computer defines the colors we see.</p>
+
+      <h3>1.6.1 Additive vs. Subtractive Color</h3>
+
+      <p>There are two fundamentally different ways to mix colors, depending on whether you are working with <strong>light</strong> or <strong>pigment</strong>.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Additive color mixing</strong> (light): Start with black (no light) and add colored light. Red + Green = Yellow. Red + Blue = Magenta. Green + Blue = Cyan. All three = White. This is how screens work.</p>
+        <p><strong>Subtractive color mixing</strong> (pigment): Start with white (all light reflected) and add pigments that absorb light. Cyan + Magenta = Blue. Cyan + Yellow = Green. All three = Black. This is how printers and paint work.</p>
+      </div>
+
+      <p>Computer screens use <strong>additive</strong> color. Each pixel contains a tiny red, green, and blue sub-pixel. By varying the intensity of each, the screen can produce millions of colors. This is why the primary color model for screens is RGB.</p>
+
+      <h3>1.6.2 The RGB Color Model</h3>
+
+      <p>In p5.js, the default color mode is RGB. Colors are specified with three values, each ranging from 0 to 255:</p>
+
+      <ul>
+        <li><strong>R</strong> (Red): 0 = no red, 255 = full red</li>
+        <li><strong>G</strong> (Green): 0 = no green, 255 = full green</li>
+        <li><strong>B</strong> (Blue): 0 = no blue, 255 = full blue</li>
+      </ul>
+
+      <table>
+        <thead><tr><th>Color</th><th>R</th><th>G</th><th>B</th><th>Code</th></tr></thead>
+        <tbody>
+          <tr><td>Black</td><td>0</td><td>0</td><td>0</td><td><code>fill(0, 0, 0)</code></td></tr>
+          <tr><td>White</td><td>255</td><td>255</td><td>255</td><td><code>fill(255, 255, 255)</code></td></tr>
+          <tr><td>Red</td><td>255</td><td>0</td><td>0</td><td><code>fill(255, 0, 0)</code></td></tr>
+          <tr><td>Green</td><td>0</td><td>255</td><td>0</td><td><code>fill(0, 255, 0)</code></td></tr>
+          <tr><td>Blue</td><td>0</td><td>0</td><td>255</td><td><code>fill(0, 0, 255)</code></td></tr>
+          <tr><td>Yellow</td><td>255</td><td>255</td><td>0</td><td><code>fill(255, 255, 0)</code></td></tr>
+          <tr><td>Cyan</td><td>0</td><td>255</td><td>255</td><td><code>fill(0, 255, 255)</code></td></tr>
+          <tr><td>Magenta</td><td>255</td><td>0</td><td>255</td><td><code>fill(255, 0, 255)</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>A single number gives grayscale: <code>fill(128)</code> is equivalent to <code>fill(128, 128, 128)</code>, a medium gray.</p>
+
+      <h3>1.6.3 The HSB Color Model</h3>
+
+      <p>RGB is intuitive for computers but less intuitive for humans. If someone asks you to make a color &ldquo;a bit more orange,&rdquo; you would need to reason about adjusting red and green values. The <strong>HSB</strong> (Hue, Saturation, Brightness) model is more aligned with how humans perceive color:</p>
+
+      <ul>
+        <li><strong>Hue</strong> (0&ndash;360): The &ldquo;type&rdquo; of color on the color wheel. 0 = red, 60 = yellow, 120 = green, 180 = cyan, 240 = blue, 300 = magenta.</li>
+        <li><strong>Saturation</strong> (0&ndash;100): How vivid the color is. 0 = gray, 100 = fully saturated.</li>
+        <li><strong>Brightness</strong> (0&ndash;100): How bright the color is. 0 = black, 100 = full brightness.</li>
+      </ul>
+
+      <p>To use HSB in p5.js, call <code>colorMode(HSB)</code> (typically in <code>setup()</code>):</p>
+
+      <pre><code>function setup() {
+  createCanvas(400, 400);
+  colorMode(HSB, 360, 100, 100);
+}
+
+function draw() {
+  background(0, 0, 95);          // Near-white
+  fill(0, 80, 100);              // Bright red
+  circle(100, 200, 80);
+  fill(120, 80, 100);            // Bright green
+  circle(200, 200, 80);
+  fill(240, 80, 100);            // Bright blue
+  circle(300, 200, 80);
+}</code></pre>
+
+      <p>HSB makes it especially easy to create <strong>rainbow effects</strong>. By incrementing the hue over time while keeping saturation and brightness constant, you get a smooth cycle through all colors:</p>
+
+      <pre><code>colorMode(HSB, 360, 100, 100);
+let hue = frameCount % 360;  // Cycles 0 to 359 endlessly
+fill(hue, 80, 100);          // Vibrant, smoothly changing color</code></pre>
+
+      <p>This technique is widely used in generative art for creating dynamic, evolving color palettes.</p>
+
+      <h3>1.6.4 Alpha: Transparency</h3>
+
+      <p>Both RGB and HSB support a fourth value called <strong>alpha</strong>, which controls opacity:</p>
+
+      <ul>
+        <li><code>fill(255, 0, 0, 255)</code> &mdash; Fully opaque red</li>
+        <li><code>fill(255, 0, 0, 128)</code> &mdash; Semi-transparent red</li>
+        <li><code>fill(255, 0, 0, 0)</code> &mdash; Fully transparent (invisible)</li>
+      </ul>
+
+      <p>Alpha blending is how overlapping semi-transparent shapes create new visual effects. It is a fundamental technique for creating trails, glows, and layered compositions.</p>
+
+      <h3>1.6.5 The <code>colorMode()</code> Function</h3>
+
+      <p>By default, p5.js uses RGB with ranges 0&ndash;255. The <code>colorMode()</code> function lets you switch between color models and customize the ranges:</p>
+
+      <pre><code>// Default: RGB with 0-255 range
+colorMode(RGB, 255);
+
+// RGB with 0-1 range (useful for shader-like work)
+colorMode(RGB, 1.0);
+
+// HSB with standard ranges
+colorMode(HSB, 360, 100, 100);
+
+// HSB with 0-255 ranges
+colorMode(HSB, 255);</code></pre>
+
+      <p>HSB is particularly useful when you want to cycle through colors smoothly (just change the hue), create pastel palettes (reduce saturation), or darken/lighten colors (adjust brightness). Many generative artists prefer HSB for its intuitive control over color aesthetics.</p>
+
+      <h3>1.6.6 Practical Color Tips</h3>
+
+      <p>Here are some practical guidelines for working with color in creative coding:</p>
+
+      <ul>
+        <li><strong>Limit your palette</strong>: Constraints breed creativity. Start with 3&ndash;5 colors rather than using the full RGB spectrum.</li>
+        <li><strong>Use HSB for gradients</strong>: Sweeping hue from 0 to 360 creates a rainbow. Sweeping brightness from 100 to 0 fades to black.</li>
+        <li><strong>Alpha for depth</strong>: Semi-transparent overlapping shapes create rich, layered compositions that are difficult to achieve with opaque drawing.</li>
+        <li><strong>Background matters</strong>: A dark background makes bright colors pop. A light background makes subtle pastels shine.</li>
+      </ul>
+
+      <h3>1.6.7 State-Based Drawing</h3>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><code>fill()</code> and <code>stroke()</code> do not apply to a specific shape. They set the <strong>current drawing state</strong>. Once you call <code>fill(255, 0, 0)</code>, every shape drawn after that will be red&mdash;until you change the fill again. Think of it like picking up a colored marker: everything you draw stays that color until you switch markers.</p>
+      </div>
+
+      <p>Related state functions:</p>
+      <ul>
+        <li><code>fill(r, g, b)</code> &mdash; Set interior color</li>
+        <li><code>stroke(r, g, b)</code> &mdash; Set outline color</li>
+        <li><code>noFill()</code> &mdash; Transparent interior</li>
+        <li><code>noStroke()</code> &mdash; No outline</li>
+        <li><code>strokeWeight(w)</code> &mdash; Outline thickness</li>
+      </ul>
+
+      <p>Try this interactive color mixing demo:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Color Mixing Demo &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(30);
+
+  // Additive color mixing with transparency
+  noStroke();
+
+  // Red circle
+  fill(255, 0, 0, 180);
+  circle(170, 160, 180);
+
+  // Green circle
+  fill(0, 255, 0, 180);
+  circle(230, 160, 180);
+
+  // Blue circle
+  fill(0, 0, 255, 180);
+  circle(200, 230, 180);
+
+  // Labels
+  fill(255);
+  textAlign(CENTER);
+  textSize(14);
+  text("Additive Color Mixing", 200, 30);
+  textSize(11);
+  text("(overlapping translucent circles)", 200, 50);
+
+  // Show RGB state-based drawing
+  fill(255);
+  textSize(13);
+  text("State-based color:", 200, 340);
+
+  fill(255, 0, 0);
+  rect(100, 355, 40, 30);   // red
+  fill(0, 200, 0);
+  rect(150, 355, 40, 30);   // green
+  fill(50, 100, 255);
+  rect(200, 355, 40, 30);   // blue
+  fill(255, 200, 0);
+  rect(250, 355, 40, 30);   // yellow
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz after 1.6 -->
+      <div class="quiz" data-id="ch01-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What color does <code>fill(255, 0, 0)</code> produce?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q3" value="a"> Blue</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q3" value="b"> Green</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q3" value="c" data-correct> Red</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q3" value="d"> White</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>fill(255, 0, 0)</code> sets R=255 (full red), G=0 (no green), B=0 (no blue). The result is pure red. In RGB, the first parameter is always the red channel.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.7 — VARIABLES AND DATA TYPES
+           =============================================== -->
+      <h2 id="variables-and-data-types">1.7 Variables and Data Types</h2>
+
+      <p>A <strong>variable</strong> is a named container for a value. Instead of using a number directly, you give it a name and refer to it by that name.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Variable</strong> &mdash; A named storage location in the computer's memory that holds a value. The value can be read, used in calculations, and changed over time.</p>
+      </div>
+
+      <h3>1.7.1 Declaring Variables: <code>let</code> and <code>const</code></h3>
+
+      <p>JavaScript provides two primary keywords for declaring variables:</p>
+
+      <p><strong><code>let</code></strong> &mdash; Declares a variable whose value can change:</p>
+
+      <pre><code>let x = 100;       // x is 100 now
+x = 200;           // x is now 200 (reassigned)
+x = x + 5;         // x is now 205</code></pre>
+
+      <p><strong><code>const</code></strong> &mdash; Declares a variable whose value cannot be reassigned:</p>
+
+      <pre><code>const GRAVITY = 0.2;   // This value cannot change
+GRAVITY = 0.5;         // ERROR! Cannot reassign a const</code></pre>
+
+      <p>Use <code>const</code> for values that should remain fixed (like physical constants or configuration settings). Use <code>let</code> for values that change over time (like position, velocity, or color).</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>You may see <code>var</code> in older JavaScript code. While <code>var</code> still works, it has confusing scoping rules that can lead to bugs. In modern JavaScript, always use <code>let</code> or <code>const</code> instead.</p>
+      </div>
+
+      <h3>1.7.2 Data Types</h3>
+
+      <p>Every variable holds a value, and every value has a <strong>type</strong>. The most common types in JavaScript are:</p>
+
+      <p><strong>Number</strong> &mdash; Any numeric value, including integers and decimals:</p>
+      <pre><code>let count = 42;
+let pi = 3.14159;
+let negative = -10;</code></pre>
+
+      <p><strong>String</strong> &mdash; Text, written in quotes:</p>
+      <pre><code>let name = "Alice";
+let greeting = 'Hello, world!';
+let message = `Score: ${count}`;   // Template literal with embedded expression</code></pre>
+
+      <p><strong>Boolean</strong> &mdash; Either <code>true</code> or <code>false</code>:</p>
+      <pre><code>let isRunning = true;
+let gameOver = false;</code></pre>
+
+      <h3>1.7.3 Scope: Where Variables Live</h3>
+
+      <p>Where you declare a variable determines where it can be accessed.</p>
+
+      <p><strong>Global scope</strong>: Variables declared outside any function are accessible everywhere:</p>
+
+      <pre><code>let x = 0;  // Global -- accessible in setup(), draw(), etc.
+
+function setup() {
+  createCanvas(400, 400);
+  x = 200;  // Can access x here
+}
+
+function draw() {
+  circle(x, 200, 50);  // Can access x here too
+}</code></pre>
+
+      <p><strong>Local scope</strong>: Variables declared inside a function (or block) exist only within that function:</p>
+
+      <pre><code>function draw() {
+  let diameter = 50;  // Local to draw()
+  circle(200, 200, diameter);  // Works fine
+}
+
+function mousePressed() {
+  // circle(200, 200, diameter);  // ERROR! diameter does not exist here
+}</code></pre>
+
+      <h3>1.7.4 Naming Conventions</h3>
+
+      <p>Good variable names describe what the variable represents:</p>
+
+      <ul>
+        <li><code>ballX</code> is better than <code>a</code></li>
+        <li><code>launchSpeed</code> is better than <code>ls</code></li>
+        <li><code>isGameOver</code> clearly indicates a boolean</li>
+      </ul>
+
+      <p>JavaScript convention uses <strong>camelCase</strong> for variables and functions: <code>myVariable</code>, <code>drawFlower</code>, <code>launchSpeed</code>. Constants often use <strong>UPPER_SNAKE_CASE</strong>: <code>MAX_SPEED</code>, <code>GRAVITY</code>.</p>
+
+      <h3>1.7.5 Type Coercion and <code>typeof</code></h3>
+
+      <p>JavaScript is a <strong>dynamically typed</strong> language, meaning variables can hold values of any type, and types can change at runtime. This flexibility can occasionally cause surprises:</p>
+
+      <pre><code>let x = 5;          // x is a number
+x = "hello";        // Now x is a string (no error!)
+
+// Type coercion surprises:
+console.log("5" + 3);    // "53" (string concatenation, not addition!)
+console.log("5" - 3);    // 2   (subtraction converts string to number)
+console.log(typeof 42);  // "number"
+console.log(typeof "hi");// "string"
+console.log(typeof true);// "boolean"</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>The <code>+</code> operator does double duty in JavaScript: it adds numbers <em>and</em> concatenates strings. If one operand is a string, JavaScript converts the other to a string and concatenates. This is why <code>"5" + 3</code> gives <code>"53"</code> instead of <code>8</code>. When in doubt, use <code>Number()</code> to explicitly convert: <code>Number("5") + 3</code> gives <code>8</code>.</p>
+      </div>
+
+      <h3>1.7.6 Using Variables for Animation</h3>
+
+      <p>Variables make animation possible. By changing a variable each frame, shapes appear to move:</p>
+
+      <pre><code>let x = 0;
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(220);
+  circle(x, 200, 50);
+  x = x + 2;  // Move right by 2 pixels each frame
+}</code></pre>
+
+      <p>The statement <code>x = x + 2</code> might look strange mathematically (no number equals itself plus 2). But in programming, <code>=</code> does not mean &ldquo;is equal to.&rdquo; It means &ldquo;assign the value on the right to the variable on the left.&rdquo; So <code>x = x + 2</code> means: take the current value of x, add 2, and store the result back in x.</p>
+
+      <p>JavaScript provides shorthand operators for common updates:</p>
+
+      <table>
+        <thead><tr><th>Shorthand</th><th>Equivalent</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>x += 2</code></td><td><code>x = x + 2</code></td><td>Add 2 to x</td></tr>
+          <tr><td><code>x -= 1</code></td><td><code>x = x - 1</code></td><td>Subtract 1 from x</td></tr>
+          <tr><td><code>x *= 0.95</code></td><td><code>x = x * 0.95</code></td><td>Multiply x by 0.95</td></tr>
+          <tr><td><code>x /= 2</code></td><td><code>x = x / 2</code></td><td>Divide x by 2</td></tr>
+          <tr><td><code>x++</code></td><td><code>x = x + 1</code></td><td>Increment x by 1</td></tr>
+          <tr><td><code>x--</code></td><td><code>x = x - 1</code></td><td>Decrement x by 1</td></tr>
+        </tbody>
+      </table>
+
+      <p>These shorthand forms are used extensively in loops (<code>i++</code>) and physics simulations (<code>vy += gravity</code>).</p>
+
+
+      <!-- ===============================================
+           SECTION 1.8 — BUILT-IN VARIABLES
+           =============================================== -->
+      <h2 id="built-in-variables">1.8 Built-in Variables</h2>
+
+      <p>p5.js automatically provides several variables that you can use without declaring them:</p>
+
+      <table>
+        <thead><tr><th>Variable</th><th>What it contains</th></tr></thead>
+        <tbody>
+          <tr><td><code>mouseX</code></td><td>Current x-coordinate of the mouse on the canvas</td></tr>
+          <tr><td><code>mouseY</code></td><td>Current y-coordinate of the mouse on the canvas</td></tr>
+          <tr><td><code>pmouseX</code></td><td>Previous frame's mouseX (useful for calculating speed)</td></tr>
+          <tr><td><code>pmouseY</code></td><td>Previous frame's mouseY</td></tr>
+          <tr><td><code>width</code></td><td>The width of the canvas (set by <code>createCanvas</code>)</td></tr>
+          <tr><td><code>height</code></td><td>The height of the canvas (set by <code>createCanvas</code>)</td></tr>
+          <tr><td><code>frameCount</code></td><td>How many frames have been drawn since the sketch started</td></tr>
+          <tr><td><code>mouseIsPressed</code></td><td><code>true</code> if the mouse button is held down</td></tr>
+          <tr><td><code>keyIsPressed</code></td><td><code>true</code> if any key is held down</td></tr>
+          <tr><td><code>key</code></td><td>The most recently pressed key (as a string)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Using <code>width</code> and <code>height</code> for responsive layouts:</strong> Instead of hard-coding positions, use <code>width</code> and <code>height</code> to place elements relative to the canvas size. For example, <code>circle(width / 2, height / 2, 50)</code> always draws at the center, regardless of canvas dimensions. This makes your sketches adaptable if you change the canvas size later.</p>
+      </div>
+
+      <p>p5.js also provides <strong>event functions</strong> that run automatically when specific events occur:</p>
+
+      <table>
+        <thead><tr><th>Function</th><th>When it runs</th></tr></thead>
+        <tbody>
+          <tr><td><code>mousePressed()</code></td><td>Once when the mouse button is clicked</td></tr>
+          <tr><td><code>mouseReleased()</code></td><td>Once when the mouse button is released</td></tr>
+          <tr><td><code>mouseMoved()</code></td><td>Each frame the mouse moves (button up)</td></tr>
+          <tr><td><code>mouseDragged()</code></td><td>Each frame the mouse moves (button down)</td></tr>
+          <tr><td><code>keyPressed()</code></td><td>Once when a key is pressed</td></tr>
+          <tr><td><code>keyReleased()</code></td><td>Once when a key is released</td></tr>
+        </tbody>
+      </table>
+
+      <p>These event functions are essential for interactivity. The cannon simulation uses <code>mousePressed()</code> to fire projectiles.</p>
+
+      <p>Try the mouse-follower demo below&mdash;it uses <code>mouseX</code>, <code>mouseY</code>, and <code>mouseIsPressed</code>:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Mouse Follower &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  background(240);
+}
+
+function draw() {
+  // Semi-transparent background for trail effect
+  background(240, 15);
+
+  // Change color when mouse is pressed
+  if (mouseIsPressed) {
+    fill(255, 60, 100);
+  } else {
+    fill(50, 120, 255);
+  }
+  noStroke();
+
+  // Size changes with speed
+  let speed = dist(mouseX, mouseY, pmouseX, pmouseY);
+  let size = map(speed, 0, 50, 10, 60);
+
+  circle(mouseX, mouseY, size);
+
+  // Display info
+  fill(60);
+  noStroke();
+  textSize(12);
+  text("mouseX: " + mouseX, 10, 20);
+  text("mouseY: " + mouseY, 10, 36);
+  text("frameCount: " + frameCount, 10, 52);
+  text("mouseIsPressed: " + mouseIsPressed, 10, 68);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.9 — CONTROL FLOW: CONDITIONALS
+           =============================================== -->
+      <h2 id="conditionals">1.9 Control Flow: Conditionals</h2>
+
+      <p>An <code>if</code> statement lets your program make decisions. Without conditionals, a program would execute every instruction in the same order every time. Conditionals allow the program to take different paths depending on the current state.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Conditional</strong> &mdash; A control flow statement that executes different blocks of code depending on whether a specified condition evaluates to <code>true</code> or <code>false</code>. Conditionals are what give programs the ability to &ldquo;decide&rdquo; what to do based on the current state.</p>
+      </div>
+
+      <h3>1.9.1 The <code>if</code> Statement</h3>
+
+      <pre><code>if (condition) {
+  // This code runs only if the condition is true
+}</code></pre>
+
+      <p>The condition is a <strong>boolean expression</strong>&mdash;something that evaluates to <code>true</code> or <code>false</code>. If the condition is true, the code inside the curly braces executes. If false, it is skipped entirely.</p>
+
+      <h3>1.9.2 <code>if / else</code></h3>
+
+      <pre><code>if (condition) {
+  // Runs if condition is true
+} else {
+  // Runs if condition is false
+}</code></pre>
+
+      <h3>1.9.3 <code>if / else if / else</code></h3>
+
+      <p>For multiple conditions, chain them with <code>else if</code>:</p>
+
+      <pre><code>if (x &lt; 100) {
+  fill(255, 0, 0);     // Red zone
+} else if (x &lt; 200) {
+  fill(255, 255, 0);   // Yellow zone
+} else if (x &lt; 300) {
+  fill(0, 255, 0);     // Green zone
+} else {
+  fill(0, 0, 255);     // Blue zone
+}</code></pre>
+
+      <p>The conditions are checked in order from top to bottom. As soon as one is true, its block executes, and the rest are skipped.</p>
+
+      <h3>1.9.4 Comparison Operators</h3>
+
+      <table>
+        <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>&gt;</code></td><td>Greater than</td><td><code>x &gt; 100</code></td></tr>
+          <tr><td><code>&lt;</code></td><td>Less than</td><td><code>x &lt; 100</code></td></tr>
+          <tr><td><code>&gt;=</code></td><td>Greater than or equal to</td><td><code>x &gt;= 100</code></td></tr>
+          <tr><td><code>&lt;=</code></td><td>Less than or equal to</td><td><code>x &lt;= 100</code></td></tr>
+          <tr><td><code>===</code></td><td>Strictly equal to</td><td><code>x === 100</code></td></tr>
+          <tr><td><code>!==</code></td><td>Strictly not equal to</td><td><code>x !== 100</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Use <code>===</code> (triple equals) for comparison, not <code>=</code> (single equals). A single <code>=</code> is the <strong>assignment</strong> operator (it stores a value). Writing <code>if (x = 5)</code> does not check whether x equals 5&mdash;it <em>sets</em> x to 5 and always evaluates as true. Always use <code>===</code> for comparisons.</p>
+      </div>
+
+      <h3>1.9.5 Logical Operators</h3>
+
+      <p>Combine multiple conditions using logical operators:</p>
+
+      <table>
+        <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>&amp;&amp;</code></td><td>AND (both must be true)</td><td><code>x &gt; 0 &amp;&amp; x &lt; 400</code></td></tr>
+          <tr><td><code>||</code></td><td>OR (at least one must be true)</td><td><code>x &lt; 0 || x &gt; 400</code></td></tr>
+          <tr><td><code>!</code></td><td>NOT (inverts true/false)</td><td><code>!mouseIsPressed</code></td></tr>
+        </tbody>
+      </table>
+
+      <pre><code>// Check if mouse is within a rectangle region
+if (mouseX > 100 && mouseX < 300 && mouseY > 50 && mouseY < 250) {
+  fill(0, 255, 0);  // Green: mouse is inside
+} else {
+  fill(255, 0, 0);  // Red: mouse is outside
+}</code></pre>
+
+      <h3>1.9.6 Conditionals in Practice</h3>
+
+      <p>Conditionals are used constantly in creative coding: checking mouse position, detecting collisions, wrapping objects around screen edges, cycling through states, and much more. Here is a practical example that combines several conditional concepts:</p>
+
+      <pre><code>let x = 200;
+let speed = 3;
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(220);
+
+  // Move the ball
+  x = x + speed;
+
+  // Bounce off edges (reverse direction)
+  if (x > width - 25 || x < 25) {
+    speed = -speed;
+  }
+
+  // Color depends on direction
+  if (speed > 0) {
+    fill(0, 150, 255);   // Blue: moving right
+  } else {
+    fill(255, 100, 50);  // Orange: moving left
+  }
+
+  circle(x, 200, 50);
+}</code></pre>
+
+      <p>This pattern&mdash;checking for boundary conditions and reversing velocity&mdash;is one of the most fundamental conditional patterns in simulation and game programming. You will use it in the bouncing ball exercise at the end of this chapter and throughout the course whenever objects need to interact with boundaries.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Boundary detection</strong> is one of the most common uses of conditionals in creative coding. The general pattern is: (1) check if the object has crossed a boundary, (2) if so, correct its position and/or reverse its velocity. This simple pattern underlies collision detection in physics simulations, screen wrapping in particle systems, and edge bouncing in generative art.</p>
+      </div>
+
+      <!-- Quiz after 1.9 -->
+      <div class="quiz" data-id="ch01-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In JavaScript, what does the <code>===</code> operator do?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q4" value="a"> Assigns a value to a variable</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q4" value="b" data-correct> Checks if two values are strictly equal (same value and type)</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q4" value="c"> Multiplies two numbers</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q4" value="d"> Declares a constant variable</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>===</code> is the <strong>strict equality</strong> operator. It returns <code>true</code> only if both operands have the same value <em>and</em> the same type. For example, <code>5 === 5</code> is true, but <code>5 === "5"</code> is false because one is a number and the other is a string. Always use <code>===</code> (not <code>==</code>) for comparisons in modern JavaScript.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.10 — LOOPS
+           =============================================== -->
+      <h2 id="loops">1.10 Loops</h2>
+
+      <p>A <strong>loop</strong> repeats a block of code multiple times. Loops are essential whenever you need to do something many times&mdash;draw a row of circles, iterate through an array, or process every pixel in an image.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Loop</strong> &mdash; A control flow structure that repeats a block of code multiple times. The two most common loops in JavaScript are <code>for</code> (when you know how many times to repeat) and <code>while</code> (when repetition depends on a condition). Loops eliminate the need to copy-paste similar code and are essential for working with arrays and grids.</p>
+      </div>
+
+      <h3>1.10.1 The <code>for</code> Loop</h3>
+
+      <p>The most common loop in JavaScript is the <code>for</code> loop:</p>
+
+      <pre><code>for (let i = 0; i &lt; 10; i++) {
+  // This code runs 10 times
+  // i takes values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+}</code></pre>
+
+      <p>The three parts inside the parentheses:</p>
+      <ol>
+        <li><strong>Initialization</strong>: <code>let i = 0</code> &mdash; Create a counter variable, starting at 0</li>
+        <li><strong>Condition</strong>: <code>i &lt; 10</code> &mdash; Keep looping while this is true</li>
+        <li><strong>Update</strong>: <code>i++</code> &mdash; After each iteration, increment i by 1</li>
+      </ol>
+
+      <p>Example&mdash;draw a row of 10 circles spaced 40 pixels apart:</p>
+
+      <pre><code>for (let i = 0; i &lt; 10; i++) {
+  circle(i * 40 + 20, 200, 30);
+}</code></pre>
+
+      <p>Without the loop, you would need to write 10 separate <code>circle()</code> calls. With the loop, one line of drawing code handles all 10. If you change <code>10</code> to <code>100</code>, you get 100 circles with no additional code.</p>
+
+      <h3>1.10.2 The <code>while</code> Loop</h3>
+
+      <p>A <code>while</code> loop repeats as long as a condition is true:</p>
+
+      <pre><code>let x = 0;
+while (x &lt; 400) {
+  circle(x, 200, 20);
+  x = x + 40;
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Be careful with <code>while</code> loops: if the condition never becomes false, the loop runs forever and your sketch will freeze. Always make sure the loop variable changes in a way that eventually makes the condition false.</p>
+      </div>
+
+      <h3>1.10.3 Nested Loops: Drawing a Grid</h3>
+
+      <p>By placing one loop inside another, you can iterate over a 2D grid. This is one of the most useful patterns in creative coding:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Nested Loop Grid &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(30);
+  noStroke();
+
+  let spacing = 40;
+  let size = 30;
+
+  for (let x = spacing / 2; x < width; x += spacing) {
+    for (let y = spacing / 2; y < height; y += spacing) {
+      // Color based on position
+      let r = map(x, 0, width, 50, 255);
+      let b = map(y, 0, height, 50, 255);
+
+      // Size changes with mouse distance
+      let d = dist(mouseX, mouseY, x, y);
+      let s = map(d, 0, 200, size * 1.5, size * 0.3);
+      s = constrain(s, 4, size * 1.5);
+
+      fill(r, 100, b);
+      circle(x, y, s);
+    }
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>The outer loop iterates over columns (x positions), and the inner loop iterates over rows (y positions). Together they visit every cell in the grid. For a 10&times;10 grid, the inner loop runs 100 times total (10 rows for each of 10 columns).</p>
+
+      <h3>1.10.4 Common Loop Patterns</h3>
+
+      <p>Here are several loop patterns you will use repeatedly in creative coding:</p>
+
+      <p><strong>Counting from a start to an end:</strong></p>
+      <pre><code>for (let i = 5; i &lt; 15; i++) {
+  // i goes 5, 6, 7, ..., 14
+}</code></pre>
+
+      <p><strong>Stepping by a custom amount:</strong></p>
+      <pre><code>for (let x = 0; x &lt; width; x += 20) {
+  line(x, 0, x, height);  // Vertical lines every 20 pixels
+}</code></pre>
+
+      <p><strong>Counting backwards:</strong></p>
+      <pre><code>for (let i = 10; i &gt;= 0; i--) {
+  // i goes 10, 9, 8, ..., 0
+  // Useful when removing from arrays during iteration
+}</code></pre>
+
+      <p><strong>Iterating over an array:</strong></p>
+      <pre><code>let colors = ["red", "green", "blue"];
+for (let i = 0; i &lt; colors.length; i++) {
+  console.log(colors[i]);
+}</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Nested loops and computational cost:</strong> A single loop over $n$ items does $n$ operations. Two nested loops each iterating $n$ times do $n \times n = n^2$ operations. For a grid of 100&times;100, that is 10,000 iterations per frame. At 60 fps, that is 600,000 iterations per second. Keep this in mind as your sketches grow more complex&mdash;deeply nested loops can slow things down.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.11 — FUNCTIONS
+           =============================================== -->
+      <h2 id="functions">1.11 Functions</h2>
+
+      <p>You have already used many functions: <code>circle()</code>, <code>fill()</code>, <code>background()</code>. These are functions that p5.js provides. But you can also write your own.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Function</strong> &mdash; A reusable, named block of code that performs a specific task. Functions can accept <em>parameters</em> (input values) and <em>return</em> a result. They are the primary tool for organizing and reusing code.</p>
+      </div>
+
+      <h3>1.11.1 Defining a Function</h3>
+
+      <pre><code>function drawFlower(x, y, size) {
+  fill(255, 150, 200);
+  noStroke();
+  circle(x - size/3, y, size/2);
+  circle(x + size/3, y, size/2);
+  circle(x, y - size/3, size/2);
+  circle(x, y + size/3, size/2);
+  fill(255, 255, 100);
+  circle(x, y, size/3);
+}</code></pre>
+
+      <p>The values in parentheses (<code>x</code>, <code>y</code>, <code>size</code>) are <strong>parameters</strong>&mdash;placeholders that get filled in with specific values each time you call the function. When you write <code>drawFlower(100, 200, 60)</code>, the function runs with <code>x = 100</code>, <code>y = 200</code>, <code>size = 60</code>.</p>
+
+      <h3>1.11.2 Return Values</h3>
+
+      <p>Functions can compute and <strong>return</strong> a value using the <code>return</code> keyword:</p>
+
+      <pre><code>function distance(x1, y1, x2, y2) {
+  let dx = x2 - x1;
+  let dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+let d = distance(0, 0, 3, 4);  // d is 5</code></pre>
+
+      <p>The <code>return</code> statement does two things: it specifies the output value of the function, and it immediately exits the function.</p>
+
+      <h3>1.11.3 Function Expressions</h3>
+
+      <p>JavaScript also allows you to create functions as expressions and store them in variables:</p>
+
+      <pre><code>const square = function(n) {
+  return n * n;
+};
+
+// Arrow function syntax (shorter)
+const cube = (n) => n * n * n;</code></pre>
+
+      <h3>1.11.4 Why Functions Matter</h3>
+
+      <p>Functions are essential for three reasons:</p>
+
+      <ol>
+        <li><strong>Reusability</strong>: Write the code once, use it many times with different arguments.</li>
+        <li><strong>Abstraction</strong>: Give complex operations a simple name. <code>drawFlower(100, 200, 60)</code> is easier to understand than 10 lines of circle-drawing code.</li>
+        <li><strong>Organization</strong>: Break a complex program into smaller, understandable pieces. Each function handles one task.</li>
+      </ol>
+
+      <h3>1.11.5 Example: A Drawing Function in Action</h3>
+
+      <p>Here is a complete example showing how custom functions make it easy to create complex compositions from simple building blocks:</p>
+
+      <pre><code>function drawTree(x, y, size) {
+  // Trunk
+  fill(100, 70, 30);
+  noStroke();
+  rect(x - size * 0.1, y, size * 0.2, size * 0.5);
+
+  // Leaves (three overlapping circles)
+  fill(30, 140, 50);
+  circle(x, y - size * 0.2, size * 0.6);
+  circle(x - size * 0.2, y, size * 0.5);
+  circle(x + size * 0.2, y, size * 0.5);
+}
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(135, 200, 235);  // Sky blue
+
+  // Ground
+  fill(80, 160, 60);
+  rect(0, 300, 400, 100);
+
+  // A forest of trees, each one call to drawTree()
+  drawTree(50, 280, 80);
+  drawTree(150, 290, 60);
+  drawTree(250, 275, 90);
+  drawTree(350, 285, 70);
+}</code></pre>
+
+      <p>Without the <code>drawTree</code> function, drawing four trees would require repeating the trunk-and-leaves code four times. With it, each tree is a single, readable function call. This pattern&mdash;building complex visuals from simple, reusable functions&mdash;is the foundation of creative coding.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Decomposition</strong> is the practice of breaking a complex problem into smaller, manageable parts. In creative coding, this usually means writing a function for each visual element (tree, flower, star, particle) and then composing them together. Good decomposition makes your code readable, modifiable, and reusable.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.12 — ARRAYS
+           =============================================== -->
+      <h2 id="arrays">1.12 Arrays</h2>
+
+      <p>An <strong>array</strong> is an ordered list of values. Arrays let you store and work with collections of data&mdash;a list of positions, a set of colors, a collection of projectile objects.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Array</strong> &mdash; An ordered collection of values stored in a single variable. Each value in the array is called an <em>element</em>, and each element has a numeric <em>index</em> starting from 0.</p>
+      </div>
+
+      <p>If variables are like labeled jars holding one item each, arrays are like numbered shelves holding many items in order. They are indispensable for any program that deals with collections of things: a list of particle positions, a sequence of colors, a set of trail points.</p>
+
+      <h3>1.12.1 Creating and Accessing Arrays</h3>
+
+      <pre><code>let colors = ["red", "green", "blue"];   // Array of strings
+let sizes = [10, 20, 30, 40, 50];       // Array of numbers
+let empty = [];                           // Empty array
+
+// Access by index (0-based)
+console.log(colors[0]);  // "red"
+console.log(colors[1]);  // "green"
+console.log(colors[2]);  // "blue"
+
+// Length
+console.log(sizes.length);  // 5</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Array indices start at <strong>0</strong>, not 1. The first element is <code>array[0]</code>, the second is <code>array[1]</code>, and so on. An array of length 5 has indices 0 through 4. Accessing <code>array[5]</code> returns <code>undefined</code>.</p>
+      </div>
+
+      <h3>1.12.2 Adding and Removing Elements</h3>
+
+      <pre><code>let arr = [1, 2, 3];
+
+arr.push(4);      // Add to end:     [1, 2, 3, 4]
+arr.pop();        // Remove from end: [1, 2, 3]
+arr.unshift(0);   // Add to front:    [0, 1, 2, 3]
+arr.shift();      // Remove from front: [1, 2, 3]
+arr.splice(1, 1); // Remove 1 element at index 1: [1, 3]</code></pre>
+
+      <h3>1.12.3 Iterating Over Arrays</h3>
+
+      <pre><code>let values = [10, 20, 30, 40, 50];
+
+// for loop
+for (let i = 0; i &lt; values.length; i++) {
+  console.log(values[i]);
+}
+
+// for...of loop (simpler syntax)
+for (let v of values) {
+  console.log(v);
+}</code></pre>
+
+      <h3>1.12.4 Objects in Arrays</h3>
+
+      <p>Arrays can hold objects&mdash;values with multiple named properties. This is how we store complex data like projectiles with position, velocity, and color:</p>
+
+      <pre><code>let particles = [];
+
+// Add a particle
+particles.push({
+  x: 200,
+  y: 100,
+  vx: 2,
+  vy: -3,
+  color: [255, 100, 50]
+});
+
+// Access properties
+console.log(particles[0].x);    // 200
+console.log(particles[0].vy);   // -3</code></pre>
+
+      <h3>1.12.5 Arrays and Loops Together</h3>
+
+      <p>The true power of arrays emerges when combined with loops. This pattern&mdash;storing data in an array and processing it with a loop&mdash;is the backbone of almost every creative coding project:</p>
+
+      <pre><code>let dots = [];
+
+function setup() {
+  createCanvas(400, 400);
+  // Create 20 random dots
+  for (let i = 0; i &lt; 20; i++) {
+    dots.push({
+      x: random(width),
+      y: random(height),
+      size: random(10, 40),
+      r: random(255),
+      g: random(255),
+      b: random(255)
+    });
+  }
+}
+
+function draw() {
+  background(30);
+  noStroke();
+  // Draw all dots
+  for (let dot of dots) {
+    fill(dot.r, dot.g, dot.b);
+    circle(dot.x, dot.y, dot.size);
+  }
+}</code></pre>
+
+      <p>This same pattern scales from 20 dots to 20,000 particles. The code structure remains identical&mdash;only the number changes. This scalability is one of the great strengths of computational art: once you have the system working, you can amplify it to any scale.</p>
+
+      <p>Arrays also support useful built-in methods for functional-style programming:</p>
+
+      <ul>
+        <li><code>arr.forEach(fn)</code> &mdash; Calls a function on each element</li>
+        <li><code>arr.map(fn)</code> &mdash; Creates a new array by transforming each element</li>
+        <li><code>arr.filter(fn)</code> &mdash; Creates a new array with only elements that pass a test</li>
+        <li><code>arr.find(fn)</code> &mdash; Returns the first element that passes a test</li>
+      </ul>
+
+      <p>We will explore these methods in depth later. For now, the <code>for</code> loop and <code>push()</code>/<code>splice()</code> will cover all your array needs.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The <strong>array + loop</strong> pattern is the most important pattern in creative coding. Virtually every simulation, particle system, and generative artwork uses it. Master this pattern and you can build anything: starfields, rain, flocking birds, bouncing balls, growing trees.</p>
+      </div>
+
+      <!-- Quiz after 1.12 -->
+      <div class="quiz" data-id="ch01-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">How do you add an element to the <strong>end</strong> of an array in JavaScript?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q5" value="a"> <code>array.add(element)</code></label></li>
+          <li class="option"><label><input type="radio" name="ch01-q5" value="b"> <code>array.insert(element)</code></label></li>
+          <li class="option"><label><input type="radio" name="ch01-q5" value="c" data-correct> <code>array.push(element)</code></label></li>
+          <li class="option"><label><input type="radio" name="ch01-q5" value="d"> <code>array.append(element)</code></label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>push()</code> adds one or more elements to the end of an array. It is the most commonly used method for growing an array. The counterpart <code>pop()</code> removes the last element. The names come from the &ldquo;push/pop&rdquo; operations of a <em>stack</em> data structure.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.13 — MODELING AND SIMULATION
+           =============================================== -->
+      <h2 id="modeling-simulation">1.13 Modeling and Simulation</h2>
+
+      <p>Now we step back from the technical details to discuss the larger idea that motivates this course.</p>
+
+      <h3>1.13.1 Humans Are Modelers</h3>
+
+      <p>You build models of the world constantly. When you catch a ball, your brain predicts where the ball will be. When you plan a trip, you model travel time. When you read someone's face, you model their emotional state. These are all <strong>mental models</strong>&mdash;simplified representations of reality that let you predict the future and make decisions.</p>
+
+      <p>A <strong>computational model</strong> takes this same idea and makes it precise. Instead of an intuitive feeling for how a ball moves, you write equations. Instead of a rough sense of traffic patterns, you simulate thousands of cars on a road network.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>A model is useful precisely because it is <strong>simpler</strong> than reality. A map that contained every detail of the real world would be as large as the world itself and therefore useless. A good model captures the <em>essential</em> features and ignores the rest. In our ballistics simulation, we model gravity but ignore air resistance. We model the ball as a point but ignore its rotation. These simplifications are deliberate.</p>
+      </div>
+
+      <h3>1.13.2 Analytical vs. Numerical Methods</h3>
+
+      <p>There are two approaches to working with models:</p>
+
+      <p><strong>Analytical</strong>: Find a mathematical formula that gives the exact answer. For projectile motion, the exact formula is:</p>
+
+      <p>$$y(t) = y_0 + v_{y_0} \cdot t + \frac{1}{2} g \cdot t^2$$</p>
+
+      <p>Plug in time, get position. Exact. Elegant. But only possible for simple systems with known closed-form solutions.</p>
+
+      <p><strong>Numerical</strong>: Step through time, updating the state at each step. This is what we do with Euler integration. It is approximate, but it works for virtually any system, no matter how complex.</p>
+
+      <p>Almost all modern simulation&mdash;weather prediction, movie special effects, engineering analysis, video game physics&mdash;uses numerical methods. The ballistics simulation you will build in this chapter uses numerical methods.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The distinction between analytical and numerical methods has a long history. Isaac Newton (1643&ndash;1727) and Gottfried Leibniz (1646&ndash;1716) developed calculus, which provides analytical tools for continuous change. But even Newton used numerical methods for problems too complex for analytical solutions. Today, with computers capable of billions of calculations per second, numerical methods have become the dominant approach for scientific simulation. The same numerical integration technique you will learn in this chapter underlies everything from NASA trajectory calculations to Pixar's fluid simulations.</p>
+      </div>
+
+      <h3>1.13.3 The Modeling Mindset</h3>
+
+      <p>Learning to model is learning to ask: <em>&ldquo;What are the essential features of this phenomenon, and what can I safely ignore?&rdquo;</em></p>
+
+      <p>Consider modeling a flock of birds:</p>
+
+      <ul>
+        <li><strong>Essential</strong>: Each bird has a position and velocity. Birds try to stay near the flock, avoid collisions, and match their neighbors' heading.</li>
+        <li><strong>Safely ignored</strong>: The exact shape of each bird, the biomechanics of wing flapping, air turbulence, fatigue.</li>
+      </ul>
+
+      <p>The result, as Craig Reynolds demonstrated in 1986 with his famous <em>Boids</em> algorithm, is that three simple rules produce stunningly realistic flocking behavior. We will build a Boids simulation later in this course. For now, the takeaway is that good models are <strong>maximally simple</strong>&mdash;as simple as possible, but no simpler.</p>
+
+
+      <!-- ===============================================
+           SECTION 1.14 — PHYSICS: POSITION, VELOCITY, ACCELERATION
+           =============================================== -->
+      <h2 id="physics">1.14 Physics: Position, Velocity, and Acceleration</h2>
+
+      <p>To simulate a cannonball (or any moving object), we need to understand three quantities and how they relate.</p>
+
+      <h3>1.14.1 Position</h3>
+
+      <p>Position is <strong>where</strong> something is. It is an $(x, y)$ coordinate on the canvas:</p>
+
+      <pre><code>let x = 100;
+let y = 300;</code></pre>
+
+      <h3>1.14.2 Velocity</h3>
+
+      <p>Velocity is <strong>how fast</strong> something is moving, and <strong>in what direction</strong>. In 2D, velocity has two components:</p>
+
+      <pre><code>let vx = 4;   // Moving 4 pixels right per frame
+let vy = -6;  // Moving 6 pixels upward per frame</code></pre>
+
+      <p>Velocity tells you how position changes over time. Mathematically, velocity is the first <strong>derivative</strong> of position with respect to time:</p>
+
+      <p>$$\vec{v} = \frac{d\vec{p}}{dt}$$</p>
+
+      <p>Since positive $y$ is downward in screen coordinates, a <strong>negative</strong> $v_y$ means the ball is moving <strong>upward</strong>.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>The inverted y-axis is the most common source of confusion in physics simulations. Remember: in screen coordinates, gravity is a <strong>positive</strong> y-acceleration (it adds to $v_y$, pushing objects downward). To launch something &ldquo;upward,&rdquo; you give it a <strong>negative</strong> initial $v_y$. This is the opposite of what you learned in physics class, where &ldquo;up&rdquo; is positive.</p>
+      </div>
+
+      <h3>1.14.3 Acceleration</h3>
+
+      <p>Acceleration is the <strong>rate of change of velocity</strong>. It is the second derivative of position with respect to time:</p>
+
+      <p>$$\vec{a} = \frac{d\vec{v}}{dt} = \frac{d^2\vec{p}}{dt^2}$$</p>
+
+      <p>For our simulation, the only acceleration is <strong>gravity</strong>, which pulls downward at a constant rate:</p>
+
+      <pre><code>let gravity = 0.2;  // pixels per frame per frame</code></pre>
+
+      <p>Gravity is positive because it accelerates things in the positive $y$ direction (downward in screen coordinates). The unit &ldquo;pixels per frame per frame&rdquo; means: each frame, $v_y$ increases by 0.2 pixels-per-frame. After 10 frames, an object starting from rest would have $v_y = 2$ pixels-per-frame; after 50 frames, $v_y = 10$ pixels-per-frame. This ever-increasing speed is what creates the characteristic accelerating motion of falling objects.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Newton's Second Law</div>
+        <p>The relationship between force, mass, and acceleration is described by Newton's Second Law: $\vec{F} = m \cdot \vec{a}$, or equivalently $\vec{a} = \vec{F} / m$. For our simple simulations, we set mass to 1 and work directly with accelerations. When we add forces (gravity, drag, springs), this equation tells us how to convert them into accelerations that drive our Euler integration.</p>
+      </div>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The Update Chain</strong>: Every frame, we update the simulation in two steps:</p>
+        <ol>
+          <li>Velocity changes due to acceleration: $v_y = v_y + g$</li>
+          <li>Position changes due to velocity: $x = x + v_x$, $y = y + v_y$</li>
+        </ol>
+        <p>This is the heart of physics simulation. Acceleration drives velocity, and velocity drives position. Two lines of code create the illusion of physical motion.</p>
+      </div>
+
+      <p>Here is a simple falling ball to see these physics in action:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Falling Ball &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let x = 200;
+let y = 50;
+let vx = 0;
+let vy = 0;
+let gravity = 0.2;
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(30);
+
+  // Semi-Implicit Euler Integration
+  vy = vy + gravity;   // acceleration -> velocity
+  x = x + vx;          // velocity -> position
+  y = y + vy;
+
+  // Draw the ball
+  fill(255, 100, 50);
+  noStroke();
+  circle(x, y, 24);
+
+  // Display physics values
+  fill(200);
+  textSize(13);
+  text("position: (" + x.toFixed(1) + ", " + y.toFixed(1) + ")", 10, 20);
+  text("velocity: (" + vx.toFixed(1) + ", " + vy.toFixed(1) + ")", 10, 38);
+  text("gravity: " + gravity, 10, 56);
+  text("frame: " + frameCount, 10, 74);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.15 — EULER INTEGRATION
+           =============================================== -->
+      <h2 id="euler-integration">1.15 Euler Integration</h2>
+
+      <p>The update process described above has a name: <strong>semi-implicit Euler integration</strong> (also called symplectic Euler).</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Named after <strong>Leonhard Euler</strong> (1707&ndash;1783), one of history's most prolific mathematicians. He made foundational contributions to calculus, graph theory, number theory, and mechanics. Pronounced &ldquo;OY-ler,&rdquo; not &ldquo;YOO-ler.&rdquo;</p>
+      </div>
+
+      <h3>1.15.1 Explicit vs. Semi-Implicit Euler</h3>
+
+      <p>The &ldquo;semi-implicit&rdquo; part refers to the order of operations. Compare:</p>
+
+      <p><strong>Explicit (Forward) Euler</strong> &mdash; less accurate:</p>
+      <pre><code>// Update position with OLD velocity, then update velocity
+x = x + vx;
+y = y + vy;
+vy = vy + gravity;</code></pre>
+
+      <p><strong>Semi-Implicit Euler</strong> &mdash; more accurate:</p>
+      <pre><code>// Update velocity FIRST, then position with NEW velocity
+vy = vy + gravity;
+x = x + vx;
+y = y + vy;</code></pre>
+
+      <p>The difference is subtle but real. Semi-implicit Euler <strong>conserves energy</strong> better over long simulations, producing more accurate parabolic arcs.</p>
+
+      <h3>1.15.2 Stability and Time Steps</h3>
+
+      <p>Euler integration is an <strong>approximation</strong>. We are replacing continuous motion with discrete jumps. The accuracy of this approximation depends on the <strong>time step</strong>&mdash;how much simulated time passes between updates.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Stability Principle</div>
+        <p>Smaller time steps produce more accurate simulations but require more computation. Larger time steps are faster but may become <strong>unstable</strong>&mdash;objects can gain energy spontaneously, vibrate wildly, or pass through boundaries. In p5.js at 60 fps, each frame represents approximately $\Delta t \approx 0.0167$ seconds of real time. Our approach of using &ldquo;pixels per frame&rdquo; implicitly sets $\Delta t = 1$, which works well for interactive sketches.</p>
+      </div>
+
+      <p>For the simulations in this course, semi-implicit Euler at 60 fps provides more than enough accuracy. In professional physics engines, more sophisticated methods (Verlet integration, Runge-Kutta 4th order) are used when precision is critical.</p>
+
+      <h3>1.15.3 Why Not Just Use the Exact Formula?</h3>
+
+      <p>For projectile motion, an exact analytical formula exists:</p>
+
+      <p>$$x(t) = x_0 + v_{x_0} \cdot t$$</p>
+      <p>$$y(t) = y_0 + v_{y_0} \cdot t + \frac{1}{2} g \cdot t^2$$</p>
+
+      <p>So why bother with numerical integration? Two reasons:</p>
+
+      <ol>
+        <li><strong>Generality</strong>: Exact formulas exist only for simple systems. As soon as you add air resistance, wind, collisions, or multiple interacting objects, closed-form solutions become impossible. Numerical integration works for <em>any</em> system.</li>
+        <li><strong>Interactivity</strong>: With the numerical approach, you can change forces mid-simulation (e.g., the user clicks to add a new force). The analytical formula assumes forces are constant from start to finish.</li>
+      </ol>
+
+      <p>The Euler method is the simplest numerical integrator, but its simplicity is also its power. Once you understand it, you can simulate <em>anything</em>&mdash;gravity, springs, magnetic fields, flocking behavior, fluid dynamics. The update pattern is always the same: compute acceleration, update velocity, update position.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; The Euler Update Pattern</div>
+        <p>For any simulation with forces, the fundamental update (each frame) follows three steps:</p>
+        <p>$$\vec{a} = \frac{\vec{F}}{m} \quad \text{(compute acceleration from forces)}$$</p>
+        <p>$$\vec{v}_{n+1} = \vec{v}_n + \vec{a} \cdot \Delta t \quad \text{(update velocity)}$$</p>
+        <p>$$\vec{p}_{n+1} = \vec{p}_n + \vec{v}_{n+1} \cdot \Delta t \quad \text{(update position)}$$</p>
+        <p>In our p5.js sketches, $\Delta t = 1$ (one frame), so the equations simplify to addition.</p>
+      </div>
+
+      <!-- Quiz after 1.15 -->
+      <div class="quiz" data-id="ch01-q6">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In semi-implicit Euler integration, what updates first?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q6" value="a"> Position updates before velocity</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q6" value="b" data-correct> Velocity updates before position</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q6" value="c"> Both update simultaneously</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q6" value="d"> It depends on the frame rate</label></li>
+        </ul>
+        <div class="explanation">
+          <p>In semi-implicit (symplectic) Euler integration, <strong>velocity is updated first</strong> using the current acceleration, and then position is updated using the <em>new</em> velocity. This ordering conserves energy better than explicit Euler (which updates position with the old velocity) and produces more accurate trajectories for oscillating and orbital systems.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.16 — BUILDING THE SIMULATION
+           =============================================== -->
+      <h2 id="building-simulation">1.16 Building the Simulation</h2>
+
+      <p>Now let us put everything together. We will build a cannon simulation step by step, combining variables, conditionals, arrays, functions, and Euler integration into one interactive sketch.</p>
+
+      <h3>1.16.1 Aiming with Trigonometry</h3>
+
+      <p>We need to calculate the <strong>angle</strong> from the cannon to the mouse. This requires a bit of trigonometry.</p>
+
+      <p>p5.js provides <code>atan2(y, x)</code>, which returns the angle (in radians) from the positive x-axis to the point $(x, y)$. To find the angle from the cannon to the mouse, we compute the differences in coordinates and pass them to <code>atan2</code>:</p>
+
+      <pre><code>let dx = mouseX - cannonX;
+let dy = mouseY - cannonY;
+let angle = atan2(dy, dx);</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Why <code>atan2</code> instead of <code>atan</code>?</strong> The standard arctangent function <code>atan(y/x)</code> cannot distinguish between opposite directions (e.g., up-right vs. down-left) because the ratio $y/x$ is the same for both. <code>atan2(y, x)</code> takes both values separately and returns the correct angle in all four quadrants, from $-\pi$ to $\pi$. Always use <code>atan2</code> for direction calculations.</p>
+      </div>
+
+      <p>We then use trigonometry to decompose the launch speed into horizontal and vertical components:</p>
+
+      <p>$$v_x = \text{speed} \cdot \cos(\theta), \quad v_y = \text{speed} \cdot \sin(\theta)$$</p>
+
+      <p>This is a fundamental technique in 2D simulation. Given an angle and a magnitude (speed), $\cos(\theta)$ gives the x-component and $\sin(\theta)$ gives the y-component. Together, they form a <strong>velocity vector</strong> pointing in the desired direction.</p>
+
+      <h3>1.16.2 The Complete Cannon Simulation</h3>
+
+      <p>Here is the full, working ballistics simulator. Click on the canvas to fire the cannon:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Cannon Simulation &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">// =============================================
+// Ballistics Simulator
+// MAT 200C - Week 1
+// =============================================
+
+let cannonX = 40;
+let cannonY;
+let cannonLength = 50;
+
+let gravity = 0.25;
+let launchSpeed = 9;
+
+let projectiles = [];
+
+function setup() {
+  createCanvas(400, 380);
+  cannonY = height - 30;
+}
+
+function draw() {
+  background(25, 25, 45);
+
+  // Ground
+  fill(45, 100, 45);
+  noStroke();
+  rect(0, height - 30, width, 30);
+
+  // Aim angle
+  let angle = atan2(mouseY - cannonY, mouseX - cannonX);
+  if (angle > 0) angle = 0;
+
+  // Draw cannon barrel
+  stroke(170);
+  strokeWeight(7);
+  strokeCap(SQUARE);
+  let bx = cannonX + cannonLength * cos(angle);
+  let by = cannonY + cannonLength * sin(angle);
+  line(cannonX, cannonY, bx, by);
+
+  // Cannon base
+  fill(130);
+  noStroke();
+  arc(cannonX, cannonY, 28, 28, PI, TWO_PI);
+
+  // Update and draw projectiles
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    let p = projectiles[i];
+
+    // Semi-Implicit Euler
+    p.vy = p.vy + gravity;
+    p.x = p.x + p.vx;
+    p.y = p.y + p.vy;
+
+    p.trail.push({ x: p.x, y: p.y });
+
+    // Draw trail
+    stroke(p.r, p.g, p.b, 100);
+    strokeWeight(1.5);
+    noFill();
+    beginShape();
+    for (let j = 0; j < p.trail.length; j++) {
+      vertex(p.trail[j].x, p.trail[j].y);
+    }
+    endShape();
+
+    // Draw ball
+    fill(p.r, p.g, p.b);
+    noStroke();
+    circle(p.x, p.y, 12);
+
+    // Remove if off-screen
+    if (p.x > width + 50 || p.y > height + 50 || p.x < -50) {
+      projectiles.splice(i, 1);
+    }
+  }
+
+  fill(180);
+  noStroke();
+  textSize(12);
+  text("Click to fire!", 15, 16);
+}
+
+function mousePressed() {
+  let angle = atan2(mouseY - cannonY, mouseX - cannonX);
+  if (angle > 0) angle = 0;
+
+  projectiles.push({
+    x: cannonX + cannonLength * cos(angle),
+    y: cannonY + cannonLength * sin(angle),
+    vx: launchSpeed * cos(angle),
+    vy: launchSpeed * sin(angle),
+    trail: [],
+    r: random(180, 255),
+    g: random(80, 200),
+    b: random(40, 120)
+  });
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>1.16.3 Understanding the Code</h3>
+
+      <p>Let us trace through the key parts of this simulation:</p>
+
+      <p><strong>The projectiles array</strong>: This is an empty array that holds all active projectile objects. Each time you click, a new projectile object is added. Each projectile has properties: position (<code>x</code>, <code>y</code>), velocity (<code>vx</code>, <code>vy</code>), a trail array, and color values (<code>r</code>, <code>g</code>, <code>b</code>).</p>
+
+      <p><strong>The simulation loop</strong>: We loop <em>backward</em> through the projectiles array (<code>for (let i = projectiles.length - 1; i &gt;= 0; i--)</code>). This is important because we might remove elements during the loop with <code>splice()</code>. If we looped forward and removed element 3, element 4 would shift to position 3 and be skipped. Looping backward avoids this problem.</p>
+
+      <p><strong>The trail</strong>: Each projectile maintains its own trail array. Every frame, we push the current position into the trail. We draw the trail using <code>beginShape()</code> and <code>vertex()</code>, which draws connected line segments through all recorded positions.</p>
+
+      <p><strong>The mousePressed function</strong>: When clicked, we calculate the aim angle, create a new projectile object starting at the barrel tip, give it velocity components based on the angle, and push it into the array. The <code>random()</code> calls give each projectile a unique warm color.</p>
+
+      <h3>1.16.4 Experiments to Try</h3>
+
+      <p>The best way to learn is to modify working code. Try these changes in the cannon simulation above:</p>
+
+      <ul>
+        <li><strong>Change gravity</strong>: Try <code>0.1</code> (moon-like), <code>0.5</code> (heavy), or even <code>-0.1</code> (upside-down).</li>
+        <li><strong>Change launch speed</strong>: Try <code>4</code> (short range) or <code>15</code> (long range).</li>
+        <li><strong>Add air resistance</strong>: Before the Euler step, add <code>p.vx *= 0.995; p.vy *= 0.995;</code></li>
+        <li><strong>Add bounce</strong>: After the position update, add: <code>if (p.y &gt; height - 36) { p.y = height - 36; p.vy *= -0.65; }</code></li>
+        <li><strong>Variable launch speed</strong>: Replace <code>launchSpeed</code> with <code>dist(mouseX, mouseY, cannonX, cannonY) / 30</code> so the farther you click, the harder you fire.</li>
+        <li><strong>Add a target</strong>: Draw a <code>rect()</code> on the canvas and use conditionals to check if a projectile hits it.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Experimentation is the creative coder's core practice.</strong> Professional creative coders spend most of their time tweaking parameters, observing results, and iterating. The simulation you built is a <em>playground</em>&mdash;change a number, see what happens. This exploratory loop (code &rarr; observe &rarr; modify &rarr; repeat) is how creative coding ideas develop.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.17 — GENERATIVE ART
+           =============================================== -->
+      <h2 id="generative-art">1.17 Generative Art: History and Philosophy</h2>
+
+      <p>The ballistics simulation we just built is a computational model&mdash;a simplified representation of projectile motion, expressed as code. It is also, in a sense, a tiny piece of generative art. You designed a system of rules (gravity, velocity, Euler integration), and the system generates visual output (arcing trajectories) that you did not draw by hand.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Generative art</strong> &mdash; Art produced by an autonomous system designed by the artist. The artist controls the rules and parameters of the system, not the individual marks. The system generates the final visual, sonic, or interactive output.</p>
+      </div>
+
+      <h3>1.17.1 Pioneers of Computer Art</h3>
+
+      <p>The first wave of computer artists emerged in the early 1960s, working with mainframe computers and pen plotters:</p>
+
+      <ul>
+        <li><strong>Georg Nees</strong> (1926&ndash;2016): German mathematician and artist. Created some of the first algorithmically generated drawings, including <em>Schotter</em> (1968), which shows a grid of squares gradually dissolving from order into randomness. Nees explored how simple rules with increasing randomness could generate aesthetically compelling compositions.</li>
+        <li><strong>Frieder Nake</strong> (b. 1938): German mathematician and computer scientist. His work explored the interplay between algorithmic precision and aesthetic form. He has written extensively on the theory of computer art.</li>
+        <li><strong>A. Michael Noll</strong> (b. 1939): American researcher at Bell Labs. Created early computer-generated patterns and conducted experiments asking viewers to distinguish between his algorithmic art and paintings by Piet Mondrian&mdash;many preferred the computer version.</li>
+        <li><strong>Vera Moln&aacute;r</strong> (1924&ndash;2023): Hungarian-French artist who began using computers in 1968. Known for systematic explorations of geometric form, she often created series showing gradual transformation from order to disorder.</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Vera Moln&aacute;r</strong> is considered one of the most important pioneers of digital art. Before gaining access to a computer, she used a method she called <em>machine imaginaire</em>&mdash;systematically following algorithmic rules by hand. When she finally gained access to a computer in 1968, she said it was like &ldquo;finding the tool I had always been looking for.&rdquo; Her work demonstrates that generative art is fundamentally about <em>thinking in systems</em>, not about technology.</p>
+      </div>
+
+      <h3>1.17.2 Processing and the Creative Coding Movement</h3>
+
+      <p>In 2001, <strong>Casey Reas</strong> and <strong>Ben Fry</strong>&mdash;then graduate students at the MIT Media Lab&mdash;created <strong>Processing</strong>. Their goal was radical: make programming accessible to visual artists, designers, and others without traditional computer science training.</p>
+
+      <p>Processing combined a simple programming language (based on Java) with an artist-friendly IDE. It reduced the boilerplate of graphics programming to just a few lines of code. The <code>setup()</code> and <code>draw()</code> structure that we use in p5.js comes directly from Processing.</p>
+
+      <p>Processing spawned a global community of creative coders and inspired many derivative projects:</p>
+
+      <ul>
+        <li><strong>p5.js</strong> (2013): JavaScript port by Lauren Lee McCarthy, bringing Processing to the web</li>
+        <li><strong>openFrameworks</strong>: C++ creative coding toolkit</li>
+        <li><strong>Cinder</strong>: Another C++ creative coding library</li>
+        <li><strong>TouchDesigner</strong>: Node-based visual programming for real-time graphics</li>
+      </ul>
+
+      <h3>1.17.3 The Philosophy of Creative Coding</h3>
+
+      <p>Creative coding occupies a unique space between art and engineering. The creative coder:</p>
+
+      <ol>
+        <li><strong>Designs systems, not images</strong>. Instead of placing pixels directly, you define rules that generate pixels.</li>
+        <li><strong>Embraces emergence</strong>. Simple rules can produce complex, surprising results. A system of 100 agents following three simple steering rules can produce behavior that looks like a flock of birds.</li>
+        <li><strong>Uses randomness as a tool</strong>. The <code>random()</code> function introduces controlled unpredictability, ensuring that each run of a generative program produces a unique result.</li>
+        <li><strong>Iterates through code</strong>. Creative coding is an exploratory practice. You write code, observe the result, modify a parameter, observe again. The feedback loop between code and visual output drives the creative process.</li>
+      </ol>
+
+      <p>This course will teach you to build increasingly sophisticated systems: particle simulations, flocking behaviors, fractal growth, fluid dynamics, and shader effects. Each system is both a computational model and a potential generative artwork.</p>
+
+      <h3>1.17.4 Generative Art Today</h3>
+
+      <p>In recent years, generative art has experienced a remarkable renaissance. Several factors have contributed:</p>
+
+      <ul>
+        <li><strong>NFTs and on-chain art</strong> (2021&ndash;present): Platforms like Art Blocks enabled artists to deploy generative algorithms on the blockchain, where each collector receives a unique output from the same algorithm. Projects like Tyler Hobbs' <em>Fidenza</em> and Dmitri Cherniak's <em>Ringers</em> brought generative art to mainstream attention.</li>
+        <li><strong>Social media</strong>: Platforms like Instagram and Twitter have created vibrant communities of creative coders who share daily experiments, often with source code.</li>
+        <li><strong>Accessible tools</strong>: p5.js, Processing, and shader environments like ShaderToy have lowered the barrier to entry.</li>
+        <li><strong>AI and machine learning</strong>: Tools like ml5.js (which we will encounter later in this course) allow artists to incorporate machine learning models into their creative coding practice.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Generative art is not about replacing human creativity with algorithms. It is about <strong>extending</strong> human creativity. The artist designs the system; the system explores a possibility space that no human could traverse by hand. The interplay between human intention and algorithmic surprise is what makes generative art compelling.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 1.18 — SUMMARY
+           =============================================== -->
+      <h2 id="summary">1.18 Summary</h2>
+
+      <p>In this chapter, you learned:</p>
+
+      <ol>
+        <li><strong>What programming is</strong>: writing precise instructions for a computer, with roots stretching back to Ada Lovelace and Alan Turing</li>
+        <li><strong>The p5.js web editor</strong>: your coding environment, requiring no installation</li>
+        <li><strong><code>setup()</code> and <code>draw()</code></strong>: the two core functions; setup runs once, draw loops at 60 fps</li>
+        <li><strong>The coordinate system</strong>: $(0,0)$ is the top-left; $y$ increases downward</li>
+        <li><strong>Drawing primitives</strong>: <code>circle()</code>, <code>rect()</code>, <code>line()</code>, <code>point()</code>, <code>ellipse()</code>, <code>triangle()</code>, <code>arc()</code>, <code>quad()</code></li>
+        <li><strong>Color</strong>: RGB and HSB color models, alpha transparency, state-based drawing with <code>fill()</code> and <code>stroke()</code></li>
+        <li><strong>Variables</strong>: <code>let</code> and <code>const</code>, data types (number, string, boolean), scope</li>
+        <li><strong>Built-in variables</strong>: <code>mouseX</code>, <code>mouseY</code>, <code>width</code>, <code>height</code>, <code>frameCount</code></li>
+        <li><strong>Conditionals</strong>: <code>if/else if/else</code>, comparison operators, logical operators</li>
+        <li><strong>Loops</strong>: <code>for</code>, <code>while</code>, nested loops for grid patterns</li>
+        <li><strong>Functions</strong>: parameters, return values, abstraction and reuse</li>
+        <li><strong>Arrays</strong>: ordered collections, <code>push()</code>/<code>pop()</code>, iterating, objects in arrays</li>
+        <li><strong>Modeling and simulation</strong>: representing the world as simplified computational rules</li>
+        <li><strong>Position, velocity, and acceleration</strong>: the three quantities of motion</li>
+        <li><strong>Semi-implicit Euler integration</strong>: updating velocity first, then position</li>
+        <li><strong>Generative art</strong>: designing systems that produce visual output, from Nees and Moln&aacute;r to Processing and p5.js</li>
+      </ol>
+
+
+      <h3>What Comes Next</h3>
+
+      <p>In Chapter 2, we will explore <strong>transformations</strong>&mdash;translate, rotate, and scale&mdash;which let you move and manipulate the entire coordinate system rather than individual shapes. We will also introduce <strong>recursion</strong>, the powerful technique of a function calling itself, which opens the door to fractal structures and tree-like branching patterns. These tools will dramatically expand the visual complexity you can achieve with just a few lines of code.</p>
+
+      <p>The journey from here builds layer upon layer: Chapter 2 adds spatial transformations and recursion. Chapter 3 introduces randomness and Perlin noise for organic, natural-looking motion. Later chapters cover fractals, particle systems, agent-based models, cellular automata, GLSL shaders, and more. Each chapter builds on the foundations established here: variables, loops, functions, arrays, and the Euler integration loop.</p>
+
+      <p>The most important advice for beginning creative coders: <strong>write code every day</strong>. Even 15 minutes of experimentation&mdash;changing a parameter, adding a new shape, combining two ideas&mdash;builds fluency faster than any amount of reading. The p5.js editor is always one browser tab away. Use it. Play with it. Break things and fix them. That is how you learn.</p>
+
+
+      <!-- ===============================================
+           SECTION 1.19 — KEY TERMS GLOSSARY
+           =============================================== -->
+      <h2 id="glossary">1.19 Key Terms Glossary</h2>
+
+      <table>
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Canvas</strong></td><td>The rectangular drawing surface in p5.js, created with <code>createCanvas()</code></td></tr>
+          <tr><td><strong>Frame</strong></td><td>A single execution of the <code>draw()</code> function; one &ldquo;picture&rdquo; in the animation</td></tr>
+          <tr><td><strong>FPS</strong></td><td>Frames per second; how many times <code>draw()</code> runs per second (default: 60)</td></tr>
+          <tr><td><strong>Variable</strong></td><td>A named container for a value, declared with <code>let</code> or <code>const</code></td></tr>
+          <tr><td><strong>Constant</strong></td><td>A variable declared with <code>const</code> whose value cannot be reassigned</td></tr>
+          <tr><td><strong>Data type</strong></td><td>The category of a value: number, string, boolean, array, object, etc.</td></tr>
+          <tr><td><strong>Function</strong></td><td>A named block of code that performs a task, optionally accepting parameters and returning a value</td></tr>
+          <tr><td><strong>Parameter</strong></td><td>A placeholder in a function definition that receives an argument when the function is called</td></tr>
+          <tr><td><strong>Argument</strong></td><td>A value passed to a function when it is called</td></tr>
+          <tr><td><strong>Return value</strong></td><td>The output of a function, specified with the <code>return</code> keyword</td></tr>
+          <tr><td><strong>Array</strong></td><td>An ordered list of values, accessed by numeric index starting at 0</td></tr>
+          <tr><td><strong>Object</strong></td><td>A collection of named values (properties), written as <code>{ key: value }</code></td></tr>
+          <tr><td><strong>Scope</strong></td><td>The region of code where a variable is accessible (global or local)</td></tr>
+          <tr><td><strong>Conditional</strong></td><td>An <code>if/else</code> statement that executes code based on whether a condition is true or false</td></tr>
+          <tr><td><strong>Loop</strong></td><td>A control structure (<code>for</code>, <code>while</code>) that repeats code multiple times</td></tr>
+          <tr><td><strong>RGB</strong></td><td>A color model using Red, Green, and Blue channels (each 0&ndash;255)</td></tr>
+          <tr><td><strong>HSB</strong></td><td>A color model using Hue, Saturation, and Brightness</td></tr>
+          <tr><td><strong>Alpha</strong></td><td>The opacity component of a color (0 = transparent, 255 = opaque)</td></tr>
+          <tr><td><strong>Model</strong></td><td>A simplified representation of a real-world phenomenon</td></tr>
+          <tr><td><strong>Simulation</strong></td><td>Running a model over time to observe its behavior</td></tr>
+          <tr><td><strong>Numerical integration</strong></td><td>Approximating continuous change with discrete time steps</td></tr>
+          <tr><td><strong>Euler integration</strong></td><td>The simplest numerical integration method: multiply derivative by time step</td></tr>
+          <tr><td><strong>Semi-implicit Euler</strong></td><td>A variant that updates velocity before position, improving energy conservation</td></tr>
+          <tr><td><strong>Position</strong></td><td>Where something is: $(x, y)$ coordinates</td></tr>
+          <tr><td><strong>Velocity</strong></td><td>How fast and in what direction something moves (pixels per frame)</td></tr>
+          <tr><td><strong>Acceleration</strong></td><td>The rate of change of velocity (pixels per frame per frame)</td></tr>
+          <tr><td><strong>Generative art</strong></td><td>Art produced by an autonomous system designed by the artist</td></tr>
+          <tr><td><strong>Creative coding</strong></td><td>Writing code as a medium of artistic expression</td></tr>
+        </tbody>
+      </table>
+
+
+      <!-- ===============================================
+           CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <div class="code-challenge" data-id="ch01-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1</div>
+        <p class="prompt">Write a function called <code>distance</code> that takes four parameters (<code>x1</code>, <code>y1</code>, <code>x2</code>, <code>y2</code>) and returns the Euclidean distance between the two points. Use the formula: $d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$</p>
+        <textarea class="cm-editor">function distance(x1, y1, x2, y2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "distance(0, 0, 3, 4)", "expected": 5},
+          {"call": "distance(0, 0, 0, 0)", "expected": 0},
+          {"call": "distance(1, 1, 4, 5)", "expected": 5},
+          {"call": "distance(-1, -1, 2, 3)", "expected": 5}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch01-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2</div>
+        <p class="prompt">Write a function called <code>clamp</code> that takes three parameters (<code>value</code>, <code>min</code>, <code>max</code>) and returns the value constrained to the range [min, max]. If value is below min, return min. If value is above max, return max. Otherwise, return value unchanged.</p>
+        <textarea class="cm-editor">function clamp(value, min, max) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "clamp(5, 0, 10)", "expected": 5},
+          {"call": "clamp(-3, 0, 10)", "expected": 0},
+          {"call": "clamp(15, 0, 10)", "expected": 10},
+          {"call": "clamp(0, 0, 10)", "expected": 0},
+          {"call": "clamp(10, 0, 10)", "expected": 10},
+          {"call": "clamp(50, -100, 100)", "expected": 50}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch01-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3</div>
+        <p class="prompt">Write a function called <code>countEven</code> that takes an array of numbers and returns the count of even numbers in that array. Hint: a number is even if <code>n % 2 === 0</code> (the modulo operator <code>%</code> gives the remainder after division).</p>
+        <textarea class="cm-editor">function countEven(arr) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "countEven([1, 2, 3, 4, 5, 6])", "expected": 3},
+          {"call": "countEven([1, 3, 5, 7])", "expected": 0},
+          {"call": "countEven([2, 4, 6, 8])", "expected": 4},
+          {"call": "countEven([])", "expected": 0},
+          {"call": "countEven([0])", "expected": 1}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch01-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge 4</div>
+        <p class="prompt">Write a function called <code>mapRange</code> that takes five parameters (<code>value</code>, <code>inMin</code>, <code>inMax</code>, <code>outMin</code>, <code>outMax</code>) and maps a value from one range to another. For example, <code>mapRange(0.5, 0, 1, 0, 100)</code> should return <code>50</code>. The formula is: $\text{out} = \text{outMin} + \frac{(\text{value} - \text{inMin})}{(\text{inMax} - \text{inMin})} \times (\text{outMax} - \text{outMin})$</p>
+        <textarea class="cm-editor">function mapRange(value, inMin, inMax, outMin, outMax) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "mapRange(0.5, 0, 1, 0, 100)", "expected": 50},
+          {"call": "mapRange(0, 0, 1, 0, 100)", "expected": 0},
+          {"call": "mapRange(1, 0, 1, 0, 100)", "expected": 100},
+          {"call": "mapRange(5, 0, 10, 0, 200)", "expected": 100},
+          {"call": "mapRange(25, 0, 100, -1, 1)", "expected": -0.5}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===============================================
+           OPEN-ENDED EXERCISES
+           =============================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 1.1 &mdash; Concentric Colored Circles</div>
+        <p class="prompt">Draw five concentric circles (circles with the same center but different diameters) at the center of the canvas. Give each a different color. Draw the <strong>largest circle first</strong> so smaller circles appear on top. Hint: use <code>noStroke()</code> and draw from largest diameter to smallest.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(240);
+  // Your code here: draw 5 concentric circles
+  // at the center (200, 200) with different
+  // sizes and colors
+
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(240);
+  noStroke();
+
+  // Draw largest first so smaller appear on top
+  fill(50, 50, 200);      // Blue (largest)
+  circle(200, 200, 250);
+
+  fill(0, 180, 100);      // Teal
+  circle(200, 200, 200);
+
+  fill(255, 200, 0);      // Yellow
+  circle(200, 200, 150);
+
+  fill(255, 80, 50);      // Orange-red
+  circle(200, 200, 100);
+
+  fill(200, 50, 200);     // Purple (smallest)
+  circle(200, 200, 50);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 1.2 &mdash; Bouncing Ball</div>
+        <p class="prompt">Create a ball that bounces off all four edges of the canvas. You will need variables for position (<code>x</code>, <code>y</code>) and velocity (<code>vx</code>, <code>vy</code>). Use <code>if</code> statements to detect when the ball hits an edge, and reverse the appropriate velocity component when it does. Add a small trail effect using <code>background()</code> with alpha.</p>
+        <textarea class="cm-editor">let x, y, vx, vy;
+
+function setup() {
+  createCanvas(400, 400);
+  x = 200;
+  y = 200;
+  vx = 3;
+  vy = 2;
+}
+
+function draw() {
+  background(30, 25);
+  // Your code here:
+  // 1. Update position using velocity
+  // 2. Check for edge collisions and reverse velocity
+  // 3. Draw the ball
+
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let x, y, vx, vy;
+let r = 15;
+
+function setup() {
+  createCanvas(400, 400);
+  x = 200;
+  y = 200;
+  vx = 3.5;
+  vy = 2.5;
+}
+
+function draw() {
+  background(30, 25);
+
+  // Update position
+  x = x + vx;
+  y = y + vy;
+
+  // Bounce off edges
+  if (x + r > width || x - r < 0) {
+    vx = -vx;
+  }
+  if (y + r > height || y - r < 0) {
+    vy = -vy;
+  }
+
+  // Draw
+  noStroke();
+  fill(100, 200, 255);
+  circle(x, y, r * 2);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 1.3 &mdash; Mouse-Controlled Particle Launcher</div>
+        <p class="prompt">Create a sketch where clicking the mouse launches a particle upward from the click position. The particle should fall under gravity and leave a colorful trail. Each click should create a new particle with a random color. Store all particles in an array and remove them when they fall off-screen.</p>
+        <textarea class="cm-editor">let particles = [];
+let gravity = 0.15;
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(20, 20, 35);
+
+  // Your code here:
+  // 1. Loop through particles (backward!)
+  // 2. Update velocity and position (Euler)
+  // 3. Record trail, draw trail and particle
+  // 4. Remove off-screen particles
+
+}
+
+function mousePressed() {
+  // Your code here:
+  // Create a new particle at mouseX, mouseY
+  // with an upward velocity and random color
+
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let particles = [];
+let gravity = 0.15;
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(20, 20, 35);
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+
+    // Semi-implicit Euler
+    p.vy += gravity;
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // Trail
+    p.trail.push({ x: p.x, y: p.y });
+    if (p.trail.length > 50) p.trail.shift();
+
+    // Draw trail
+    noFill();
+    stroke(p.r, p.g, p.b, 80);
+    strokeWeight(2);
+    beginShape();
+    for (let t of p.trail) {
+      vertex(t.x, t.y);
+    }
+    endShape();
+
+    // Draw particle
+    fill(p.r, p.g, p.b);
+    noStroke();
+    circle(p.x, p.y, 10);
+
+    // Remove off-screen
+    if (p.y > height + 50) {
+      particles.splice(i, 1);
+    }
+  }
+
+  fill(150);
+  textSize(12);
+  noStroke();
+  text("Click to launch particles!", 10, 20);
+}
+
+function mousePressed() {
+  particles.push({
+    x: mouseX,
+    y: mouseY,
+    vx: random(-2, 2),
+    vy: random(-8, -4),
+    trail: [],
+    r: random(150, 255),
+    g: random(80, 255),
+    b: random(80, 255)
+  });
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER END QUIZ
+           =============================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 1 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of the concepts covered in this chapter.</p>
+
+        <div class="quiz" data-id="ch01-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">Which function in p5.js runs once when the sketch starts, and which runs repeatedly?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch01-fq1" value="a"> <code>draw()</code> runs once; <code>setup()</code> runs repeatedly</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq1" value="b" data-correct> <code>setup()</code> runs once; <code>draw()</code> runs repeatedly</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq1" value="c"> Both run once</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq1" value="d"> Both run repeatedly</label></li>
+          </ul>
+          <div class="explanation"><p><code>setup()</code> is called exactly once when the sketch starts (used for initialization like <code>createCanvas()</code>). <code>draw()</code> is called repeatedly at the frame rate (default 60 fps), forming the animation loop.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch01-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">On a 600 &times; 400 canvas, what are the coordinates of the bottom-right corner?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch01-fq2" value="a"> (400, 600)</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq2" value="b" data-correct> (600, 400)</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq2" value="c"> (300, 200)</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq2" value="d"> (0, 0)</label></li>
+          </ul>
+          <div class="explanation"><p>The canvas created by <code>createCanvas(600, 400)</code> is 600 pixels wide and 400 pixels tall. Since $(0, 0)$ is the top-left, the bottom-right is $(600, 400)$, matching the (width, height) arguments.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch01-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">In the default RGB color mode, what color does <code>fill(0, 255, 255)</code> produce?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch01-fq3" value="a"> Yellow</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq3" value="b"> Magenta</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq3" value="c" data-correct> Cyan</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq3" value="d"> White</label></li>
+          </ul>
+          <div class="explanation"><p><code>fill(0, 255, 255)</code> means R=0, G=255, B=255. Mixing full green and full blue light produces <strong>cyan</strong>. Remember: RGB is additive color mixing. Red+Green=Yellow, Red+Blue=Magenta, Green+Blue=Cyan.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch01-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">What is the difference between <code>let</code> and <code>const</code> in JavaScript?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch01-fq4" value="a"> <code>let</code> is for numbers; <code>const</code> is for strings</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq4" value="b"> <code>let</code> is global; <code>const</code> is local</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq4" value="c" data-correct> <code>let</code> allows reassignment; <code>const</code> does not</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq4" value="d"> They are identical</label></li>
+          </ul>
+          <div class="explanation"><p>Variables declared with <code>let</code> can be reassigned to new values (e.g., <code>x = x + 1</code>). Variables declared with <code>const</code> cannot be reassigned after initialization. Use <code>const</code> for values that should not change (configuration, physical constants) and <code>let</code> for values that change over time (position, velocity).</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch01-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">In a physics simulation using semi-implicit Euler integration, what is the correct update order each frame?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch01-fq5" value="a"> Draw, then update position, then update velocity</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq5" value="b"> Update position, then update velocity, then draw</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq5" value="c" data-correct> Update velocity (from acceleration), then update position (from new velocity), then draw</label></li>
+            <li class="option"><label><input type="radio" name="ch01-fq5" value="d"> Update velocity and position simultaneously, then draw</label></li>
+          </ul>
+          <div class="explanation"><p>Semi-implicit Euler integration follows this order: (1) Update velocity using acceleration: <code>vy += gravity</code>. (2) Update position using the <em>new</em> velocity: <code>y += vy</code>. (3) Draw the object at the new position. Updating velocity first (before position) is what makes this method &ldquo;semi-implicit&rdquo; and gives it better energy conservation than explicit Euler.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <div class="nav-prev" style="visibility: hidden;">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title"></span>
+        </div>
+        <a href="../ch02/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 2: Transformations, Recursion &amp; Complexity</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

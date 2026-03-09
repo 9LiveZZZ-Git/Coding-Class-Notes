@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computing Arts — Interactive Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="shared/style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .book-hero {
+      text-align: center;
+      padding: 4rem 2rem 3rem;
+      background: linear-gradient(135deg, var(--accent-light) 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .book-hero h1 {
+      font-family: var(--font-heading);
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
+    }
+
+    .book-hero .subtitle {
+      font-family: var(--font-body);
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.6;
+    }
+
+    .book-hero .course-info {
+      font-family: var(--font-heading);
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .overall-progress {
+      max-width: 500px;
+      margin: 1.5rem auto 0;
+    }
+
+    .overall-progress-label {
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .overall-progress-bar {
+      height: 8px;
+      background: var(--border-light);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .overall-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    .chapters-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .chapters-grid h2 {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+
+    .chapter-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+      padding: 1.25rem;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.15s ease;
+    }
+
+    .chapter-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+
+    .chapter-number {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 2.5rem;
+      text-align: center;
+      line-height: 1;
+      padding-top: 0.15rem;
+    }
+
+    .chapter-info { flex: 1; }
+
+    .chapter-card-title {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      line-height: 1.3;
+    }
+
+    .chapter-description {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+
+    .chapter-topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .topic-tag {
+      font-family: var(--font-heading);
+      font-size: 0.65rem;
+      padding: 0.15rem 0.5rem;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 100px;
+      font-weight: 600;
+    }
+
+    .chapter-progress-mini {
+      min-width: 50px;
+      text-align: right;
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding-top: 0.2rem;
+    }
+
+    .footer {
+      margin-top: auto;
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+    }
+
+    .top-bar {
+      margin-left: 0;
+      justify-content: flex-end;
+    }
+
+    .top-bar .progress-bar-container,
+    .top-bar .progress-text,
+    .top-bar .hamburger { display: none; }
+
+    @media (max-width: 600px) {
+      .book-hero h1 { font-size: 1.8rem; }
+      .chapter-card { flex-direction: column; gap: 0.5rem; }
+      .chapter-number { min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <header class="book-hero">
+    <p class="course-info">MAT 200C: Computing Arts &mdash; UC Santa Barbara</p>
+    <h1>Computing Arts</h1>
+    <p class="subtitle">An interactive textbook on creative coding, simulation, fractals, shaders, and computational art with p5.js and GLSL.</p>
+
+    <div class="overall-progress">
+      <div class="overall-progress-label">
+        <span>Overall Progress</span>
+        <span id="overall-pct">0%</span>
+      </div>
+      <div class="overall-progress-bar">
+        <div class="overall-progress-fill" id="overall-fill"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="chapters-grid">
+    <h2>Chapters</h2>
+
+    <a href="ch01/index.html" class="chapter-card">
+      <div class="chapter-number">1</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Introduction to Creative Coding</div>
+        <div class="chapter-description">Setting up p5.js, drawing shapes, variables, conditionals, functions, and your first physics simulation with Euler integration.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">p5.js</span>
+          <span class="topic-tag">Drawing</span>
+          <span class="topic-tag">Variables</span>
+          <span class="topic-tag">Physics</span>
+          <span class="topic-tag">Euler Integration</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch01"></div>
+    </a>
+
+    <a href="ch02/index.html" class="chapter-card">
+      <div class="chapter-number">2</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Transformations, Recursion & Complexity</div>
+        <div class="chapter-description">Geometric transformations, algorithmic art history (Nees), information theory, recursion, and data compression.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Transformations</span>
+          <span class="topic-tag">Recursion</span>
+          <span class="topic-tag">Entropy</span>
+          <span class="topic-tag">Compression</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch02"></div>
+    </a>
+
+    <a href="ch03/index.html" class="chapter-card">
+      <div class="chapter-number">3</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Iteration, Chaos & Fractals</div>
+        <div class="chapter-description">Series and convergence, the logistic map, chaos theory, complex numbers, the Mandelbrot set, and introduction to GLSL.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Chaos</span>
+          <span class="topic-tag">Fractals</span>
+          <span class="topic-tag">Mandelbrot</span>
+          <span class="topic-tag">Complex Numbers</span>
+          <span class="topic-tag">GLSL</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch03"></div>
+    </a>
+
+    <a href="ch04/index.html" class="chapter-card">
+      <div class="chapter-number">4</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Creative Fractals & Coloring</div>
+        <div class="chapter-description">Alternative fractal formulas, smooth coloring, color spaces (HSV, CIELAB), Newton fractals, and frame feedback.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Coloring</span>
+          <span class="topic-tag">Color Spaces</span>
+          <span class="topic-tag">Newton Fractals</span>
+          <span class="topic-tag">Animation History</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch04"></div>
+    </a>
+
+    <a href="ch05/index.html" class="chapter-card">
+      <div class="chapter-number">5</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Frame Feedback & Signed Distance Functions</div>
+        <div class="chapter-description">Video art history, framebuffers, feedback loops, SDF primitives, boolean operations, and morphing.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Feedback</span>
+          <span class="topic-tag">Framebuffers</span>
+          <span class="topic-tag">SDF</span>
+          <span class="topic-tag">Video Art</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch05"></div>
+    </a>
+
+    <a href="ch06/index.html" class="chapter-card">
+      <div class="chapter-number">6</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">GLSL Patterns & Cellular Automata</div>
+        <div class="chapter-description">Procedural pattern generation in GLSL, elementary cellular automata, Game of Life, and Wolfram's classification.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">GLSL Patterns</span>
+          <span class="topic-tag">Cellular Automata</span>
+          <span class="topic-tag">Game of Life</span>
+          <span class="topic-tag">Wolfram</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch06"></div>
+    </a>
+
+    <a href="ch07/index.html" class="chapter-card">
+      <div class="chapter-number">7</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Reaction-Diffusion & Pattern Formation</div>
+        <div class="chapter-description">How nature creates patterns, diffusion mathematics, Gray-Scott model, Turing patterns, and video feedback art.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Reaction-Diffusion</span>
+          <span class="topic-tag">Turing Patterns</span>
+          <span class="topic-tag">Laplacian</span>
+          <span class="topic-tag">Gray-Scott</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch07"></div>
+    </a>
+
+    <a href="ch08/index.html" class="chapter-card">
+      <div class="chapter-number">8</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Particle Systems & Simulation</div>
+        <div class="chapter-description">What is simulation, physics of motion, particle systems, agent-based models, flocking (boids), and emergent behavior.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Particles</span>
+          <span class="topic-tag">Agents</span>
+          <span class="topic-tag">Boids</span>
+          <span class="topic-tag">Emergence</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch08"></div>
+    </a>
+
+    <a href="ch09/index.html" class="chapter-card">
+      <div class="chapter-number">9</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Physics, ODEs & Forces</div>
+        <div class="chapter-description">Calculus for simulation, ODE systems, gravity, springs, drag, numerical integration methods, and webcam effects.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">ODEs</span>
+          <span class="topic-tag">Forces</span>
+          <span class="topic-tag">Springs</span>
+          <span class="topic-tag">Integration</span>
+          <span class="topic-tag">Webcam</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch09"></div>
+    </a>
+
+    <a href="ch10/index.html" class="chapter-card">
+      <div class="chapter-number">10</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Flow Fields & Computer Vision</div>
+        <div class="chapter-description">Perlin noise, flow fields, 3D geometry in p5.js, computer vision with ml5.js, and visual effects.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Flow Fields</span>
+          <span class="topic-tag">Perlin Noise</span>
+          <span class="topic-tag">3D</span>
+          <span class="topic-tag">ml5.js</span>
+          <span class="topic-tag">Computer Vision</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch10"></div>
+    </a>
+
+    <a href="ch11/index.html" class="chapter-card">
+      <div class="chapter-number">11</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Project Workflow & Code Review</div>
+        <div class="chapter-description">Software project management, code review practices, version control concepts, and iterative development.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Workflow</span>
+          <span class="topic-tag">Code Review</span>
+          <span class="topic-tag">Version Control</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch11"></div>
+    </a>
+
+    <a href="ch12/index.html" class="chapter-card">
+      <div class="chapter-number">12</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Sound & Audio-Reactive Art</div>
+        <div class="chapter-description">Digital audio fundamentals, p5-sound library, FFT analysis, synthesis, audio-reactive visuals, and GPU-accelerated effects.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Audio</span>
+          <span class="topic-tag">FFT</span>
+          <span class="topic-tag">Synthesis</span>
+          <span class="topic-tag">p5-sound</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch12"></div>
+    </a>
+
+    <a href="ch13/index.html" class="chapter-card">
+      <div class="chapter-number">13</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Algorithmic Thinking & Shader Porting</div>
+        <div class="chapter-description">Problem-solving strategies, porting ShaderToy to p5.js, fading techniques, and code attribution ethics.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Algorithms</span>
+          <span class="topic-tag">ShaderToy</span>
+          <span class="topic-tag">Porting</span>
+          <span class="topic-tag">Attribution</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch13"></div>
+    </a>
+
+    <a href="ch14/index.html" class="chapter-card">
+      <div class="chapter-number">14</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">WebGPU, Vectors & Computation</div>
+        <div class="chapter-description">Vectors and linear algebra, color theory (permutations), WebGPU with seagulls, debugging, and computation fundamentals.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">Vectors</span>
+          <span class="topic-tag">WebGPU</span>
+          <span class="topic-tag">seagulls</span>
+          <span class="topic-tag">Debugging</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch14"></div>
+    </a>
+
+    <a href="ch15/index.html" class="chapter-card">
+      <div class="chapter-number">15</div>
+      <div class="chapter-info">
+        <div class="chapter-card-title">Supplementary Topics</div>
+        <div class="chapter-description">Object-oriented programming, functional programming, data structures, interactivity, pixel manipulation, sound, and more.</div>
+        <div class="chapter-topics">
+          <span class="topic-tag">OOP</span>
+          <span class="topic-tag">FP</span>
+          <span class="topic-tag">Data Structures</span>
+          <span class="topic-tag">Pixels</span>
+          <span class="topic-tag">Games</span>
+        </div>
+      </div>
+      <div class="chapter-progress-mini" data-ch="ch15"></div>
+    </a>
+  </main>
+
+  <footer class="footer">
+    <p>MAT 200C: Computing Arts &mdash; UC Santa Barbara &mdash; Winter 2026</p>
+    <p>Interactive textbook built with p5.js, CodeMirror, and KaTeX</p>
+  </footer>
+
+  <script>
+    // Theme toggle
+    (function() {
+      const saved = localStorage.getItem('mat200c-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+
+      const btn = document.querySelector('.theme-toggle');
+      if (btn) {
+        function updateLabel() {
+          btn.textContent = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'Light Mode' : 'Dark Mode';
+        }
+        updateLabel();
+        btn.addEventListener('click', () => {
+          const next = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          localStorage.setItem('mat200c-theme', next);
+          updateLabel();
+        });
+      }
+
+      // Progress from localStorage
+      try {
+        const data = JSON.parse(localStorage.getItem('mat200c-textbook')) || {};
+        let totalDone = 0, totalAll = 0;
+        document.querySelectorAll('[data-ch]').forEach(el => {
+          const ch = el.dataset.ch;
+          const chData = data[ch];
+          if (chData) {
+            const qCorrect = Object.values(chData.quizzes || {}).filter(Boolean).length;
+            const cPassed = Object.values(chData.challenges || {}).filter(Boolean).length;
+            const done = qCorrect + cPassed;
+            const total = Object.keys(chData.quizzes || {}).length + Object.keys(chData.challenges || {}).length;
+            if (total > 0) {
+              const pct = Math.round((done / total) * 100);
+              el.textContent = pct + '%';
+              totalDone += done;
+              totalAll += total;
+            }
+          }
+        });
+        if (totalAll > 0) {
+          const overallPct = Math.round((totalDone / totalAll) * 100);
+          document.getElementById('overall-fill').style.width = overallPct + '%';
+          document.getElementById('overall-pct').textContent = overallPct + '%';
+        }
+      } catch {}
+    })();
+  </script>
+</body>
+</html>

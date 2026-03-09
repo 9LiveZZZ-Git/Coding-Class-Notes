@@ -1,0 +1,2670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 9: Physics, ODEs &amp; Forces — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch09">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 9: Physics, ODEs &amp; Forces</div>
+    </div>
+    <ul class="toc-list"></ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 9: Physics, ODEs &amp; Forces</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Simulating the physical world through calculus, differential equations, and force laws</p>
+
+      <p>
+        In previous chapters we built particle systems and agent-based models where objects moved according
+        to simple rules. We applied gravity as a constant downward pull and let particles bounce off walls.
+        But we treated the underlying mathematics as a black box. In this chapter we open that box.
+      </p>
+      <p>
+        We will learn the calculus that underpins every physics simulation, study the most important force
+        laws in nature, compare numerical integration methods that determine whether a simulation stays
+        stable or explodes, and build increasingly sophisticated physical systems &mdash; from a single
+        spring to coupled oscillators, from a bouncing ball to orbital mechanics. We close with
+        webcam-based pixel effects that connect real-world input to our simulations.
+      </p>
+      <p>
+        By the end of this chapter you will have the theoretical foundation and practical skills to
+        simulate nearly any dynamical system you can describe with equations.
+      </p>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.1 — CALCULUS FOR SIMULATION
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="calculus">9.1 Calculus for Simulation</h2>
+
+      <p>
+        Calculus is the mathematics of <em>change</em>. It was invented independently by Isaac Newton
+        and Gottfried Wilhelm Leibniz in the late 17th century, and it remains the most powerful tool
+        we have for describing how quantities evolve over time. For simulation, two ideas from calculus
+        are essential: <strong>derivatives</strong> (rates of change) and <strong>integrals</strong>
+        (accumulation of change).
+      </p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Isaac Newton developed calculus ("the method of fluxions") in the 1660s to solve problems
+        in mechanics and gravitation. Gottfried Wilhelm Leibniz independently invented calculus around
+        1675 and introduced much of the notation we still use ($dx$, $\int$, $dy/dx$). Their bitter
+        priority dispute lasted decades, but both deserve credit for one of the greatest intellectual
+        achievements in human history.</p>
+      </div>
+
+      <h3>9.1.1 Derivatives: Rates of Change</h3>
+
+      <p>
+        A <strong>derivative</strong> measures how fast a quantity is changing at a given instant.
+        If you are driving a car and your position along the road is $x(t)$, then your velocity is:
+      </p>
+
+      <p>$$v(t) = \frac{dx}{dt} = \lim_{\Delta t \to 0} \frac{x(t + \Delta t) - x(t)}{\Delta t}$$</p>
+
+      <p>
+        This says: take two positions very close together in time, compute how far you moved,
+        divide by the time interval, and let that interval shrink to zero. The result is your
+        instantaneous velocity &mdash; how fast your position is changing right now.
+      </p>
+
+      <p>
+        Think of a speedometer. At any given instant, it reads your speed &mdash; the rate at which
+        your position is changing. That speedometer reading <em>is</em> the derivative of your position.
+        You do not need to drive for a full hour to have a speed at this instant; the derivative captures
+        the instantaneous rate, even though the actual computation involves a limit of finite differences.
+      </p>
+
+      <p>Some important derivatives you will encounter in physics:</p>
+      <ul>
+        <li>$\frac{d}{dt}(at + b) = a$ &mdash; constant velocity gives zero acceleration</li>
+        <li>$\frac{d}{dt}\!\left(\frac{1}{2}at^2\right) = at$ &mdash; parabolic motion gives linear velocity</li>
+        <li>$\frac{d}{dt}\sin(\omega t) = \omega\cos(\omega t)$ &mdash; oscillatory motion</li>
+      </ul>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Derivative</strong> &mdash; The derivative $\frac{dx}{dt}$ of a function $x(t)$
+        measures the instantaneous rate of change of $x$ with respect to $t$. Geometrically, it is
+        the slope of the tangent line to the graph of $x(t)$ at time $t$.</p>
+      </div>
+
+      <p>In physics, derivatives form a chain:</p>
+
+      <p>$$\text{Position } x(t) \xrightarrow{\frac{d}{dt}} \text{Velocity } v(t) = \frac{dx}{dt} \xrightarrow{\frac{d}{dt}} \text{Acceleration } a(t) = \frac{dv}{dt} = \frac{d^2x}{dt^2}$$</p>
+
+      <p>
+        Velocity is the derivative of position (how fast position changes). Acceleration is the
+        derivative of velocity (how fast velocity changes). Acceleration is also the <em>second</em>
+        derivative of position. In our simulations, forces determine acceleration through Newton's
+        second law, and from acceleration we reconstruct velocity and position.
+      </p>
+
+      <h3>9.1.2 Integrals: Accumulation</h3>
+
+      <p>
+        An <strong>integral</strong> is the reverse of a derivative. If a derivative breaks a quantity
+        into its rate of change, an integral accumulates those rates of change back into the original
+        quantity.
+      </p>
+
+      <p>$$x(t) = x(0) + \int_0^t v(\tau)\, d\tau$$</p>
+
+      <p>
+        This says: to find the position at time $t$, start with the initial position $x(0)$ and add
+        up all the tiny displacements $v(\tau)\,d\tau$ from time $0$ to time $t$. Geometrically,
+        the integral is the <em>area under the curve</em> of the velocity function.
+      </p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Integral</strong> &mdash; The definite integral $\int_a^b f(t)\,dt$ computes the
+        accumulated total of $f(t)$ over the interval $[a, b]$. It represents the signed area between
+        the curve and the horizontal axis.</p>
+      </div>
+
+      <h3>9.1.3 The Fundamental Theorem (Intuitive)</h3>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Fundamental Theorem of Calculus (Informal)</div>
+        <p>Differentiation and integration are inverse operations. If you differentiate a function
+        and then integrate the result, you get back the original function (up to a constant).
+        Conversely, if you integrate a function and then differentiate, you recover the original
+        function.</p>
+        <p>$$\frac{d}{dt}\int_0^t f(\tau)\,d\tau = f(t)$$</p>
+      </div>
+
+      <p>
+        For simulation this means: we know forces (which give us acceleration), and we need positions.
+        We integrate acceleration to get velocity, then integrate velocity to get position. Each frame
+        of our simulation performs one small step of this integration:
+      </p>
+
+      <pre><code>// These two lines ARE numerical integration:
+this.velocity.add(this.acceleration);   // Integrate acceleration -> velocity
+this.position.add(this.velocity);       // Integrate velocity -> position</code></pre>
+
+      <p>
+        Each frame, we add one frame's worth of acceleration to velocity (a tiny integral step), then
+        add one frame's worth of velocity to position (another tiny integral step). Over many frames,
+        these tiny additions accumulate into the full motion.
+      </p>
+
+      <h3>9.1.4 The Connection: Position, Velocity, Acceleration</h3>
+
+      <p>
+        These concepts form an inseparable chain through calculus:
+      </p>
+
+      <p>
+        <strong>Going down (differentiation):</strong>
+      </p>
+      <p>$$\text{Position } x(t) \xrightarrow{\frac{d}{dt}} \text{Velocity } v(t) \xrightarrow{\frac{d}{dt}} \text{Acceleration } a(t)$$</p>
+
+      <p>
+        <strong>Going up (integration):</strong>
+      </p>
+      <p>$$\text{Acceleration } a(t) \xrightarrow{\int dt} \text{Velocity } v(t) \xrightarrow{\int dt} \text{Position } x(t)$$</p>
+
+      <p>
+        In simulation, we always go "up": we know the forces (which give us acceleration via $F = ma$),
+        and we integrate twice to get position. Each frame of our simulation loop performs two small
+        integration steps: one to update velocity from acceleration, and one to update position from velocity.
+      </p>
+
+      <p>
+        Here is a concrete example. Suppose an object starts at position $x = 0$ with velocity $v = 10$
+        and experiences constant acceleration $a = -2$ (deceleration). The exact solution is:
+      </p>
+
+      <p>$$v(t) = 10 - 2t, \quad x(t) = 10t - t^2$$</p>
+
+      <p>
+        The object moves forward, slowing down, reaches maximum displacement at $t = 5$, then reverses.
+        Our simulation will approximate this trajectory frame by frame. The better our integration method,
+        the closer our discrete trajectory will match this exact parabola.
+      </p>
+
+      <h3>9.1.5 Discrete Time vs. Continuous Time</h3>
+
+      <p>
+        In real physics, time flows continuously. In a simulation, time advances in discrete steps
+        called <strong>frames</strong> or <strong>time steps</strong>. Each frame is a snapshot. We
+        approximate the continuous flow by taking small steps:
+      </p>
+
+      <p>$$v(t + \Delta t) \approx v(t) + a(t) \cdot \Delta t$$</p>
+      <p>$$x(t + \Delta t) \approx x(t) + v(t) \cdot \Delta t$$</p>
+
+      <p>
+        The smaller $\Delta t$ is, the more accurate the approximation. At 60 frames per second
+        with $\Delta t = 1/60 \approx 0.0167$ seconds, most artistic simulations look smooth and
+        behave correctly. But the choice of how we compute these updates &mdash; the
+        <em>integration method</em> &mdash; matters enormously, as we will see in Section 9.3.
+      </p>
+
+      <p>
+        A useful analogy: imagine estimating the area of a lake on a map by covering it with small
+        squares. Smaller squares give a better approximation. Integration is the same idea applied to
+        curves over time. Our time step $\Delta t$ is the width of each "square." Smaller steps
+        give more accuracy but require more computation.
+      </p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The simulation loop is a chain: <strong>Forces</strong> $\xrightarrow{F=ma}$
+        <strong>Acceleration</strong> $\xrightarrow{\text{integrate}}$
+        <strong>Velocity</strong> $\xrightarrow{\text{integrate}}$
+        <strong>Position</strong>. This chain is the heart of every physics simulation.</p>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.2 — ORDINARY DIFFERENTIAL EQUATIONS
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="odes">9.2 Ordinary Differential Equations</h2>
+
+      <p>
+        Before we study integration methods and force laws in detail, we need to understand
+        the mathematical framework that unifies all of our simulations: ordinary differential
+        equations.
+      </p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Newton's Three Laws of Motion</div>
+        <p><strong>First Law (Inertia):</strong> An object at rest stays at rest, and an object in
+        motion stays in uniform motion, unless acted upon by a net external force.</p>
+        <p><strong>Second Law:</strong> $\vec{F} = m\vec{a}$. The net force on an object equals its
+        mass times its acceleration. Equivalently, $\vec{a} = \vec{F}/m$.</p>
+        <p><strong>Third Law:</strong> For every action there is an equal and opposite reaction. If
+        body A exerts force $\vec{F}$ on body B, then body B exerts force $-\vec{F}$ on body A.</p>
+      </div>
+
+      <p>
+        Newton's Second Law is the bridge between forces and motion. It tells us that if we know all
+        the forces acting on an object, we can compute its acceleration. And from acceleration, through
+        integration, we get velocity and position. The entire structure of our simulations rests on
+        this single equation.
+      </p>
+
+      <p>
+        In code, the principle of <strong>superposition</strong> says that all forces add together:
+      </p>
+
+      <pre><code>// Multiple forces can be applied per frame; they add up
+applyForce(force) {
+  let f = p5.Vector.div(force, this.mass); // a = F/m
+  this.acceleration.add(f);  // Accumulate contributions
+}</code></pre>
+
+      <h3>9.2.1 What Is an ODE?</h3>
+
+      <p>
+        An <strong>Ordinary Differential Equation (ODE)</strong> is an equation that relates a function
+        to its derivatives. The word "ordinary" means it involves derivatives with respect to a single
+        variable (usually time), as opposed to "partial" differential equations which involve multiple
+        variables (like space and time).
+      </p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Ordinary Differential Equation</strong> &mdash; An equation of the form
+        $\frac{dx}{dt} = f(x, t)$ that describes how the state variable $x$ changes over time.
+        The function $f$ on the right-hand side is called the <em>vector field</em> &mdash; it
+        tells us the rate of change at every point in state space.</p>
+      </div>
+
+      <p>Every simulation we build is an ODE system. The simplest example is a falling ball:</p>
+
+      <p>$$\frac{dx}{dt} = v, \quad \frac{dv}{dt} = -g$$</p>
+
+      <p>
+        This says: position changes at the rate of velocity, and velocity changes at the rate of
+        (negative) gravitational acceleration. Given initial conditions $x(0) = x_0$ and
+        $v(0) = v_0$, the solution is the familiar parabolic trajectory.
+      </p>
+
+      <h3>9.2.2 First-Order vs. Higher-Order</h3>
+
+      <p>
+        The <strong>order</strong> of an ODE is the highest derivative that appears. A first-order ODE
+        involves only the first derivative:
+      </p>
+
+      <p>$$\frac{dx}{dt} = f(x, t)$$</p>
+
+      <p>A second-order ODE involves the second derivative. Newton's second law is a second-order ODE:</p>
+
+      <p>$$m\frac{d^2x}{dt^2} = F(x, v, t)$$</p>
+
+      <p>
+        This is equivalent to $ma = F$, since acceleration $a = \frac{d^2x}{dt^2}$.
+      </p>
+
+      <h3>9.2.3 Converting to a System of First-Order ODEs</h3>
+
+      <p>
+        Any higher-order ODE can be converted into a <em>system</em> of first-order ODEs by
+        introducing new variables. For Newton's second law:
+      </p>
+
+      <p>
+        Let $v = \frac{dx}{dt}$. Then:
+      </p>
+
+      <p>$$\frac{dx}{dt} = v$$</p>
+      <p>$$\frac{dv}{dt} = \frac{F(x, v, t)}{m}$$</p>
+
+      <p>
+        Now we have two first-order equations instead of one second-order equation. This is exactly
+        what our simulation code does: we track both position and velocity as separate state variables,
+        and update each one according to its own first-order equation.
+      </p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Initial Value Problem (IVP)</strong> &mdash; An ODE together with initial conditions
+        (starting values for all state variables) defines an initial value problem. Given the equations
+        and starting state, the solution is a unique trajectory through state space. Our simulations
+        solve IVPs numerically, frame by frame.</p>
+      </div>
+
+      <h3>9.2.4 Example: The Simple Harmonic Oscillator</h3>
+
+      <p>
+        The simplest physically interesting ODE is the <strong>simple harmonic oscillator</strong>
+        (an ideal spring with no damping):
+      </p>
+
+      <p>$$m\frac{d^2x}{dt^2} = -kx$$</p>
+
+      <p>Converting to a first-order system:</p>
+
+      <p>$$\frac{dx}{dt} = v, \quad \frac{dv}{dt} = -\frac{k}{m}x$$</p>
+
+      <p>
+        The exact solution is $x(t) = A\cos(\omega t + \phi)$ where $\omega = \sqrt{k/m}$ is the
+        angular frequency and $A$ and $\phi$ are determined by initial conditions. The motion is
+        periodic: the mass oscillates back and forth forever with constant amplitude. This is the
+        reference behavior we use to test integration methods &mdash; if Forward Euler makes the
+        amplitude grow, we know the method is adding energy.
+      </p>
+
+      <h3>9.2.5 Beyond Physics: ODE Systems Everywhere</h3>
+
+      <p>
+        ODEs model far more than bouncing balls. They model epidemics (SIR model), weather
+        (Lorenz attractor), population dynamics (Lotka-Volterra), chemical reactions, neural
+        activity, and countless other phenomena. The simulation technique is always the same:
+      </p>
+
+      <ol>
+        <li>Identify the state variables ($x$, $y$, $z$, etc.)</li>
+        <li>Write the equations: $\frac{dx}{dt} = \ldots$, $\frac{dy}{dt} = \ldots$</li>
+        <li>Choose parameter values and initial conditions</li>
+        <li>Each frame: compute the right-hand sides, multiply by $\Delta t$, add to state</li>
+      </ol>
+
+      <p>The general recipe in code:</p>
+
+      <pre><code>// General ODE integration (Euler method):
+let dx = f(x, y, z) * dt;
+let dy = g(x, y, z) * dt;
+let dz = h(x, y, z) * dt;
+
+x += dx;
+y += dy;
+z += dz;</code></pre>
+
+      <p>
+        This pattern is <em>exactly the same</em> whether we are simulating a spring, an epidemic,
+        a chemical reaction, or a strange attractor. The only thing that changes is the right-hand
+        side functions $f$, $g$, $h$. This universality is what makes ODEs so powerful.
+      </p>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.3 — NUMERICAL INTEGRATION METHODS
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="integration-methods">9.3 Numerical Integration Methods</h2>
+
+      <p>
+        The choice of integration method determines whether your simulation is stable, accurate,
+        and energy-conserving. A bad method can make a spring oscillation grow without bound or
+        an orbit spiral outward. Let us examine the most important methods.
+      </p>
+
+      <h3>9.3.1 Forward (Explicit) Euler</h3>
+
+      <p>
+        The simplest method. It uses the <em>current</em> state to predict the <em>next</em> state:
+      </p>
+
+      <p>$$x_{n+1} = x_n + v_n \cdot \Delta t$$</p>
+      <p>$$v_{n+1} = v_n + a_n \cdot \Delta t$$</p>
+
+      <p>
+        Both updates use values from time step $n$ only. This is straightforward but problematic:
+        Forward Euler systematically <strong>adds energy</strong> to oscillatory systems. A spring
+        that should oscillate forever will instead grow in amplitude until the simulation explodes.
+      </p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Forward Euler looks correct but adds energy to spring/pendulum systems over time.
+        For artistic simulations that run indefinitely, this energy drift will eventually
+        cause the simulation to blow up.</p>
+      </div>
+
+      <h3>9.3.2 Semi-Implicit (Symplectic) Euler</h3>
+
+      <p>
+        One tiny change makes an enormous difference: update velocity first, then use the
+        <strong>updated</strong> velocity to update position:
+      </p>
+
+      <p>$$v_{n+1} = v_n + a_n \cdot \Delta t$$</p>
+      <p>$$x_{n+1} = x_n + v_{n+1} \cdot \Delta t$$</p>
+
+      <p>
+        The only difference is that the position update uses $v_{n+1}$ instead of $v_n$. This method
+        is called <strong>symplectic</strong> because it preserves the geometric structure of
+        Hamiltonian systems. In practice, it approximately conserves energy: oscillations remain
+        stable indefinitely.
+      </p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Semi-Implicit Euler Method</div>
+        <p>Update velocity first, then use the new velocity to update position:</p>
+        <p>$$v_{n+1} = v_n + a(x_n) \cdot \Delta t$$</p>
+        <p>$$x_{n+1} = x_n + v_{n+1} \cdot \Delta t$$</p>
+        <p>This is the recommended integration method for real-time physics simulations. It is
+        first-order accurate but energy-stable.</p>
+      </div>
+
+      <h3>9.3.3 Verlet Integration</h3>
+
+      <p>
+        Verlet integration computes position directly from the previous two positions, bypassing
+        velocity entirely:
+      </p>
+
+      <p>$$x_{n+1} = 2x_n - x_{n-1} + a_n \cdot \Delta t^2$$</p>
+
+      <p>
+        Velocity can be recovered when needed: $v_n \approx \frac{x_{n+1} - x_{n-1}}{2\Delta t}$.
+        Verlet integration is second-order accurate (error proportional to $\Delta t^2$) and symplectic,
+        making it excellent for molecular dynamics and cloth simulation. It is also naturally stable
+        for constraints (like fixed-length rods).
+      </p>
+
+      <p>
+        The Verlet method was discovered by the French physicist Loup Verlet in 1967 for molecular
+        dynamics simulations, though the same formula was known to Stormer (1907) and even Newton
+        himself used a similar approach. Its simplicity, accuracy, and energy-conservation properties
+        make it the standard for molecular dynamics and constraint-based simulations.
+      </p>
+
+      <p>In code, Verlet integration looks like this:</p>
+
+      <pre><code>// Verlet integration (stores previous position instead of velocity)
+let temp = pos.copy();
+pos.x = 2 * pos.x - prevPos.x + acc.x * dt * dt;
+pos.y = 2 * pos.y - prevPos.y + acc.y * dt * dt;
+prevPos = temp;
+
+// Recover velocity when needed:
+// vel = (pos - prevPos) / (2 * dt)</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Verlet's advantage for constraints:</strong> Because Verlet uses positions directly
+        (not velocities), it is easy to enforce constraints like fixed-length connections. Simply move
+        the positions to satisfy the constraint after each step. This is the basis of
+        <em>Position-Based Dynamics</em>, widely used in game engines for cloth, ropes, and ragdolls.</p>
+      </div>
+
+      <h3>9.3.4 Runge-Kutta (RK4)</h3>
+
+      <p>
+        The fourth-order Runge-Kutta method is the gold standard for accuracy. It evaluates the
+        derivative at four points within each time step and combines them:
+      </p>
+
+      <p>$$k_1 = f(t_n, y_n)$$</p>
+      <p>$$k_2 = f\!\left(t_n + \tfrac{\Delta t}{2},\; y_n + \tfrac{\Delta t}{2}\,k_1\right)$$</p>
+      <p>$$k_3 = f\!\left(t_n + \tfrac{\Delta t}{2},\; y_n + \tfrac{\Delta t}{2}\,k_2\right)$$</p>
+      <p>$$k_4 = f(t_n + \Delta t,\; y_n + \Delta t\,k_3)$$</p>
+      <p>$$y_{n+1} = y_n + \frac{\Delta t}{6}(k_1 + 2k_2 + 2k_3 + k_4)$$</p>
+
+      <p>
+        RK4 is fourth-order accurate (error proportional to $\Delta t^4$), which means it can take
+        much larger time steps while maintaining accuracy. However, it is <em>not</em> symplectic
+        and does not conserve energy in long simulations. It is best for short simulations or systems
+        where accuracy matters more than energy conservation (e.g., computing the Lorenz attractor).
+      </p>
+
+      <p>
+        The intuition behind RK4 is similar to Simpson's rule for numerical integration: instead of
+        evaluating the slope only at the current point (like Euler), we sample the slope at four
+        places within the time step and take a weighted average. The midpoint evaluations ($k_2$ and
+        $k_3$) get double weight, similar to how trapezoidal and Simpson's rules improve upon left-endpoint
+        Riemann sums.
+      </p>
+
+      <p>Here is a simplified RK4 implementation for a 1D system $\frac{dy}{dt} = f(t, y)$:</p>
+
+      <pre><code>function rk4Step(t, y, dt, f) {
+  let k1 = f(t, y);
+  let k2 = f(t + dt/2, y + dt/2 * k1);
+  let k3 = f(t + dt/2, y + dt/2 * k2);
+  let k4 = f(t + dt, y + dt * k3);
+  return y + (dt / 6) * (k1 + 2*k2 + 2*k3 + k4);
+}</code></pre>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The Runge-Kutta methods were developed by the German mathematicians Carl Runge (1895) and
+        Martin Kutta (1901). The fourth-order variant (RK4) became the workhorse of scientific
+        computing for nearly a century, until symplectic methods became preferred for long-time
+        integrations in the late 20th century.</p>
+      </div>
+
+      <h3>9.3.5 Comparing Methods</h3>
+
+      <table style="width:100%; border-collapse:collapse; margin:1rem 0;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);">
+            <th style="text-align:left; padding:0.5rem;">Method</th>
+            <th style="text-align:left; padding:0.5rem;">Order</th>
+            <th style="text-align:left; padding:0.5rem;">Symplectic?</th>
+            <th style="text-align:left; padding:0.5rem;">Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border-light);">
+            <td style="padding:0.5rem;">Forward Euler</td>
+            <td style="padding:0.5rem;">1st</td>
+            <td style="padding:0.5rem;">No</td>
+            <td style="padding:0.5rem;">Teaching only; avoid in practice</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border-light);">
+            <td style="padding:0.5rem;">Semi-Implicit Euler</td>
+            <td style="padding:0.5rem;">1st</td>
+            <td style="padding:0.5rem;">Yes</td>
+            <td style="padding:0.5rem;">Real-time simulations, games, art</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border-light);">
+            <td style="padding:0.5rem;">Verlet</td>
+            <td style="padding:0.5rem;">2nd</td>
+            <td style="padding:0.5rem;">Yes</td>
+            <td style="padding:0.5rem;">Cloth, ropes, molecular dynamics</td>
+          </tr>
+          <tr>
+            <td style="padding:0.5rem;">RK4</td>
+            <td style="padding:0.5rem;">4th</td>
+            <td style="padding:0.5rem;">No</td>
+            <td style="padding:0.5rem;">High-accuracy scientific computation</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Below is an interactive comparison of Forward Euler vs. Semi-Implicit Euler on a spring system.
+      Watch the energy graph: Forward Euler's energy grows (the spring explodes), while Semi-Implicit
+      Euler's energy stays bounded.</p>
+
+      <!-- Interactive: Euler vs Semi-Implicit Euler -->
+      <div class="code-runner" data-height="520">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Euler vs Semi-Implicit Euler</span>
+        </div>
+        <textarea class="cm-editor">let posF = 300, velF = 0;   // Forward Euler state
+let posS = 300, velS = 0;   // Semi-Implicit Euler state
+let anchorY = 200;
+let k = 0.02;
+let energiesF = [], energiesS = [];
+
+function setup() {
+  createCanvas(400, 500);
+}
+
+function draw() {
+  background(30);
+
+  for (let step = 0; step < 3; step++) {
+    // Forward Euler: uses OLD velocity for position
+    let dispF = posF - anchorY;
+    let accF = -k * dispF;
+    let oldVelF = velF;
+    velF += accF;
+    posF += oldVelF;
+
+    let eF = 0.5 * velF * velF + 0.5 * k * dispF * dispF;
+    energiesF.push(eF);
+
+    // Semi-Implicit Euler: uses NEW velocity for position
+    let dispS = posS - anchorY;
+    let accS = -k * dispS;
+    velS += accS;
+    posS += velS;
+
+    let eS = 0.5 * velS * velS + 0.5 * k * dispS * dispS;
+    energiesS.push(eS);
+  }
+
+  // Draw springs
+  stroke(100);
+  strokeWeight(2);
+  line(120, anchorY, 120, posF);
+  line(280, anchorY, 280, posS);
+
+  noStroke();
+  fill(255, 100, 100);
+  circle(120, anchorY, 10);
+  circle(120, posF, 22);
+
+  fill(100, 150, 255);
+  circle(280, anchorY, 10);
+  circle(280, posS, 22);
+
+  // Labels
+  noStroke();
+  textSize(12);
+  fill(255, 100, 100);
+  textAlign(CENTER);
+  text("Forward Euler", 120, 30);
+  text("(energy grows!)", 120, 46);
+  fill(100, 150, 255);
+  text("Semi-Implicit", 280, 30);
+  text("(energy stable)", 280, 46);
+
+  // Energy graph
+  let gTop = 380, gBot = 480;
+  stroke(80); strokeWeight(0.5);
+  line(10, gTop, 390, gTop);
+  line(10, gBot, 390, gBot);
+
+  noFill(); strokeWeight(1.5);
+  let maxPts = 380;
+
+  stroke(255, 100, 100);
+  beginShape();
+  let startF = max(0, energiesF.length - maxPts);
+  for (let i = startF; i < energiesF.length; i++) {
+    let x = map(i - startF, 0, maxPts, 10, 390);
+    let y = map(energiesF[i], 0, 2, gBot, gTop);
+    y = constrain(y, gTop - 20, gBot);
+    vertex(x, y);
+  }
+  endShape();
+
+  stroke(100, 150, 255);
+  beginShape();
+  let startS = max(0, energiesS.length - maxPts);
+  for (let i = startS; i < energiesS.length; i++) {
+    let x = map(i - startS, 0, maxPts, 10, 390);
+    let y = map(energiesS[i], 0, 2, gBot, gTop);
+    y = constrain(y, gTop - 20, gBot);
+    vertex(x, y);
+  }
+  endShape();
+
+  noStroke();
+  fill(200);
+  textAlign(LEFT);
+  textSize(11);
+  text("Energy over time", 12, gTop - 6);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 1 -->
+      <div class="quiz" data-id="ch09-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the key difference between Forward Euler and Semi-Implicit Euler integration?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch09-q1" value="a"> Forward Euler is second-order accurate while Semi-Implicit is first-order</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q1" value="b"> Semi-Implicit Euler updates position before velocity</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q1" value="c" data-correct> Semi-Implicit Euler updates velocity first, then uses the new velocity to update position</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q1" value="d"> Forward Euler conserves energy while Semi-Implicit does not</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Semi-Implicit (Symplectic) Euler first computes $v_{n+1} = v_n + a \Delta t$, then uses
+          this <em>updated</em> velocity to compute $x_{n+1} = x_n + v_{n+1} \Delta t$. This single
+          change in ordering makes the method symplectic, approximately conserving energy. Forward
+          Euler uses the old velocity for both and adds energy over time.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.4 — SPRING FORCES
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="springs">9.4 Spring Forces</h2>
+
+      <h3>9.4.1 Hooke's Law</h3>
+
+      <p>
+        In 1660, Robert Hooke discovered that the force exerted by an elastic material is proportional
+        to how far it is deformed from its natural length. This relationship, known as
+        <strong>Hooke's law</strong>, is one of the most useful force models in simulation.
+      </p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Hooke's Law</div>
+        <p>$$F = -k \cdot x$$</p>
+        <p>where $k$ is the <strong>spring constant</strong> (stiffness), $x$ is the
+        <strong>displacement</strong> from rest length, and the negative sign indicates the force
+        is <strong>restoring</strong> &mdash; always directed back toward the equilibrium position.</p>
+      </div>
+
+      <p>
+        A stiffer spring (larger $k$) exerts more force for the same displacement. The angular
+        frequency of oscillation is $\omega = \sqrt{k/m}$, and the period is
+        $T = 2\pi\sqrt{m/k}$. Heavier objects oscillate more slowly; stiffer springs oscillate faster.
+      </p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Hooke originally published his law as an anagram: "ceiiinosssttuv," which rearranges to
+        the Latin phrase "ut tensio, sic vis" ("as the extension, so the force"). He did this to
+        establish priority while keeping the discovery secret. Hooke's rivalry with Newton is one
+        of the most famous feuds in the history of science.</p>
+      </div>
+
+      <p>
+        In 2D or 3D, we need the <strong>vector form</strong> of Hooke's law. Given an anchor point
+        and a bob connected by a spring:
+      </p>
+
+      <pre><code>function springForceVec(anchor, bob, restLen, k) {
+  let spring = p5.Vector.sub(bob, anchor);
+  let currentLen = spring.mag();
+  let displacement = currentLen - restLen;
+  spring.normalize();
+  spring.mult(-k * displacement);
+  return spring; // Force on the bob
+}</code></pre>
+
+      <p>
+        The force direction is along the spring axis. When the spring is stretched ($\text{currentLen} &gt; \text{restLen}$),
+        the displacement is positive and the force pulls the bob back toward the anchor. When compressed,
+        the displacement is negative and the force pushes the bob away.
+      </p>
+
+      <p>
+        The <strong>potential energy</strong> stored in a spring is $U = \frac{1}{2}k x^2$. This energy is
+        zero at the rest length and increases quadratically as the spring is stretched or compressed.
+        The kinetic energy of the bob is $K = \frac{1}{2}mv^2$. In an ideal (undamped) spring system,
+        total energy $E = K + U$ is constant: energy flows back and forth between kinetic and potential
+        forms as the spring oscillates.
+      </p>
+
+      <h3>9.4.2 Damped Springs</h3>
+
+      <p>
+        Real springs lose energy to friction, air resistance, and internal deformation. We model this
+        with a <strong>damping force</strong> proportional to velocity and opposing the motion:
+      </p>
+
+      <p>$$F_{\text{total}} = -k \cdot x - b \cdot v$$</p>
+
+      <p>
+        where $b$ is the <strong>damping coefficient</strong>. The damping term $-bv$ always opposes
+        velocity, removing kinetic energy from the system. Three regimes exist:
+      </p>
+      <ul>
+        <li><strong>Underdamped</strong> ($b &lt; 2\sqrt{km}$): oscillates with decaying amplitude</li>
+        <li><strong>Critically damped</strong> ($b = 2\sqrt{km}$): returns to equilibrium as fast as possible without oscillating</li>
+        <li><strong>Overdamped</strong> ($b &gt; 2\sqrt{km}$): returns slowly without oscillating</li>
+      </ul>
+
+      <p>Here is an interactive spring with adjustable damping. Drag the ball and release it:</p>
+
+      <!-- Interactive: Spring with damping -->
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Damped Spring</span>
+        </div>
+        <textarea class="cm-editor">let bobY, velY;
+let anchorY = 80;
+let restLen = 120;
+let k = 0.03;
+let damping = 0.02;
+let dragging = false;
+
+function setup() {
+  createCanvas(400, 400);
+  bobY = anchorY + restLen + 80;
+  velY = 0;
+}
+
+function draw() {
+  background(30);
+
+  if (!dragging) {
+    let displacement = bobY - (anchorY + restLen);
+    let springF = -k * displacement;
+    let dampF = -damping * velY;
+    let acc = springF + dampF;
+    velY += acc;
+    bobY += velY;
+  }
+
+  // Draw spring (zigzag)
+  stroke(180);
+  strokeWeight(2);
+  let segments = 16;
+  let dy = (bobY - anchorY) / segments;
+  for (let i = 0; i < segments; i++) {
+    let y1 = anchorY + i * dy;
+    let y2 = anchorY + (i + 1) * dy;
+    let x1 = 200 + ((i % 2 === 0) ? -15 : 15);
+    let x2 = 200 + (((i + 1) % 2 === 0) ? -15 : 15);
+    if (i === 0) x1 = 200;
+    if (i === segments - 1) x2 = 200;
+    line(x1, y1, x2, y2);
+  }
+
+  // Anchor
+  fill(150);
+  noStroke();
+  rectMode(CENTER);
+  rect(200, anchorY, 60, 10, 3);
+
+  // Bob
+  let displacement = bobY - (anchorY + restLen);
+  let r = map(abs(displacement), 0, 100, 100, 255);
+  fill(r, 120, 255 - r);
+  stroke(255);
+  strokeWeight(1);
+  circle(200, bobY, 36);
+
+  // Info
+  noStroke();
+  fill(200);
+  textSize(12);
+  textAlign(LEFT);
+  text("k = " + k.toFixed(3), 20, 30);
+  text("damping = " + damping.toFixed(3), 20, 48);
+  text("displacement = " + displacement.toFixed(1), 20, 66);
+  text("velocity = " + velY.toFixed(2), 20, 84);
+
+  fill(150);
+  textSize(11);
+  textAlign(CENTER);
+  text("Click & drag the ball, then release", 200, 390);
+}
+
+function mousePressed() {
+  if (dist(mouseX, mouseY, 200, bobY) < 25) {
+    dragging = true;
+  }
+}
+
+function mouseDragged() {
+  if (dragging) {
+    bobY = constrain(mouseY, anchorY + 20, 380);
+    velY = 0;
+  }
+}
+
+function mouseReleased() {
+  dragging = false;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>9.4.3 Spring-Mass Systems and Cloth</h3>
+
+      <p>
+        A single spring is interesting. A <em>network</em> of springs is powerful. By connecting
+        masses with springs in a grid, we can simulate cloth, jelly, soft bodies, and bridges.
+        Each mass point feels forces from all springs attached to it, plus gravity and damping.
+      </p>
+
+      <p>
+        For a cloth simulation, we typically use three types of springs:
+      </p>
+      <ul>
+        <li><strong>Structural springs</strong>: connect immediate horizontal and vertical neighbors (maintain shape)</li>
+        <li><strong>Shear springs</strong>: connect diagonal neighbors (resist shearing)</li>
+        <li><strong>Bend springs</strong>: connect every other node (resist folding)</li>
+      </ul>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.5 — GRAVITY AND ORBITAL MECHANICS
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="gravity">9.5 Gravity and Orbital Mechanics</h2>
+
+      <h3>9.5.1 Newton's Law of Universal Gravitation</h3>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Newton's Law of Universal Gravitation</div>
+        <p>Every object with mass attracts every other object with mass. The force is:</p>
+        <p>$$F = G \frac{m_1 m_2}{r^2}$$</p>
+        <p>where $G$ is the gravitational constant, $m_1$ and $m_2$ are the masses, and $r$ is
+        the distance between their centers. The force is always attractive, directed along the
+        line connecting the two objects.</p>
+      </div>
+
+      <p>
+        This is an <strong>inverse-square law</strong>: the force drops off as the square of the
+        distance. At twice the distance, the force is $1/4$ as strong. At ten times the distance,
+        $1/100$. This creates rich dynamics: nearby objects interact strongly, while distant ones
+        barely influence each other.
+      </p>
+
+      <p>In code:</p>
+
+      <pre><code>function gravitationalForce(bodyA, bodyB) {
+  let force = p5.Vector.sub(bodyB.position, bodyA.position);
+  let distance = constrain(force.mag(), 20, 500);
+  let G = 0.5;
+  let strength = (G * bodyA.mass * bodyB.mass) / (distance * distance);
+  force.setMag(strength);
+  return force; // pulls bodyA toward bodyB
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Always clamp the minimum distance! When two bodies get very close, $r \to 0$ and
+        $F \to \infty$, causing the simulation to explode. Use <code>constrain(distance, minDist, maxDist)</code>
+        to prevent singularities.</p>
+      </div>
+
+      <h3>9.5.2 The Two-Body Problem and Orbits</h3>
+
+      <p>
+        When one body orbits another, the gravitational force provides the centripetal acceleration
+        needed for circular (or elliptical) motion. For a stable circular orbit, the initial velocity
+        must be perpendicular to the line connecting the bodies and have the right magnitude:
+      </p>
+
+      <p>$$v_{\text{orbit}} = \sqrt{\frac{G \cdot M}{r}}$$</p>
+
+      <p>
+        Too slow and the body falls inward. Too fast and it escapes. Just right and it orbits in
+        an ellipse (or circle).
+      </p>
+
+      <h3>9.5.3 Kepler's Laws (Conceptual)</h3>
+
+      <p>Johannes Kepler discovered three laws of planetary motion empirically, before Newton explained them with gravity:</p>
+
+      <ol>
+        <li><strong>Law of Orbits:</strong> Planets move in ellipses with the sun at one focus.</li>
+        <li><strong>Law of Areas:</strong> A line from the sun to a planet sweeps equal areas in equal times. (Planets move faster when closer to the sun.)</li>
+        <li><strong>Law of Periods:</strong> The square of the orbital period is proportional to the cube of the semi-major axis: $T^2 \propto a^3$.</li>
+      </ol>
+
+      <p>
+        Our simulations naturally reproduce Kepler's laws when we use an inverse-square gravitational
+        force with a symplectic integrator. This is a beautiful validation: the emergent behavior
+        matches centuries of astronomical observation.
+      </p>
+
+      <h3>9.5.4 N-Body Simulation</h3>
+
+      <p>
+        With more than two bodies, there is no analytical solution. We must simulate numerically.
+        For $N$ bodies, we compute all $\frac{N(N-1)}{2}$ pairwise interactions each frame.
+      </p>
+
+      <!-- Interactive: Two-body gravitational orbit -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Two-Body Gravitational Orbit</span>
+        </div>
+        <textarea class="cm-editor">let sun, planet;
+let G = 2.0;
+let trail = [];
+
+function setup() {
+  createCanvas(400, 400);
+  sun = {
+    pos: createVector(200, 200),
+    vel: createVector(0, 0),
+    mass: 500,
+    r: 20
+  };
+  planet = {
+    pos: createVector(320, 200),
+    vel: createVector(0, -2.5),
+    mass: 5,
+    r: 8
+  };
+}
+
+function draw() {
+  background(15, 15, 30);
+
+  // Gravitational force
+  let force = p5.Vector.sub(sun.pos, planet.pos);
+  let dist = constrain(force.mag(), 30, 500);
+  let strength = (G * sun.mass * planet.mass) / (dist * dist);
+  force.setMag(strength);
+
+  // Apply to planet (sun is so massive it barely moves)
+  let acc = p5.Vector.div(force, planet.mass);
+  planet.vel.add(acc);
+  planet.pos.add(planet.vel);
+
+  // Trail
+  trail.push(planet.pos.copy());
+  if (trail.length > 600) trail.shift();
+
+  // Draw trail
+  noFill();
+  strokeWeight(1);
+  for (let i = 1; i < trail.length; i++) {
+    let t = i / trail.length;
+    stroke(80, 120 + t * 135, 255, t * 200);
+    line(trail[i-1].x, trail[i-1].y, trail[i].x, trail[i].y);
+  }
+
+  // Sun
+  noStroke();
+  fill(255, 220, 50);
+  circle(sun.pos.x, sun.pos.y, sun.r * 2);
+  fill(255, 220, 50, 40);
+  circle(sun.pos.x, sun.pos.y, sun.r * 4);
+
+  // Planet
+  fill(80, 160, 255);
+  circle(planet.pos.x, planet.pos.y, planet.r * 2);
+
+  // Info
+  fill(180);
+  noStroke();
+  textSize(11);
+  textAlign(LEFT);
+  text("G = " + G.toFixed(1) + "  Sun mass = " + sun.mass, 10, 20);
+  text("Planet speed = " + planet.vel.mag().toFixed(2), 10, 36);
+  text("Distance = " + p5.Vector.dist(sun.pos, planet.pos).toFixed(0), 10, 52);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 2 -->
+      <div class="quiz" data-id="ch09-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">According to Newton's Law of Universal Gravitation, if the distance between two objects doubles, what happens to the gravitational force?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch09-q2" value="a"> It halves</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q2" value="b" data-correct> It becomes one-quarter as strong</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q2" value="c"> It doubles</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q2" value="d"> It stays the same</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Gravity follows an inverse-square law: $F \propto 1/r^2$. If $r$ doubles,
+          $F$ becomes $1/(2^2) = 1/4$ of its original value. This rapid falloff is why
+          nearby objects dominate gravitational interactions.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.6 — DRAG AND FRICTION
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="drag-friction">9.6 Drag and Friction</h2>
+
+      <h3>9.6.1 Friction (Coulomb Friction)</h3>
+
+      <p>
+        Kinetic friction acts on objects sliding along a surface. It has a constant magnitude
+        (independent of speed) and always opposes the direction of motion:
+      </p>
+
+      <p>$$\vec{F}_{\text{friction}} = -\mu \cdot N \cdot \hat{v}$$</p>
+
+      <p>
+        where $\mu$ is the <strong>coefficient of friction</strong>, $N$ is the normal force
+        (how hard the surfaces are pressed together), and $\hat{v}$ is the unit vector in the
+        direction of velocity. On a flat surface, $N = mg$.
+      </p>
+
+      <h3>9.6.2 Linear Drag</h3>
+
+      <p>
+        For slow-moving objects (low Reynolds number), drag is proportional to velocity:
+      </p>
+
+      <p>$$\vec{F}_{\text{drag}} = -c_1 \cdot \vec{v}$$</p>
+
+      <p>This is sometimes called <strong>viscous drag</strong> or Stokes drag, and models objects moving through thick fluids like honey.</p>
+
+      <h3>9.6.3 Quadratic Drag (Air Resistance)</h3>
+
+      <p>
+        For everyday objects moving through air (high Reynolds number), drag is proportional to
+        the <em>square</em> of speed:
+      </p>
+
+      <p>$$\vec{F}_{\text{drag}} = -c_2 \cdot |\vec{v}|^2 \cdot \hat{v}$$</p>
+
+      <p>
+        The quadratic dependence on speed means drag grows very quickly. At low speeds, drag is
+        negligible. At high speeds, it dominates all other forces.
+      </p>
+
+      <h3>9.6.4 Friction vs. Drag: A Comparison</h3>
+
+      <p>
+        It is important to understand when each model applies:
+      </p>
+
+      <ul>
+        <li><strong>Friction</strong> is constant regardless of speed. A slow object and a fast object
+        on the same surface feel the same friction force. It is most relevant for objects sliding on surfaces.</li>
+        <li><strong>Linear drag</strong> ($F \propto v$) applies at low speeds in viscous fluids. Think of
+        a marble sinking slowly through honey.</li>
+        <li><strong>Quadratic drag</strong> ($F \propto v^2$) applies at everyday speeds in air and water.
+        It grows rapidly: double the speed means four times the drag force.</li>
+      </ul>
+
+      <p>
+        In most artistic simulations, <strong>linear drag</strong> (velocity damping) is the simplest and
+        most common choice. It is easy to implement and creates smooth, natural-looking deceleration:
+      </p>
+
+      <pre><code>// Simple velocity damping (linear drag)
+this.velocity.mult(0.99); // Remove 1% of velocity each frame</code></pre>
+
+      <h3>9.6.5 Terminal Velocity</h3>
+
+      <p>
+        When a falling object's drag force equals the gravitational force, acceleration becomes zero
+        and the object reaches <strong>terminal velocity</strong>:
+      </p>
+
+      <p>$$mg = c_2 \cdot v_t^2 \implies v_t = \sqrt{\frac{mg}{c_2}}$$</p>
+
+      <p>
+        Heavier objects have higher terminal velocities. Objects with large cross-sections (like
+        parachutes) have lower terminal velocities because $c_2$ is larger.
+      </p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>A skydiver has a terminal velocity of about 55 m/s (120 mph) in a spread-eagle position.
+        With a parachute deployed, terminal velocity drops to about 5 m/s (11 mph) &mdash; an
+        11-fold decrease &mdash; because the parachute's large area dramatically increases the
+        drag coefficient $c_2$.</p>
+      </div>
+
+      <!-- Interactive: Terminal velocity -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Terminal Velocity Demo</span>
+        </div>
+        <textarea class="cm-editor">let balls = [];
+
+function setup() {
+  createCanvas(400, 400);
+  // Three balls with different drag coefficients
+  balls.push({
+    x: 80, y: 40, vy: 0,
+    mass: 1, drag: 0.001,
+    col: [255, 80, 80], label: "Low drag"
+  });
+  balls.push({
+    x: 200, y: 40, vy: 0,
+    mass: 1, drag: 0.01,
+    col: [80, 200, 80], label: "Medium drag"
+  });
+  balls.push({
+    x: 320, y: 40, vy: 0,
+    mass: 1, drag: 0.05,
+    col: [80, 140, 255], label: "High drag"
+  });
+}
+
+function draw() {
+  background(30);
+  let g = 0.15;
+
+  for (let b of balls) {
+    // Gravity
+    let fGrav = b.mass * g;
+    // Quadratic drag (opposes velocity)
+    let fDrag = -b.drag * b.vy * abs(b.vy);
+    let acc = (fGrav + fDrag) / b.mass;
+
+    b.vy += acc;
+    b.y += b.vy;
+
+    // Terminal velocity for this ball
+    let vt = sqrt((b.mass * g) / b.drag);
+
+    // Bounce
+    if (b.y > 370) {
+      b.y = 370;
+      b.vy *= -0.5;
+    }
+    if (b.y < 20) {
+      b.y = 20;
+      b.vy = 0;
+    }
+
+    // Draw
+    noStroke();
+    fill(b.col[0], b.col[1], b.col[2]);
+    circle(b.x, b.y, 24);
+
+    // Speed bar
+    let barH = map(abs(b.vy), 0, vt * 1.2, 0, 60);
+    fill(b.col[0], b.col[1], b.col[2], 120);
+    rect(b.x - 5, 380 - barH, 10, barH);
+
+    // Terminal velocity line
+    stroke(b.col[0], b.col[1], b.col[2], 80);
+    strokeWeight(1);
+    let vtBarH = map(vt, 0, vt * 1.2, 0, 60);
+    line(b.x - 15, 380 - vtBarH, b.x + 15, 380 - vtBarH);
+
+    // Label
+    noStroke();
+    fill(b.col[0], b.col[1], b.col[2]);
+    textAlign(CENTER);
+    textSize(10);
+    text(b.label, b.x, 16);
+    text("v=" + abs(b.vy).toFixed(1), b.x, 398);
+    text("vt=" + vt.toFixed(1), b.x, 30);
+  }
+
+  fill(150);
+  textAlign(LEFT);
+  textSize(11);
+  text("Dashed line = terminal velocity", 10, 398);
+}
+
+function mousePressed() {
+  for (let b of balls) {
+    b.y = 40;
+    b.vy = 0;
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.7 — CONSTRAINTS AND COLLISIONS
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="collisions">9.7 Constraints and Collisions</h2>
+
+      <h3>9.7.1 Boundary Reflection</h3>
+
+      <p>
+        The simplest collision is bouncing off a wall. When an object crosses a boundary, we
+        reflect its position and negate the velocity component perpendicular to the wall:
+      </p>
+
+      <pre><code>// Bounce off floor
+if (pos.y > height) {
+  pos.y = height;
+  vel.y *= -restitution; // restitution: 1.0 = perfectly elastic, 0 = no bounce
+}</code></pre>
+
+      <h3>9.7.2 Elastic vs. Inelastic Collisions</h3>
+
+      <p>
+        When two objects collide, momentum is always conserved. Whether kinetic energy is also
+        conserved determines the type of collision:
+      </p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Elastic collision</strong> &mdash; both momentum and kinetic energy are conserved.
+        The objects bounce off each other perfectly.</p>
+        <p><strong>Inelastic collision</strong> &mdash; momentum is conserved but kinetic energy is
+        not. Some energy is lost to deformation, heat, or sound.</p>
+      </div>
+
+      <h3>9.7.3 Conservation of Momentum</h3>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Conservation of Momentum</div>
+        <p>$$m_1 v_1 + m_2 v_2 = m_1 v_1' + m_2 v_2'$$</p>
+        <p>The total momentum before the collision equals the total momentum after.</p>
+      </div>
+
+      <p>For a <strong>1D elastic collision</strong>, the final velocities are:</p>
+
+      <p>$$v_1' = \frac{(m_1 - m_2) v_1 + 2 m_2 v_2}{m_1 + m_2}$$</p>
+      <p>$$v_2' = \frac{(m_2 - m_1) v_2 + 2 m_1 v_1}{m_1 + m_2}$$</p>
+
+      <p>
+        Special case: when the masses are equal ($m_1 = m_2$), the objects simply exchange velocities:
+        $v_1' = v_2$ and $v_2' = v_1$.
+      </p>
+
+      <h3>9.7.4 2D Elastic Collision Between Circles</h3>
+
+      <p>
+        For 2D collisions between circles, we project the velocities onto the collision normal
+        (the line connecting the centers) and apply the 1D elastic collision formulas to the
+        normal components. The tangential components (perpendicular to the normal) are unchanged.
+      </p>
+
+      <pre><code>// 2D elastic collision resolution
+let normal = p5.Vector.sub(b.pos, a.pos).normalize();
+let relVel = p5.Vector.sub(a.vel, b.vel);
+let velAlongNormal = relVel.dot(normal);
+
+if (velAlongNormal > 0) return; // Already moving apart
+
+let impulse = (2 * velAlongNormal) / (a.mass + b.mass);
+a.vel.sub(p5.Vector.mult(normal, impulse * b.mass));
+b.vel.add(p5.Vector.mult(normal, impulse * a.mass));</code></pre>
+
+      <h3>9.7.5 Circle-Circle Collision Detection</h3>
+
+      <p>Two circles collide when the distance between their centers is less than the sum of their radii:</p>
+
+      <p>$$|\vec{p}_1 - \vec{p}_2| &lt; r_1 + r_2$$</p>
+
+      <p>
+        When a collision is detected, we must also <strong>separate</strong> the overlapping bodies
+        to prevent them from getting stuck inside each other. We push each body away along the
+        collision normal by half the overlap distance:
+      </p>
+
+      <pre><code>let overlap = (a.r + b.r) - dist;
+let pushVec = normal.copy().mult(overlap * 0.5);
+a.pos.sub(pushVec);
+b.pos.add(pushVec);</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Coefficient of restitution</strong> ($e$) determines how "bouncy" a collision is.
+        $e = 1$ means perfectly elastic (no energy lost). $e = 0$ means perfectly inelastic (objects
+        stick together). Real-world collisions have $0 &lt; e &lt; 1$. A tennis ball on concrete has
+        $e \approx 0.75$; a lump of clay has $e \approx 0$.</p>
+      </div>
+
+      <!-- Interactive: Bouncing balls with collisions -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Bouncing Balls with Elastic Collisions</span>
+        </div>
+        <textarea class="cm-editor">let balls = [];
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 8; i++) {
+    let r = random(12, 25);
+    balls.push({
+      pos: createVector(random(r, width-r), random(r, height-r)),
+      vel: createVector(random(-3, 3), random(-3, 3)),
+      r: r,
+      mass: r * r,
+      col: [random(100,255), random(100,255), random(100,255)]
+    });
+  }
+}
+
+function draw() {
+  background(20);
+
+  // Update positions
+  for (let b of balls) {
+    b.pos.add(b.vel);
+
+    // Wall bounces
+    if (b.pos.x - b.r < 0) { b.pos.x = b.r; b.vel.x *= -1; }
+    if (b.pos.x + b.r > width) { b.pos.x = width - b.r; b.vel.x *= -1; }
+    if (b.pos.y - b.r < 0) { b.pos.y = b.r; b.vel.y *= -1; }
+    if (b.pos.y + b.r > height) { b.pos.y = height - b.r; b.vel.y *= -1; }
+  }
+
+  // Ball-ball collisions
+  for (let i = 0; i < balls.length; i++) {
+    for (let j = i + 1; j < balls.length; j++) {
+      let a = balls[i], b = balls[j];
+      let diff = p5.Vector.sub(b.pos, a.pos);
+      let dist = diff.mag();
+      let minDist = a.r + b.r;
+
+      if (dist < minDist && dist > 0) {
+        // Separate overlapping balls
+        let overlap = minDist - dist;
+        let normal = diff.copy().normalize();
+        a.pos.sub(p5.Vector.mult(normal, overlap * 0.5));
+        b.pos.add(p5.Vector.mult(normal, overlap * 0.5));
+
+        // 1D elastic collision along collision normal
+        let relVel = p5.Vector.sub(a.vel, b.vel);
+        let velAlongNormal = relVel.dot(normal);
+
+        if (velAlongNormal > 0) continue; // moving apart
+
+        let totalMass = a.mass + b.mass;
+        let impulse = (2 * velAlongNormal) / totalMass;
+
+        a.vel.sub(p5.Vector.mult(normal, impulse * b.mass));
+        b.vel.add(p5.Vector.mult(normal, impulse * a.mass));
+      }
+    }
+  }
+
+  // Draw
+  for (let b of balls) {
+    fill(b.col[0], b.col[1], b.col[2]);
+    stroke(255, 60);
+    strokeWeight(1);
+    circle(b.pos.x, b.pos.y, b.r * 2);
+  }
+
+  fill(180);
+  noStroke();
+  textSize(11);
+  text("8 balls with elastic collisions", 10, 18);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 3 -->
+      <div class="quiz" data-id="ch09-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In a perfectly elastic collision between two objects of equal mass where one is initially at rest, what happens?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch09-q3" value="a"> Both objects move at half the original speed</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q3" value="b"> Both objects stop</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q3" value="c" data-correct> The moving object stops and the stationary object moves at the original speed</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q3" value="d"> Both objects move in the same direction at different speeds</label></li>
+        </ul>
+        <div class="explanation">
+          <p>With equal masses, the elastic collision formulas give $v_1' = v_2$ and $v_2' = v_1$
+          (the velocities are exchanged). If object 2 was at rest ($v_2 = 0$), then object 1
+          stops ($v_1' = 0$) and object 2 moves with object 1's original velocity.
+          This is famously demonstrated by Newton's cradle.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.8 — COUPLED OSCILLATORS
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="coupled-oscillators">9.8 Coupled Oscillators</h2>
+
+      <h3>9.8.1 Connected Springs</h3>
+
+      <p>
+        A <strong>coupled oscillator</strong> is a system where multiple oscillators are connected,
+        so the motion of one affects the others. The simplest example is a chain of masses connected
+        by springs. Each mass feels spring forces from its neighbors:
+      </p>
+
+      <p>$$F_i = -k(x_i - x_{i-1}) - k(x_i - x_{i+1}) - b \cdot v_i$$</p>
+
+      <p>
+        where $x_{i-1}$ and $x_{i+1}$ are the positions of the neighboring masses.
+      </p>
+
+      <h3>9.8.2 Wave Propagation</h3>
+
+      <p>
+        When you disturb one end of a spring chain, the disturbance propagates along the chain as
+        a <strong>wave</strong>. The speed of the wave depends on the spring constant and the mass:
+        $c = \sqrt{k/m} \cdot d$ where $d$ is the spacing between masses. This is exactly how
+        sound waves propagate through a solid.
+      </p>
+
+      <h3>9.8.3 Normal Modes</h3>
+
+      <p>
+        A system of $N$ coupled oscillators has $N$ <strong>normal modes</strong> &mdash; special
+        patterns of oscillation where all masses move sinusoidally at the same frequency.
+        The lowest mode has all masses moving in phase; higher modes have more complex patterns
+        with nodes (stationary points). Any motion of the chain can be decomposed into a
+        superposition of normal modes, which is the physical basis of Fourier analysis.
+      </p>
+
+      <p>For a chain of $N$ identical masses connected by identical springs, the normal mode frequencies are:</p>
+
+      <p>$$\omega_k = 2\sqrt{\frac{k}{m}} \sin\!\left(\frac{k\pi}{2(N+1)}\right), \quad k = 1, 2, \ldots, N$$</p>
+
+      <p>
+        The lowest frequency ($k=1$) is the fundamental mode; higher values of $k$ give harmonics.
+        This is directly analogous to the harmonics of a vibrating string, which is why a guitar
+        string (modeled as a chain of many coupled oscillators) produces a fundamental frequency
+        plus overtones.
+      </p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>From particles to waves:</strong> A chain of coupled oscillators with many nodes
+        behaves like a continuous wave. The wave equation $\frac{\partial^2 u}{\partial t^2} = c^2
+        \frac{\partial^2 u}{\partial x^2}$ emerges as the continuum limit of coupled oscillators
+        when the number of particles approaches infinity. This is the bridge between discrete
+        particle simulations and continuous wave phenomena like sound and light.</p>
+      </div>
+
+      <!-- Interactive: Spring-mass chain (pendulum) -->
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Pendulum Simulation</span>
+        </div>
+        <textarea class="cm-editor">let angle, angleVel;
+let pivotX, pivotY, len;
+let trail = [];
+
+function setup() {
+  createCanvas(400, 400);
+  pivotX = 200;
+  pivotY = 60;
+  len = 180;
+  angle = PI / 3;
+  angleVel = 0;
+}
+
+function draw() {
+  background(25);
+
+  // Physics: simple pendulum ODE
+  // d^2(theta)/dt^2 = -(g/L) * sin(theta)
+  let g = 0.4;
+  let damping = 0.001;
+  let angleAcc = -(g / len) * sin(angle) - damping * angleVel;
+  angleVel += angleAcc;
+  angle += angleVel;
+
+  let bobX = pivotX + len * sin(angle);
+  let bobY = pivotY + len * cos(angle);
+
+  trail.push(createVector(bobX, bobY));
+  if (trail.length > 200) trail.shift();
+
+  // Draw trail
+  noFill();
+  for (let i = 1; i < trail.length; i++) {
+    let t = i / trail.length;
+    stroke(120, 180, 255, t * 120);
+    strokeWeight(t * 3);
+    line(trail[i-1].x, trail[i-1].y, trail[i].x, trail[i].y);
+  }
+
+  // Rod
+  stroke(180);
+  strokeWeight(2);
+  line(pivotX, pivotY, bobX, bobY);
+
+  // Pivot
+  fill(150);
+  noStroke();
+  circle(pivotX, pivotY, 12);
+
+  // Bob
+  fill(80, 160, 255);
+  stroke(200);
+  strokeWeight(1);
+  circle(bobX, bobY, 30);
+
+  // Info
+  noStroke();
+  fill(200);
+  textSize(12);
+  textAlign(LEFT);
+  text("angle: " + degrees(angle).toFixed(1) + "\u00B0", 10, 25);
+  text("angular vel: " + angleVel.toFixed(4), 10, 42);
+
+  let KE = 0.5 * len * len * angleVel * angleVel;
+  let PE = -g * len * cos(angle);
+  fill(255, 140, 80);
+  text("KE: " + KE.toFixed(2), 10, 370);
+  fill(80, 200, 120);
+  text("PE: " + PE.toFixed(2), 10, 386);
+  fill(220, 220, 80);
+  text("Total: " + (KE + PE).toFixed(2), 150, 386);
+}
+
+function mousePressed() {
+  angle = map(mouseX, 0, width, -PI/2, PI/2);
+  angleVel = 0;
+  trail = [];
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Interactive: Spring-mass chain -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Spring-Mass Chain (Coupled Oscillators)</span>
+        </div>
+        <textarea class="cm-editor">let nodes = [];
+let N = 15;
+let restLen = 22;
+let k = 0.4;
+let damping = 0.04;
+let gravity = 0.3;
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < N; i++) {
+    nodes.push({
+      pos: createVector(200, 30 + i * restLen),
+      vel: createVector(0, 0),
+      pinned: i === 0
+    });
+  }
+}
+
+function draw() {
+  background(25);
+
+  // Physics
+  for (let iter = 0; iter < 3; iter++) {
+    for (let i = 0; i < N; i++) {
+      if (nodes[i].pinned) continue;
+      let force = createVector(0, gravity); // gravity
+
+      // Spring to previous node
+      if (i > 0) {
+        let diff = p5.Vector.sub(nodes[i-1].pos, nodes[i].pos);
+        let dist = diff.mag();
+        let stretch = dist - restLen;
+        diff.normalize().mult(k * stretch);
+        force.add(diff);
+      }
+
+      // Spring to next node
+      if (i < N - 1) {
+        let diff = p5.Vector.sub(nodes[i+1].pos, nodes[i].pos);
+        let dist = diff.mag();
+        let stretch = dist - restLen;
+        diff.normalize().mult(k * stretch);
+        force.add(diff);
+      }
+
+      // Damping
+      let damp = nodes[i].vel.copy().mult(-damping);
+      force.add(damp);
+
+      // Semi-implicit Euler
+      nodes[i].vel.add(force);
+      nodes[i].pos.add(nodes[i].vel);
+    }
+  }
+
+  // Mouse interaction: drag last node
+  if (mouseIsPressed) {
+    let last = nodes[N-1];
+    last.pos.set(mouseX, mouseY);
+    last.vel.set(0, 0);
+  }
+
+  // Draw springs
+  stroke(120, 180, 220);
+  strokeWeight(2);
+  for (let i = 0; i < N - 1; i++) {
+    line(nodes[i].pos.x, nodes[i].pos.y,
+         nodes[i+1].pos.x, nodes[i+1].pos.y);
+  }
+
+  // Draw nodes
+  for (let i = 0; i < N; i++) {
+    if (nodes[i].pinned) {
+      fill(255, 100, 100);
+    } else {
+      let speed = nodes[i].vel.mag();
+      fill(80 + speed * 40, 160, 255 - speed * 30);
+    }
+    noStroke();
+    circle(nodes[i].pos.x, nodes[i].pos.y, 12);
+  }
+
+  // Anchor
+  fill(150);
+  rect(nodes[0].pos.x - 20, nodes[0].pos.y - 5, 40, 10);
+
+  fill(180);
+  textSize(11);
+  textAlign(LEFT);
+  text("Click & drag anywhere to pull the chain", 10, 395);
+  text(N + " nodes, k=" + k + ", damping=" + damping, 10, 18);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 4 -->
+      <div class="quiz" data-id="ch09-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In Hooke's law $F = -kx$, what does the negative sign mean physically?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch09-q4" value="a"> The spring always pushes objects away from equilibrium</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q4" value="b" data-correct> The force is a restoring force &mdash; it always points back toward the equilibrium (rest) position</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q4" value="c"> The displacement is always negative</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q4" value="d"> The spring constant $k$ must be negative</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The negative sign makes the spring force a <em>restoring</em> force. When the spring is
+          stretched (positive $x$), the force is negative (pulling back). When compressed (negative
+          $x$), the force is positive (pushing out). The force always drives the system toward its
+          rest length.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.9 — WEBCAM EFFECTS
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="webcam">9.9 Webcam Effects</h2>
+
+      <h3>9.9.1 Accessing the Webcam in p5.js</h3>
+
+      <p>
+        p5.js can capture live webcam video with a single function call. The <code>createCapture(VIDEO)</code>
+        function creates a video element that streams from the user's camera:
+      </p>
+
+      <pre><code>let video;
+
+function setup() {
+  createCanvas(640, 480);
+  video = createCapture(VIDEO);
+  video.size(640, 480);
+  video.hide(); // Hide the default HTML video element
+}
+
+function draw() {
+  // Mirror for natural feel
+  push();
+  translate(width, 0);
+  scale(-1, 1);
+  image(video, 0, 0);
+  pop();
+}</code></pre>
+
+      <h3>9.9.2 Pixel Manipulation</h3>
+
+      <p>
+        The pixel array stores color data as a flat array of RGBA values. For a 640x480 image,
+        that is $640 \times 480 \times 4 = 1{,}228{,}800$ values. Each group of four values
+        represents one pixel: <code>[R, G, B, A, R, G, B, A, ...]</code>.
+      </p>
+
+      <p>To convert from (x, y) coordinates to an index in the pixel array:</p>
+
+      <p>$$\text{index} = 4 \times (y \times \text{width} + x)$$</p>
+
+      <h3>9.9.3 Common Effects</h3>
+
+      <p><strong>Threshold (black and white):</strong> Convert each pixel to grayscale and compare to a threshold value.</p>
+
+      <pre><code>let gray = (r + g + b) / 3;
+let bw = gray > 128 ? 255 : 0;</code></pre>
+
+      <p><strong>Posterize:</strong> Reduce the number of color levels to create a poster-like effect.</p>
+
+      <pre><code>let levels = 4;
+let posterized = round(value / 255 * levels) / levels * 255;</code></pre>
+
+      <p><strong>Edge detection (Sobel):</strong> Compute the gradient of brightness using neighboring pixels. Strong gradients indicate edges.</p>
+
+      <h3>9.9.4 Motion Detection</h3>
+
+      <p>
+        Motion detection works by comparing the current frame to the previous frame. Pixels that
+        have changed significantly indicate motion. This is called <strong>frame differencing</strong>:
+      </p>
+
+      <pre><code>// For each pixel:
+let diff = abs(currentBrightness - previousBrightness);
+if (diff > threshold) {
+  // Motion detected at this pixel
+}</code></pre>
+
+      <p>
+        More sophisticated motion detection uses <strong>background subtraction</strong>: maintain a
+        slowly-updating average background image, and flag any pixel that differs significantly from
+        this background. This handles gradual lighting changes better than frame differencing.
+      </p>
+
+      <h3>9.9.5 Brightness Mirror and Interactive Effects</h3>
+
+      <p>
+        A popular creative coding technique is the <strong>brightness mirror</strong>: replace each
+        pixel with a visual element (circle, character, emoji) whose size or color is based on the
+        pixel's brightness. This transforms the webcam feed into an ASCII art effect or a dynamic
+        mosaic.
+      </p>
+
+      <pre><code>// Brightness mirror concept
+let gridSize = 8;
+for (let y = 0; y < video.height; y += gridSize) {
+  for (let x = 0; x < video.width; x += gridSize) {
+    let idx = 4 * (y * video.width + x);
+    let brightness = (video.pixels[idx] + video.pixels[idx+1] + video.pixels[idx+2]) / 3;
+    let size = map(brightness, 0, 255, gridSize, 1);
+    ellipse(x, y, size, size);
+  }
+}</code></pre>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Performance tip:</strong> CPU-based pixel manipulation processes pixels sequentially
+        and can be slow for large images. For real-time performance, either work with a smaller
+        resolution (e.g., 160x120 instead of 640x480) or use GLSL fragment shaders, which process
+        all pixels in parallel on the GPU.</p>
+      </div>
+
+      <p>
+        The interactive demo below simulates webcam effects using Perlin noise (since actual webcam
+        access requires a live browser environment with camera permissions). Click to cycle through
+        the effects:
+      </p>
+
+      <!-- Interactive: Webcam pixel effects (simulated with noise) -->
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Webcam-Style Pixel Effects (simulated)</span>
+        </div>
+        <textarea class="cm-editor">// Simulates webcam effects using Perlin noise
+// (Real webcam needs createCapture(VIDEO) in a live environment)
+let mode = 0;
+let modeNames = ["Original", "Threshold", "Posterize", "Edge Detect"];
+let pg;
+
+function setup() {
+  createCanvas(400, 400);
+  pg = createGraphics(100, 100);
+  textAlign(CENTER);
+}
+
+function draw() {
+  // Generate a "fake video frame" with noise
+  pg.loadPixels();
+  let t = frameCount * 0.02;
+  for (let y = 0; y < pg.height; y++) {
+    for (let x = 0; x < pg.width; x++) {
+      let idx = 4 * (y * pg.width + x);
+      let n = noise(x * 0.05, y * 0.05, t);
+      let r = n * 200 + 55;
+      let g = noise(x * 0.05 + 10, y * 0.05, t) * 200 + 55;
+      let b = noise(x * 0.05, y * 0.05 + 10, t) * 200 + 55;
+      pg.pixels[idx] = r;
+      pg.pixels[idx+1] = g;
+      pg.pixels[idx+2] = b;
+      pg.pixels[idx+3] = 255;
+    }
+  }
+  pg.updatePixels();
+
+  // Apply effect
+  let out = createImage(pg.width, pg.height);
+  pg.loadPixels();
+  out.loadPixels();
+
+  for (let y = 0; y < pg.height; y++) {
+    for (let x = 0; x < pg.width; x++) {
+      let idx = 4 * (y * pg.width + x);
+      let r = pg.pixels[idx];
+      let g = pg.pixels[idx+1];
+      let b = pg.pixels[idx+2];
+
+      if (mode === 0) {
+        // Original
+        out.pixels[idx] = r;
+        out.pixels[idx+1] = g;
+        out.pixels[idx+2] = b;
+      } else if (mode === 1) {
+        // Threshold
+        let gray = (r + g + b) / 3;
+        let bw = gray > 128 ? 255 : 0;
+        out.pixels[idx] = bw;
+        out.pixels[idx+1] = bw;
+        out.pixels[idx+2] = bw;
+      } else if (mode === 2) {
+        // Posterize
+        let levels = 4;
+        out.pixels[idx] = round(r/255*levels)/levels*255;
+        out.pixels[idx+1] = round(g/255*levels)/levels*255;
+        out.pixels[idx+2] = round(b/255*levels)/levels*255;
+      } else if (mode === 3) {
+        // Edge detection (simple Sobel)
+        if (x > 0 && x < pg.width-1 && y > 0 && y < pg.height-1) {
+          let getGray = (xx, yy) => {
+            let ii = 4*(yy*pg.width+xx);
+            return (pg.pixels[ii]+pg.pixels[ii+1]+pg.pixels[ii+2])/3;
+          };
+          let gx = -getGray(x-1,y-1) + getGray(x+1,y-1)
+                    -2*getGray(x-1,y) + 2*getGray(x+1,y)
+                    -getGray(x-1,y+1) + getGray(x+1,y+1);
+          let gy = -getGray(x-1,y-1) - 2*getGray(x,y-1) - getGray(x+1,y-1)
+                    +getGray(x-1,y+1) + 2*getGray(x,y+1) + getGray(x+1,y+1);
+          let edge = constrain(sqrt(gx*gx + gy*gy), 0, 255);
+          out.pixels[idx] = edge;
+          out.pixels[idx+1] = edge;
+          out.pixels[idx+2] = edge;
+        }
+      }
+      out.pixels[idx+3] = 255;
+    }
+  }
+  out.updatePixels();
+
+  background(30);
+  noSmooth();
+  image(out, 0, 0, 400, 370);
+
+  // UI
+  noStroke();
+  fill(0, 180);
+  rect(0, 370, 400, 30);
+  fill(255);
+  textSize(13);
+  text("Mode: " + modeNames[mode] + "  (click to change)", 200, 390);
+}
+
+function mousePressed() {
+  mode = (mode + 1) % modeNames.length;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 5 -->
+      <div class="quiz" data-id="ch09-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In p5.js, how are pixel colors stored in the <code>pixels[]</code> array?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch09-q5" value="a"> As hex color strings like "#FF0000"</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q5" value="b"> As HSB values in groups of 3</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q5" value="c" data-correct> As a flat array of RGBA values: [R, G, B, A, R, G, B, A, ...]</label></li>
+          <li class="option"><label><input type="radio" name="ch09-q5" value="d"> As a 2D array indexed by (x, y)</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The <code>pixels[]</code> array is a flat (one-dimensional) array where every four
+          consecutive values represent one pixel's Red, Green, Blue, and Alpha channels. To access
+          pixel (x, y), use index $4 \times (y \times \text{width} + x)$.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.10 — SUMMARY
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="summary">9.10 Summary</h2>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Chapter Summary</div>
+        <ol>
+          <li><strong>Calculus for simulation:</strong> Derivatives measure rates of change (velocity is the derivative of position; acceleration is the derivative of velocity). Integrals accumulate change (position is the integral of velocity). Our simulation loop performs numerical integration frame by frame.</li>
+          <li><strong>ODEs:</strong> Every simulation is an initial value problem for a system of ordinary differential equations. We identify state variables, write rate equations, and integrate numerically.</li>
+          <li><strong>Integration methods matter:</strong> Forward Euler adds energy and is unstable for oscillatory systems. Semi-Implicit (Symplectic) Euler conserves energy approximately and is the recommended method for real-time simulations. Verlet is excellent for constraints. RK4 is the most accurate but not energy-conserving.</li>
+          <li><strong>Hooke's Law</strong> ($F = -kx$) gives us springs, which are the building blocks for ropes, cloth, soft bodies, and coupled oscillators.</li>
+          <li><strong>Universal Gravitation</strong> ($F = Gm_1m_2/r^2$) is an inverse-square law that produces orbits. Always clamp the minimum distance to prevent singularities.</li>
+          <li><strong>Drag and friction</strong> dissipate energy. Friction is constant; quadratic drag grows with speed squared. Terminal velocity occurs when drag balances gravity.</li>
+          <li><strong>Collisions</strong> conserve momentum. Elastic collisions also conserve kinetic energy. For 1D elastic collisions, closed-form velocity formulas exist.</li>
+          <li><strong>Coupled oscillators</strong> produce wave propagation and normal modes, connecting particle physics to wave physics.</li>
+          <li><strong>Webcam input</strong> brings real-world data into simulations. Pixel manipulation enables threshold, posterize, edge detection, and motion detection effects.</li>
+        </ol>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           SECTION 9.11 — REFERENCES
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="references">9.11 References</h2>
+
+      <ul>
+        <li>Daniel Shiffman, <em>The Nature of Code</em> &mdash; Chapters 2 (Forces), 3 (Oscillation), 4 (Particle Systems). <a href="https://natureofcode.com/" target="_blank">natureofcode.com</a></li>
+        <li>3Blue1Brown, <em>Essence of Calculus</em> &mdash; Visual introduction to derivatives and integrals. <a href="https://www.3blue1brown.com/topics/calculus" target="_blank">3blue1brown.com</a></li>
+        <li>Steven Strogatz, <em>Nonlinear Dynamics and Chaos</em> (Westview Press) &mdash; Excellent introduction to dynamical systems and ODEs.</li>
+        <li>Golan Levin, "Computer Vision for Artists and Designers" &mdash; Webcam techniques for creative coding.</li>
+        <li>Grant Sanderson, <em>Differential Equations</em> (3Blue1Brown series) &mdash; Visual explanations of ODEs.</li>
+        <li>Hairer, Lubich, Wanner, <em>Geometric Numerical Integration</em> (Springer) &mdash; Symplectic integrators and structure-preserving methods.</li>
+        <li>Matthias M&uuml;ller et al., "Position Based Dynamics" (2007) &mdash; Modern approach to cloth and soft-body simulation.</li>
+        <li>p5.js Reference: <a href="https://p5js.org/reference/" target="_blank">p5js.org/reference</a> &mdash; <code>createCapture()</code>, <code>pixels[]</code>, <code>loadPixels()</code>.</li>
+      </ul>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           CODE CHALLENGES
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <!-- Challenge 1: springForce -->
+      <div class="code-challenge" data-id="ch09-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1</div>
+        <p class="prompt">Write a function <code>springForce(x, restLength, k)</code> that implements Hooke's law. Given the current length <code>x</code>, the rest length <code>restLength</code>, and the spring constant <code>k</code>, return the scalar spring force. Remember: $F = -k \cdot (x - \text{restLength})$.</p>
+        <textarea class="cm-editor">function springForce(x, restLength, k) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "springForce(150, 100, 0.5)", "expected": -25},
+          {"call": "springForce(100, 100, 0.5)", "expected": 0},
+          {"call": "springForce(50, 100, 0.5)", "expected": 25},
+          {"call": "springForce(200, 100, 0.1)", "expected": -10},
+          {"call": "springForce(80, 100, 2)", "expected": 40}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2: eulerStep -->
+      <div class="code-challenge" data-id="ch09-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2</div>
+        <p class="prompt">Write a function <code>eulerStep(pos, vel, acc, dt)</code> that performs one step of <strong>Semi-Implicit Euler</strong> integration. It should update velocity first (using acceleration), then update position (using the new velocity). Return an object <code>{pos, vel}</code> with the updated values.</p>
+        <textarea class="cm-editor">function eulerStep(pos, vel, acc, dt) {
+  // Your code here
+  // Remember: Semi-Implicit Euler updates vel first, then pos
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "eulerStep(0, 0, 10, 1)", "expected": {"pos": 10, "vel": 10}},
+          {"call": "eulerStep(100, 5, -2, 1)", "expected": {"pos": 103, "vel": 3}},
+          {"call": "eulerStep(0, 10, 0, 0.5)", "expected": {"pos": 5, "vel": 10}},
+          {"call": "eulerStep(50, -3, 1, 2)", "expected": {"pos": 48, "vel": -1}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3: gravitationalForce -->
+      <div class="code-challenge" data-id="ch09-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3</div>
+        <p class="prompt">Write a function <code>gravitationalForce(m1, m2, r)</code> that computes the magnitude of the gravitational force between two masses separated by distance <code>r</code>. Use $G = 1$ for simplicity. Formula: $F = G \cdot m_1 \cdot m_2 / r^2$.</p>
+        <textarea class="cm-editor">function gravitationalForce(m1, m2, r) {
+  // Your code here (use G = 1)
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "gravitationalForce(1, 1, 1)", "expected": 1},
+          {"call": "gravitationalForce(10, 5, 2)", "expected": 12.5},
+          {"call": "gravitationalForce(100, 100, 10)", "expected": 100},
+          {"call": "gravitationalForce(4, 9, 3)", "expected": 4},
+          {"call": "gravitationalForce(50, 2, 5)", "expected": 4}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 4: elasticCollision -->
+      <div class="code-challenge" data-id="ch09-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge 4</div>
+        <p class="prompt">Write a function <code>elasticCollision(v1, m1, v2, m2)</code> that computes the velocities after a 1D elastic collision. Return an object <code>{v1: newV1, v2: newV2}</code>. Use the formulas: $v_1' = \frac{(m_1 - m_2)v_1 + 2m_2 v_2}{m_1 + m_2}$ and $v_2' = \frac{(m_2 - m_1)v_2 + 2m_1 v_1}{m_1 + m_2}$.</p>
+        <textarea class="cm-editor">function elasticCollision(v1, m1, v2, m2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "elasticCollision(5, 1, 0, 1)", "expected": {"v1": 0, "v2": 5}},
+          {"call": "elasticCollision(3, 2, -1, 2)", "expected": {"v1": -1, "v2": 3}},
+          {"call": "elasticCollision(10, 1, 0, 1000)", "expected_approx": {"v1": -9.98, "v2": 0.02}, "tolerance": 0.02},
+          {"call": "elasticCollision(4, 3, -2, 1)", "expected": {"v1": 1, "v2": 7}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           OPEN-ENDED EXERCISES
+           ═══════════════════════════════════════════════════════════ -->
+      <h2 id="exercises">Exercises</h2>
+
+      <!-- Exercise 1: Solar system -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 9.1 &mdash; Solar System Simulation</div>
+        <p class="prompt">Create a simulation with a large central "sun" and three "planets" orbiting it. Each planet should have a different mass, distance, and orbital speed. Use Newton's law of universal gravitation to compute forces. Add trails to visualize the orbits. Hint: for a stable circular orbit, set the initial tangential velocity to $v = \sqrt{G \cdot M_{\text{sun}} / r}$.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  // Create sun and 3 planets here
+}
+
+function draw() {
+  background(10);
+  // Apply gravitational forces
+  // Update positions (semi-implicit Euler)
+  // Draw trails and bodies
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let sun, planets;
+let G = 3.0;
+let trails = [[], [], []];
+
+function setup() {
+  createCanvas(400, 400);
+  sun = { pos: createVector(200, 200), mass: 800, r: 18 };
+
+  planets = [];
+  let dists = [70, 110, 160];
+  let masses = [3, 6, 2];
+  let colors = [[255,120,80],[80,200,120],[120,150,255]];
+
+  for (let i = 0; i < 3; i++) {
+    let d = dists[i];
+    let v = sqrt(G * sun.mass / d);
+    let angle = random(TWO_PI);
+    planets.push({
+      pos: createVector(200 + d * cos(angle), 200 + d * sin(angle)),
+      vel: createVector(-v * sin(angle), v * cos(angle)),
+      mass: masses[i],
+      r: 4 + masses[i],
+      col: colors[i]
+    });
+  }
+}
+
+function draw() {
+  background(10, 10, 25);
+
+  for (let i = 0; i < planets.length; i++) {
+    let p = planets[i];
+    let force = p5.Vector.sub(sun.pos, p.pos);
+    let dist = constrain(force.mag(), 20, 500);
+    let strength = (G * sun.mass * p.mass) / (dist * dist);
+    force.setMag(strength / p.mass);
+
+    p.vel.add(force);
+    p.pos.add(p.vel);
+
+    trails[i].push(p.pos.copy());
+    if (trails[i].length > 300) trails[i].shift();
+  }
+
+  // Draw trails
+  for (let i = 0; i < 3; i++) {
+    noFill();
+    beginShape();
+    for (let j = 0; j < trails[i].length; j++) {
+      let t = j / trails[i].length;
+      stroke(planets[i].col[0], planets[i].col[1], planets[i].col[2], t * 150);
+      strokeWeight(t * 2);
+      vertex(trails[i][j].x, trails[i][j].y);
+    }
+    endShape();
+  }
+
+  // Sun glow
+  noStroke();
+  fill(255, 200, 50, 30);
+  circle(sun.pos.x, sun.pos.y, sun.r * 5);
+  fill(255, 220, 80);
+  circle(sun.pos.x, sun.pos.y, sun.r * 2);
+
+  // Planets
+  for (let p of planets) {
+    fill(p.col[0], p.col[1], p.col[2]);
+    noStroke();
+    circle(p.pos.x, p.pos.y, p.r * 2);
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: Cloth simulation -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 9.2 &mdash; Cloth Simulation</div>
+        <p class="prompt">Create a cloth simulation using a grid of masses connected by springs. Pin the top row of masses. Apply gravity and damping. Use structural springs (horizontal and vertical neighbors) at minimum. For extra realism, add shear springs (diagonal neighbors). The cloth should drape naturally under gravity and respond when you drag a point with the mouse.</p>
+        <textarea class="cm-editor">let cols = 12, rows = 10;
+let spacing = 25;
+// Create your grid of mass points and springs here
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(30);
+  // Apply forces, integrate, draw
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let cols = 12, rows = 10;
+let spacing = 28;
+let nodes = [];
+let k = 0.35, damping = 0.06, grav = 0.15;
+
+function setup() {
+  createCanvas(400, 400);
+  let startX = (width - (cols-1)*spacing) / 2;
+  let startY = 30;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      nodes.push({
+        pos: createVector(startX + c * spacing, startY + r * spacing),
+        vel: createVector(0, 0),
+        pinned: r === 0 && (c % 3 === 0)
+      });
+    }
+  }
+}
+
+function getNode(r, c) {
+  if (r < 0 || r >= rows || c < 0 || c >= cols) return null;
+  return nodes[r * cols + c];
+}
+
+function springF(a, b, rest) {
+  let diff = p5.Vector.sub(b.pos, a.pos);
+  let dist = diff.mag();
+  if (dist < 0.001) return createVector(0, 0);
+  let stretch = dist - rest;
+  diff.normalize().mult(k * stretch);
+  return diff;
+}
+
+function draw() {
+  background(30, 30, 45);
+
+  for (let iter = 0; iter < 4; iter++) {
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        let n = getNode(r, c);
+        if (n.pinned) continue;
+        let force = createVector(0, grav);
+
+        // Structural springs
+        let neighbors = [[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+        for (let [nr, nc] of neighbors) {
+          let nb = getNode(nr, nc);
+          if (nb) force.add(springF(n, nb, spacing));
+        }
+        // Shear springs
+        let diags = [[r-1,c-1],[r-1,c+1],[r+1,c-1],[r+1,c+1]];
+        for (let [nr, nc] of diags) {
+          let nb = getNode(nr, nc);
+          if (nb) force.add(springF(n, nb, spacing * 1.414));
+        }
+
+        force.add(p5.Vector.mult(n.vel, -damping));
+        n.vel.add(force);
+        n.pos.add(n.vel);
+      }
+    }
+  }
+
+  // Mouse drag
+  if (mouseIsPressed) {
+    let closest = null, minD = 30;
+    for (let n of nodes) {
+      let d = dist(mouseX, mouseY, n.pos.x, n.pos.y);
+      if (d < minD) { minD = d; closest = n; }
+    }
+    if (closest && !closest.pinned) {
+      closest.pos.set(mouseX, mouseY);
+      closest.vel.set(0, 0);
+    }
+  }
+
+  // Draw structural springs
+  stroke(140, 180, 220, 150);
+  strokeWeight(1);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      let n = getNode(r, c);
+      if (c < cols-1) {
+        let right = getNode(r, c+1);
+        line(n.pos.x, n.pos.y, right.pos.x, right.pos.y);
+      }
+      if (r < rows-1) {
+        let below = getNode(r+1, c);
+        line(n.pos.x, n.pos.y, below.pos.x, below.pos.y);
+      }
+    }
+  }
+
+  // Draw nodes
+  for (let n of nodes) {
+    noStroke();
+    fill(n.pinned ? color(255,100,100) : color(120,180,255));
+    circle(n.pos.x, n.pos.y, n.pinned ? 8 : 5);
+  }
+
+  fill(150); noStroke(); textSize(11);
+  text("Drag nodes with mouse", 10, height - 10);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3: Webcam motion detector -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 9.3 &mdash; Webcam Motion Detector</div>
+        <p class="prompt">Create a motion detection sketch. Compare each frame to the previous frame using frame differencing. Where the difference exceeds a threshold, draw bright pixels; otherwise draw dark pixels. This creates a "security camera" effect that highlights moving objects. Below is a simulated version using noise; adapt it to use <code>createCapture(VIDEO)</code> for a real webcam.</p>
+        <textarea class="cm-editor">let prevFrame;
+let threshold = 30;
+
+function setup() {
+  createCanvas(400, 300);
+  prevFrame = createImage(width, height);
+  prevFrame.loadPixels();
+  for (let i = 0; i < prevFrame.pixels.length; i++) {
+    prevFrame.pixels[i] = 0;
+  }
+  prevFrame.updatePixels();
+}
+
+function draw() {
+  // Generate a "current frame" with noise
+  // In real code: use video.loadPixels() instead
+  // Compare current to prevFrame
+  // Highlight differences above threshold
+  background(0);
+  fill(150); textSize(14);
+  textAlign(CENTER);
+  text("Implement motion detection here!", width/2, height/2);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>// Simulated webcam motion detection using Perlin noise
+let prevPixels = [];
+let threshold = 40;
+let w = 100, h = 75;
+
+function setup() {
+  createCanvas(400, 300);
+  // Initialize previous frame
+  for (let i = 0; i < w * h * 4; i++) {
+    prevPixels.push(0);
+  }
+}
+
+function draw() {
+  // Simulate a "video frame" with moving noise
+  let t = frameCount * 0.03;
+  let currentPixels = [];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let blobX = 50 + 30 * sin(t * 1.2);
+      let blobY = 37 + 20 * cos(t * 0.8);
+      let d = dist(x, y, blobX, blobY);
+      let brightness = max(0, 255 - d * 8) + noise(x*0.1, y*0.1, t) * 60;
+      let idx = (y * w + x) * 4;
+      currentPixels[idx] = brightness;
+      currentPixels[idx+1] = brightness * 0.9;
+      currentPixels[idx+2] = brightness * 0.8;
+      currentPixels[idx+3] = 255;
+    }
+  }
+
+  // Frame differencing
+  let out = createImage(w, h);
+  out.loadPixels();
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let idx = (y * w + x) * 4;
+      let dr = abs(currentPixels[idx] - prevPixels[idx]);
+      let dg = abs(currentPixels[idx+1] - prevPixels[idx+1]);
+      let db = abs(currentPixels[idx+2] - prevPixels[idx+2]);
+      let diff = (dr + dg + db) / 3;
+
+      if (diff > threshold) {
+        out.pixels[idx] = 0;
+        out.pixels[idx+1] = 255;
+        out.pixels[idx+2] = 100;
+      } else {
+        out.pixels[idx] = 15;
+        out.pixels[idx+1] = 15;
+        out.pixels[idx+2] = 20;
+      }
+      out.pixels[idx+3] = 255;
+    }
+  }
+  out.updatePixels();
+
+  prevPixels = currentPixels.slice();
+
+  background(0);
+  noSmooth();
+  image(out, 0, 0, 400, 300);
+
+  fill(0, 200);
+  noStroke();
+  rect(0, 0, 400, 22);
+  fill(0, 255, 100);
+  textSize(12);
+  textAlign(LEFT);
+  text("Motion Detection (green = movement)", 10, 16);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           CHAPTER END QUIZ
+           ═══════════════════════════════════════════════════════════ -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 9 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of the physics and simulation concepts covered in this chapter.</p>
+
+        <div class="quiz" data-id="ch09-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">Which integration method is <strong>symplectic</strong> (approximately conserves energy)?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch09-fq1" value="a"> Forward Euler</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq1" value="b" data-correct> Semi-Implicit Euler</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq1" value="c"> Runge-Kutta (RK4)</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq1" value="d"> None of the above</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Semi-Implicit (Symplectic) Euler preserves the geometric (symplectic) structure of
+            Hamiltonian systems, which means it approximately conserves energy over long time periods.
+            Forward Euler adds energy, and RK4 is accurate but not symplectic.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch09-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">A spring with $k = 2$ has rest length 50. If the current length is 80, what is the spring force magnitude?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch09-fq2" value="a"> 160</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq2" value="b"> 100</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq2" value="c" data-correct> 60</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq2" value="d"> 30</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Displacement $x = 80 - 50 = 30$. Force magnitude $= k \cdot |x| = 2 \times 30 = 60$.
+            The force direction is restoring (toward the rest length).</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch09-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">Why do we always clamp the minimum distance in gravitational force calculations?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch09-fq3" value="a"> To make objects orbit faster</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq3" value="b" data-correct> To prevent the force from becoming infinitely large when objects get very close ($r \to 0$)</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq3" value="c"> To simulate air resistance</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq3" value="d"> To ensure objects always collide</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Since $F \propto 1/r^2$, as $r$ approaches zero the force approaches infinity, causing
+            extreme velocities that break the simulation. Clamping the minimum distance to a reasonable
+            value prevents this numerical singularity.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch09-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">What is terminal velocity?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch09-fq4" value="a"> The maximum speed an object can ever reach</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq4" value="b"> The velocity at which an object breaks apart</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq4" value="c" data-correct> The constant velocity reached when the drag force equals the gravitational force, so net acceleration is zero</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq4" value="d"> The initial velocity needed to escape a planet's gravity</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Terminal velocity occurs when drag (which increases with speed) exactly balances gravity
+            (which is constant). At this point, the net force is zero, acceleration is zero, and the
+            object falls at a constant speed: $v_t = \sqrt{mg / c_d}$.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch09-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">In the pixel array <code>pixels[]</code>, a 200-pixel-wide image has pixel (x=10, y=5). What is the starting index of this pixel's red channel?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch09-fq5" value="a"> 1010</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq5" value="b"> 4040</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq5" value="c" data-correct> 4040</label></li>
+            <li class="option"><label><input type="radio" name="ch09-fq5" value="d"> 210</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Index $= 4 \times (y \times \text{width} + x) = 4 \times (5 \times 200 + 10) = 4 \times 1010 = 4040$.
+            Each pixel takes 4 values (R, G, B, A), so we multiply by 4.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ═══════════════════════════════════════════════════════════
+           CHAPTER NAVIGATION
+           ═══════════════════════════════════════════════════════════ -->
+      <nav class="chapter-nav">
+        <a href="../ch08/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 8</span>
+        </a>
+        <a href="../ch10/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 10: Flow Fields &amp; Computer Vision</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

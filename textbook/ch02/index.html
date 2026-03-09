@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 2: Transformations, Recursion &amp; Complexity — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch02">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 2: Transformations, Recursion &amp; Complexity</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 2: Transformations, Recursion &amp; Complexity</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; Coordinate systems, recursive structures, information theory, and the mathematics of generative art.</p>
+
+      <p>In this chapter, we build on the p5.js foundations from Chapter 1 and explore the deep connections between mathematics, computer science, and art. We will learn how transformations enable complex compositions, how recursion generates fractal beauty, how information theory quantifies complexity, and how early computer artists established the principles that guide generative art today. These are not merely technical tools &mdash; they are ways of thinking about what art is and how it can be created.</p>
+
+
+      <!-- ===================================================================
+           2.1  JavaScript and p5.js Revisited
+           =================================================================== -->
+      <h2 id="js-p5-revisited">2.1 JavaScript and p5.js Revisited</h2>
+
+      <p>Before we dive into the deeper topics of this chapter, let us briefly revisit the tools we are working with and understand where they come from. <strong>p5.js</strong> is a JavaScript library for creative coding that runs in any modern web browser. It descends from a rich lineage of artist-oriented programming environments.</p>
+
+      <h3>2.1.1 The Processing Lineage</h3>
+
+      <p>In 2001, <strong>Casey Reas</strong> and <strong>Ben Fry</strong>, then graduate students at the MIT Media Lab working under John Maeda, created <strong>Processing</strong>. Their goal was radical: make programming accessible to visual artists and designers who had no formal computer science training. Processing used a simplified Java syntax and provided immediate visual feedback &mdash; type a few lines of code, press play, and see shapes appear on screen.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>John Maeda</strong>, who directed the Aesthetics + Computation Group at MIT Media Lab, had already explored the intersection of code and design through his <em>Design By Numbers</em> project (1999). Processing built on this foundation, creating a tool that would eventually be used by millions of artists, designers, and educators worldwide.</p>
+      </div>
+
+      <p>Processing grew into an ecosystem. Ports appeared for Python (<strong>Processing.py</strong>), Android, and eventually the web. In 2013, <strong>Lauren Lee McCarthy</strong> created <strong>p5.js</strong>, a complete reimagining of Processing for the JavaScript ecosystem. Rather than simply translating Processing's Java API to JavaScript, McCarthy redesigned the library around web-native concepts: the DOM, event handling, and the HTML5 Canvas API.</p>
+
+      <h3>2.1.2 Why JavaScript Matters for Artists</h3>
+
+      <p>JavaScript is the language of the web browser, and the web browser is the most universal creative platform ever built. A p5.js sketch runs on any device with a browser &mdash; no installation, no compilation, no app store. You share your art by sharing a URL. This is a profound shift from the early days of computer art, when creating and sharing work required access to expensive mainframe computers and specialized plotting hardware.</p>
+
+      <p>The web platform also provides access to capabilities that Processing never had: real-time audio input, webcam access, WebGL-accelerated 3D graphics, WebSocket networking, and the entire ecosystem of JavaScript libraries. p5.js embraces these through an addon system: <strong>p5.sound</strong> for audio, <strong>ml5.js</strong> for machine learning, and many community-contributed libraries.</p>
+
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Processing (Java)</th><th>p5.js (JavaScript)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Language</td><td>Java</td><td>JavaScript</td></tr>
+          <tr><td>Platform</td><td>Desktop application</td><td>Web browser</td></tr>
+          <tr><td>Installation</td><td>Required</td><td>None (use the web editor)</td></tr>
+          <tr><td>Performance</td><td>Higher (compiled)</td><td>Lower (interpreted, JIT-compiled)</td></tr>
+          <tr><td>3D support</td><td>Robust (OpenGL)</td><td>Available (WebGL)</td></tr>
+          <tr><td>Sharing</td><td>Export as application</td><td>Share a URL</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.1.3 The p5.js Lifecycle</h3>
+
+      <p>Every p5.js sketch revolves around two core functions that define its behavior over time:</p>
+
+      <pre><code>function setup() {
+  // Runs ONCE when the program starts
+  createCanvas(400, 400);
+}
+
+function draw() {
+  // Runs REPEATEDLY (~60 times per second)
+  background(220);
+  ellipse(mouseX, mouseY, 50, 50);
+}</code></pre>
+
+      <p>The <code>setup()</code> function initializes state &mdash; canvas size, background color, any variables that need to exist before animation begins. The <code>draw()</code> function is the animation loop, called approximately 60 times per second by default. Between them, p5.js manages a <strong>rendering context</strong> &mdash; a data structure that tracks the current fill color, stroke weight, transformation matrix, blending mode, and other drawing state. Understanding and controlling this state is the key to mastering transformations, which is the primary focus of this chapter.</p>
+
+      <p>A useful mental model: think of the rendering context as an invisible assistant who remembers your instructions. When you say <code>fill(255, 0, 0)</code>, the assistant notes &ldquo;red fill&rdquo; and applies it to every subsequent shape until you change it. When you say <code>translate(100, 0)</code>, the assistant shifts its grid paper 100 pixels to the right, and all future coordinates are measured from the shifted origin. <code>push()</code> tells the assistant to take a snapshot of everything; <code>pop()</code> tells it to restore to that snapshot.</p>
+
+
+      <!-- ===================================================================
+           2.2  CPU vs GPU Rendering
+           =================================================================== -->
+      <h2 id="cpu-vs-gpu">2.2 CPU vs GPU Rendering</h2>
+
+      <p>Your computer contains two fundamentally different processors that can produce graphics. Understanding the distinction is essential as you progress toward shaders later in this course.</p>
+
+      <h3>2.2.1 The CPU: Serial Processing</h3>
+
+      <p>The <strong>CPU</strong> (Central Processing Unit) is a general-purpose processor optimized for <em>sequential</em> tasks. A modern CPU has 4 to 16 powerful cores, each capable of executing billions of instructions per second. It excels at complex decision-making, branching logic, and tasks where each step depends on the result of the previous step.</p>
+
+      <p>CPUs are designed for <em>latency</em> &mdash; completing any single task as fast as possible. They have large caches, sophisticated branch predictors, and out-of-order execution units. A single CPU core can do almost anything, but it can only do one thing at a time (per core).</p>
+
+      <p>When p5.js draws with the default 2D renderer, the CPU processes each shape one at a time: calculate the vertices of this rectangle, fill its pixels, then move to the next rectangle. For a grid of 264 squares (like Schotter), the CPU performs 264 sequential drawing operations.</p>
+
+      <h3>2.2.2 The GPU: Parallel Processing</h3>
+
+      <p>The <strong>GPU</strong> (Graphics Processing Unit) takes a radically different approach. Instead of a few powerful cores, a GPU has <em>thousands</em> of small cores designed to execute the <em>same</em> operation on many data points simultaneously. A modern GPU might have 4,000+ cores. GPUs are designed for <em>throughput</em> &mdash; completing the maximum total amount of work per second, even if each individual task takes slightly longer.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>SIMD (Single Instruction, Multiple Data)</strong> &mdash; The GPU's programming model. One program (the <em>shader</em>) runs simultaneously on thousands of cores, each processing a different pixel. Every pixel is computed independently and in parallel.</p>
+      </div>
+
+      <p>Consider coloring a 400&times;400 canvas (160,000 pixels). The CPU must visit each pixel sequentially &mdash; 160,000 steps. The GPU assigns each pixel to a separate core and computes them all at once &mdash; effectively one step (in the ideal case).</p>
+
+      <h3>2.2.3 When to Use Which</h3>
+
+      <table>
+        <thead>
+          <tr><th>Task</th><th>Better Processor</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Drawing a few hundred shapes</td><td>CPU</td><td>Overhead of GPU setup not worth it</td></tr>
+          <tr><td>Pixel-level effects on every frame</td><td>GPU</td><td>Massively parallel pixel processing</td></tr>
+          <tr><td>Complex branching logic per shape</td><td>CPU</td><td>GPU cores are weak at branching</td></tr>
+          <tr><td>3D rendering with lighting</td><td>GPU</td><td>Built for matrix math and rasterization</td></tr>
+          <tr><td>Physics simulation (few bodies)</td><td>CPU</td><td>Sequential dependencies</td></tr>
+          <tr><td>Particle systems (millions)</td><td>GPU</td><td>Each particle independent</td></tr>
+        </tbody>
+      </table>
+
+      <pre><code>// CPU rendering (default 2D canvas)
+function setup() {
+  createCanvas(400, 400);       // Uses Canvas 2D API (CPU)
+}
+
+// GPU rendering (WebGL)
+function setup() {
+  createCanvas(400, 400, WEBGL); // Uses WebGL (GPU)
+}</code></pre>
+
+      <p>For this chapter, we use the default 2D renderer. We will engage the GPU directly when we study GLSL shaders in later chapters.</p>
+
+      <h3>2.2.4 A Mental Model: The Factory Analogy</h3>
+
+      <p>Think of the CPU as a <strong>master craftsperson</strong>: highly skilled, able to handle any task, but working alone (or with a few apprentices). They can make complex decisions, adapt on the fly, and solve novel problems.</p>
+
+      <p>Think of the GPU as a <strong>factory floor</strong> with thousands of workers, each trained to do one specific task extremely fast. Give them all the same job (color this pixel), and they finish in a flash. But ask each worker to do something different, and the system grinds to a halt.</p>
+
+      <p>This analogy explains why GPUs excel at shaders (every pixel runs the same program) but struggle with complex branching logic (each pixel might need different treatment). It also explains why we will use the CPU for most of this chapter&rsquo;s exercises and save the GPU for later chapters on GLSL and ray marching.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Shader</strong> &mdash; A small program that runs on the GPU, typically once per pixel (fragment shader) or once per vertex (vertex shader). Shaders execute in parallel across thousands of GPU cores, enabling real-time pixel-level effects on high-resolution displays.</p>
+      </div>
+
+
+      <!-- ===================================================================
+           2.3  Geometric Transformations
+           =================================================================== -->
+      <h2 id="geometric-transformations">2.3 Geometric Transformations</h2>
+
+      <p>Geometric transformations are operations that change the position, orientation, or size of shapes. In p5.js, instead of moving individual shapes, we move the entire <strong>coordinate system</strong>. This seemingly indirect approach turns out to be enormously powerful, enabling hierarchical compositions, animation, and the kind of structured randomness that defines algorithmic art.</p>
+
+      <p>The idea of transforming coordinate systems rather than individual points dates back to the 19th century and the development of linear algebra. In computer graphics, this approach was formalized in the 1960s and remains the standard in every graphics API from OpenGL to p5.js. Once you understand transformations, you can compose complex scenes from simple primitives, animate articulated figures, and create the recursive structures that produce fractals.</p>
+
+      <h3>2.3.1 Translation</h3>
+
+      <p><code>translate(tx, ty)</code> moves the origin of the coordinate system by <code>tx</code> pixels horizontally and <code>ty</code> pixels vertically. After calling <code>translate(100, 50)</code>, drawing at position <code>(0, 0)</code> actually places the shape at what was previously <code>(100, 50)</code>.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Translation</strong> &mdash; A geometric transformation that shifts every point by the same displacement vector $(t_x, t_y)$. For any point $(x, y)$, the translated point is $(x + t_x, \; y + t_y)$.</p>
+      </div>
+
+      <p>Translations are <strong>cumulative</strong>. Calling <code>translate(100, 0)</code> followed by <code>translate(50, 0)</code> is equivalent to <code>translate(150, 0)</code>.</p>
+
+      <h3>2.3.2 Rotation</h3>
+
+      <p><code>rotate(angle)</code> rotates the coordinate system around the <strong>current origin</strong> by the given angle (in radians). Positive angles rotate <strong>clockwise</strong> in p5.js (because the y-axis points downward).</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Rotation</strong> &mdash; A transformation that turns every point around a fixed center by angle $\theta$. A point $(x, y)$ becomes:</p>
+        <p>$$(x \cos\theta - y \sin\theta, \quad x \sin\theta + y \cos\theta)$$</p>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Rotation always happens around the <em>current origin</em>. If the origin is at the top-left corner (the default), the entire drawing swings around that corner. To rotate a shape around its own center, you must <code>translate()</code> to that center <em>first</em>, then <code>rotate()</code>.</p>
+      </div>
+
+      <h3>2.3.3 Scaling</h3>
+
+      <p><code>scale(sx, sy)</code> multiplies all coordinates by the given factors. <code>scale(2)</code> makes everything twice as large. <code>scale(0.5)</code> makes everything half-sized. You can scale differently along each axis: <code>scale(2, 0.5)</code> stretches horizontally and squashes vertically.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Scaling</strong> &mdash; A transformation that multiplies coordinates by scale factors. Point $(x, y)$ becomes $(s_x \cdot x, \; s_y \cdot y)$.</p>
+      </div>
+
+      <h3>2.3.4 Order of Transformations Matters</h3>
+
+      <p>A critical subtlety: the order in which you apply transformations changes the result. Consider these two sequences:</p>
+
+      <pre><code>// Sequence A: translate then rotate
+translate(200, 0);
+rotate(PI / 4);
+rect(0, 0, 50, 50);
+
+// Sequence B: rotate then translate
+rotate(PI / 4);
+translate(200, 0);
+rect(0, 0, 50, 50);</code></pre>
+
+      <p>In Sequence A, we first move 200 pixels right, then rotate around that new position. The rectangle ends up 200 pixels to the right, tilted 45 degrees.</p>
+
+      <p>In Sequence B, we first rotate the entire coordinate system 45 degrees, then move 200 pixels along the <em>rotated</em> x-axis (which now points diagonally). The rectangle ends up in a completely different position.</p>
+
+      <p>The general rule: <strong>later transformations operate in the coordinate system established by earlier ones</strong>. Think of it as giving instructions to a person facing a direction: &ldquo;turn right, then walk forward&rdquo; produces a different path than &ldquo;walk forward, then turn right.&rdquo;</p>
+
+      <h3>2.3.5 The Transformation Matrix</h3>
+
+      <p>Internally, p5.js represents all transformations as a single <strong>3&times;3 matrix</strong> (using homogeneous coordinates). Every call to <code>translate()</code>, <code>rotate()</code>, or <code>scale()</code> multiplies the current matrix by a new transformation matrix.</p>
+
+      <p>The general 2D affine transformation matrix is:</p>
+
+      <p>$$\mathbf{M} = \begin{pmatrix} a & c & t_x \\ b & d & t_y \\ 0 & 0 & 1 \end{pmatrix}$$</p>
+
+      <p>A point $(x, y)$ is transformed by computing:</p>
+
+      <p>$$\begin{pmatrix} x' \\ y' \\ 1 \end{pmatrix} = \begin{pmatrix} a & c & t_x \\ b & d & t_y \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} x \\ y \\ 1 \end{pmatrix}$$</p>
+
+      <p>The specific matrices for each transformation are:</p>
+
+      <p><strong>Translation by $(t_x, t_y)$:</strong></p>
+      <p>$$\mathbf{T} = \begin{pmatrix} 1 & 0 & t_x \\ 0 & 1 & t_y \\ 0 & 0 & 1 \end{pmatrix}$$</p>
+
+      <p><strong>Rotation by $\theta$:</strong></p>
+      <p>$$\mathbf{R} = \begin{pmatrix} \cos\theta & -\sin\theta & 0 \\ \sin\theta & \cos\theta & 0 \\ 0 & 0 & 1 \end{pmatrix}$$</p>
+
+      <p><strong>Scaling by $(s_x, s_y)$:</strong></p>
+      <p>$$\mathbf{S} = \begin{pmatrix} s_x & 0 & 0 \\ 0 & s_y & 0 \\ 0 & 0 & 1 \end{pmatrix}$$</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Matrix composition</strong> &mdash; Multiple transformations combine by matrix multiplication. The order matters because matrix multiplication is <em>not commutative</em>: rotating then translating produces a different result than translating then rotating. In p5.js, transformations are applied in the order you write them, and each modifies the <em>current</em> coordinate system.</p>
+      </div>
+
+      <p>Here is an interactive demonstration of how <code>translate()</code> and <code>rotate()</code> affect a rectangle:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Transformation Demo &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(240);
+
+  // Map mouse to transformation values
+  let tx = mouseX;
+  let ty = mouseY;
+  let angle = map(mouseX, 0, width, -PI, PI);
+
+  // Draw axis crosshairs at origin
+  stroke(200); strokeWeight(1);
+  line(0, height/2, width, height/2);
+  line(width/2, 0, width/2, height);
+
+  // Apply transformations
+  push();
+  translate(tx, ty);
+  rotate(angle);
+
+  // Draw the shape at the (transformed) origin
+  rectMode(CENTER);
+  fill(65, 105, 225, 180);
+  stroke(30, 60, 160);
+  strokeWeight(2);
+  rect(0, 0, 80, 50);
+
+  // Show local axes
+  stroke(255, 0, 0); line(0, 0, 40, 0);  // x-axis (red)
+  stroke(0, 180, 0); line(0, 0, 0, 40);  // y-axis (green)
+  pop();
+
+  // HUD
+  fill(0); noStroke(); textSize(13);
+  textFont('monospace');
+  text('translate(' + int(tx) + ', ' + int(ty) + ')', 10, 20);
+  text('rotate(' + nf(angle, 1, 2) + ')', 10, 38);
+  text('Move mouse to transform', 10, height - 12);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===================================================================
+           2.4  The Matrix Stack: push() and pop()
+           =================================================================== -->
+      <h2 id="push-pop">2.4 The Matrix Stack: push() and pop()</h2>
+
+      <p>Every call to <code>translate()</code>, <code>rotate()</code>, or <code>scale()</code> modifies the current transformation matrix. Without a way to undo these changes, transformations would accumulate uncontrollably. This is where <code>push()</code> and <code>pop()</code> come in.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>push()</strong> saves a copy of the current drawing state (transformation matrix, fill, stroke, etc.) onto a <em>stack</em>. <strong>pop()</strong> restores the most recently saved state. They always come in matched pairs.</p>
+      </div>
+
+      <h3>2.4.1 Why State Saving Matters</h3>
+
+      <p>Consider drawing two squares, each rotated independently:</p>
+
+      <pre><code>// WITHOUT push/pop -- BROKEN
+translate(100, 100);
+rotate(0.3);
+rect(0, 0, 40, 40);  // Square A
+
+translate(200, 0);    // This 200 is relative to the ROTATED system!
+rotate(0.5);          // This adds to the previous 0.3 rotation!
+rect(0, 0, 40, 40);  // Square B -- in the wrong place and angle</code></pre>
+
+      <pre><code>// WITH push/pop -- CORRECT
+push();
+translate(100, 100);
+rotate(0.3);
+rect(0, 0, 40, 40);  // Square A
+pop();                // Coordinate system restored
+
+push();
+translate(300, 100);
+rotate(0.5);
+rect(0, 0, 40, 40);  // Square B -- independent
+pop();</code></pre>
+
+      <h3>2.4.2 The Stack Data Structure</h3>
+
+      <p>A <strong>stack</strong> is a last-in-first-out (LIFO) data structure, like a stack of plates. <code>push()</code> places a plate on top; <code>pop()</code> removes the top plate. The key insight is that you always restore the <em>most recently saved</em> state, which makes nested transformations natural.</p>
+
+      <h3>2.4.3 Nested Transformations and Hierarchical Coordinate Systems</h3>
+
+      <p>By nesting <code>push()</code>/<code>pop()</code> blocks, you create a <strong>hierarchy</strong> of coordinate systems. Each child coordinate system is defined relative to its parent. When the parent moves, the child moves with it.</p>
+
+      <p>This is exactly how articulated structures work: a robotic arm, a human skeleton, or a solar system. The shoulder moves the upper arm, which carries the forearm, which carries the hand. Each joint adds its own rotation on top of all the rotations above it in the hierarchy.</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Robotic Arm &mdash; Nested Transformations</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(240);
+  rectMode(CENTER);
+
+  let a1 = sin(frameCount * 0.02) * 0.5;
+  let a2 = sin(frameCount * 0.03) * 0.8;
+  let a3 = sin(frameCount * 0.05) * 1.0;
+
+  push();
+  translate(200, 250); // Shoulder
+
+  // Upper arm
+  rotate(a1);
+  fill(200, 100, 100); stroke(0); strokeWeight(2);
+  rect(50, 0, 100, 20, 4);
+
+  // Elbow
+  translate(100, 0);
+  rotate(a2);
+  fill(100, 200, 100);
+  rect(40, 0, 80, 16, 4);
+
+  // Wrist
+  translate(80, 0);
+  rotate(a3);
+  fill(100, 100, 220);
+  rect(20, 0, 40, 12, 4);
+
+  // Fingertip dot
+  translate(40, 0);
+  fill(255, 50, 50); noStroke();
+  ellipse(0, 0, 10, 10);
+
+  pop();
+
+  // Joint labels
+  fill(0); noStroke(); textSize(11);
+  text('Shoulder', 185, 275);
+
+  fill(80); textSize(12);
+  text('Angles: ' + nf(a1,1,2) + ', ' + nf(a2,1,2) + ', ' + nf(a3,1,2), 10, 20);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>2.4.4 What State Does push() Save?</h3>
+
+      <p>In p5.js, <code>push()</code> saves <em>all</em> of the current drawing state, not just the transformation matrix. This includes:</p>
+
+      <ul>
+        <li><strong>Transformation matrix</strong> (translate, rotate, scale)</li>
+        <li><strong>Fill color</strong> and fill enabled/disabled state</li>
+        <li><strong>Stroke color</strong>, weight, cap, and join</li>
+        <li><strong>rectMode</strong>, <strong>ellipseMode</strong>, <strong>imageMode</strong></li>
+        <li><strong>Text properties</strong> (font, size, alignment)</li>
+        <li><strong>Tint</strong> settings</li>
+      </ul>
+
+      <p>This is extremely useful: you can set up a completely different &ldquo;drawing style&rdquo; inside a <code>push()</code>/<code>pop()</code> block, and it will not affect anything outside the block.</p>
+
+      <pre><code>// Global style: thin black strokes, white fill
+stroke(0); strokeWeight(1); fill(255);
+
+push();
+  // Local style: thick red strokes, no fill
+  stroke(255, 0, 0); strokeWeight(5); noFill();
+  translate(200, 200);
+  rotate(PI / 4);
+  rect(0, 0, 80, 80);
+pop();
+
+// Back to thin black strokes and white fill
+rect(50, 50, 80, 80);</code></pre>
+
+      <h3>2.4.5 Common Transformation Patterns</h3>
+
+      <p>Several transformation patterns appear repeatedly in creative coding:</p>
+
+      <p><strong>Pattern 1: Draw at center.</strong> Position a shape at a specific location and rotate around its center.</p>
+      <pre><code>push();
+translate(x, y);
+rotate(angle);
+rectMode(CENTER);
+rect(0, 0, w, h);
+pop();</code></pre>
+
+      <p><strong>Pattern 2: Orbital motion.</strong> Move a shape in a circular path around a point.</p>
+      <pre><code>push();
+translate(centerX, centerY);
+rotate(orbitAngle);
+translate(orbitRadius, 0);  // Move out from center
+ellipse(0, 0, size, size);
+pop();</code></pre>
+
+      <p><strong>Pattern 3: Scaled group.</strong> Draw a group of shapes at a different scale.</p>
+      <pre><code>push();
+translate(x, y);
+scale(0.5);  // Everything inside is half-sized
+drawComplexShape();
+pop();</code></pre>
+
+      <!-- Quiz after 2.4 -->
+      <div class="quiz" data-id="ch02-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What happens if you call <code>translate(100, 0)</code> twice in a row <em>without</em> using <code>push()</code> and <code>pop()</code>?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q1" value="a"> The origin moves to (100, 0)</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q1" value="b" data-correct> The origin moves to (200, 0) because translations accumulate</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q1" value="c"> The second translate overrides the first</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q1" value="d"> An error is thrown</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Transformations in p5.js are <strong>cumulative</strong>. Each <code>translate()</code> modifies the current coordinate system, so two calls of <code>translate(100, 0)</code> result in a total displacement of (200, 0). This is why <code>push()</code>/<code>pop()</code> are essential for isolating transformations.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===================================================================
+           2.5  Georg Nees and Algorithmic Art
+           =================================================================== -->
+      <h2 id="algorithmic-art">2.5 Georg Nees and Algorithmic Art</h2>
+
+      <p>The art we are learning to create with p5.js has deep roots. The first computer-generated artworks appeared in the early 1960s, when access to computers was limited to universities, military installations, and corporate research labs. A small number of pioneers recognized that the computer could be an artistic tool.</p>
+
+      <h3>2.5.1 The Stuttgart Exhibition of 1965</h3>
+
+      <p>In February 1965, <strong>Georg Nees</strong> (1926&ndash;2016), a German mathematician and Siemens engineer, exhibited computer-generated drawings at the Studiengalerie of the Technische Hochschule Stuttgart. This is widely considered one of the first exhibitions of computer art in the world.</p>
+
+      <p>Nees wrote programs in ALGOL on a Siemens mainframe. The output was rendered on a <strong>Zuse Z64 plotter</strong> &mdash; a mechanical device that moved a pen across paper according to computed coordinates. There were no screens, no real-time feedback. You wrote code, waited for the plotter to finish, and then saw the result.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The Stuttgart exhibition was organized by philosopher <strong>Max Bense</strong>, who had developed an &ldquo;information aesthetics&rdquo; &mdash; a theory that beauty could be analyzed mathematically in terms of order and complexity. Bense saw Nees&rsquo; work as empirical evidence for this theory. The exhibition was met with both fascination and hostility: some viewers questioned whether a machine could create &ldquo;real&rdquo; art.</p>
+      </div>
+
+      <h3>2.5.2 The Pioneers</h3>
+
+      <p>Three names dominate the early history of computer art:</p>
+
+      <p><strong>Georg Nees</strong> &mdash; Created <em>Schotter</em> (1968), <em>Locken</em>, and other works exploring the transition from order to disorder. His PhD thesis (1969), supervised by Max Bense, was the first doctoral dissertation on computer art.</p>
+
+      <p><strong>Frieder Nake</strong> (b. 1938) &mdash; A German mathematician who independently began creating computer art in 1963. His work <em>Hommage &agrave; Paul Klee</em> (1965) demonstrates how algorithmic rules can produce compositions reminiscent of human painters. Nake later became a prominent theorist of computational aesthetics.</p>
+
+      <p><strong>A. Michael Noll</strong> (b. 1939) &mdash; Working at Bell Telephone Laboratories in New Jersey, Noll created computer-generated patterns inspired by Piet Mondrian and Bridget Riley. His 1966 study asked viewers to distinguish between a Mondrian painting and a computer-generated imitation &mdash; most preferred the computer version, though they thought it was the Mondrian.</p>
+
+      <h3>2.5.3 Harold Cohen and AARON</h3>
+
+      <p><strong>Harold Cohen</strong> (1928&ndash;2016), a British-born painter, spent decades developing <strong>AARON</strong>, an autonomous program that generated original artworks. Unlike the algorithmic artists who created rules for abstract forms, Cohen attempted to encode artistic <em>knowledge</em> &mdash; how to compose a figure, how to balance color, how to create depth. AARON evolved from producing simple abstract drawings in the 1970s to creating full-color figurative paintings by the 1990s.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>The early computer artists established a fundamental principle: <strong>the artist writes the rules; the computer executes them</strong>. The artwork is not any single output &mdash; it is the <em>algorithm itself</em>. This idea prefigures generative art, NFTs, and AI art by half a century.</p>
+      </div>
+
+      <h3>2.5.4 Vera Moln&aacute;r</h3>
+
+      <p><strong>Vera Moln&aacute;r</strong> (1924&ndash;2023), a Hungarian-French artist, was another crucial pioneer. She began using computers for art in 1968 and spent decades exploring the boundary between geometric order and randomness &mdash; a theme directly related to Nees&rsquo; Schotter. Her series <em>(Des)Ordres</em> (1974) systematically varies the degree of disorder in geometric grids, and her work <em>1% de d&eacute;sordre</em> demonstrates how even a tiny perturbation of a regular grid catches the eye.</p>
+
+      <p>Moln&aacute;r&rsquo;s approach was distinctive: she described her process as &ldquo;machine imaginaire&rdquo; &mdash; imagining what a computer would do before she had access to one. She would execute algorithms by hand, following strict rules, anticipating the computational art that would come later.</p>
+
+      <h3>2.5.5 Schotter: Order to Disorder</h3>
+
+      <p><strong>Schotter</strong> (German for &ldquo;gravel&rdquo; or &ldquo;rubble&rdquo;) is Nees&rsquo; most famous work, created in 1968. It consists of a grid of approximately 12 columns and 22 rows of squares. At the top, the squares are perfectly aligned. Moving downward, each row introduces slightly more positional displacement and rotational perturbation, until the bottom rows dissolve into apparent chaos.</p>
+
+      <p>The piece is a visual metaphor for <strong>entropy</strong> &mdash; the second law of thermodynamics made visible. It demonstrates how a simple rule (increase randomness proportionally to row number) can produce a visually compelling gradient from order to disorder.</p>
+
+      <p>Nees described his approach as &ldquo;generative aesthetics&rdquo; &mdash; defining a set of rules and constraints, then letting the computer explore the resulting space of possibilities. The artist&rsquo;s role shifts from creating individual works to designing the <em>system</em> that generates works. This idea would later become the foundation of generative art, computational design, and even aspects of artificial intelligence research.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Generative art</strong> &mdash; Art created by a system (algorithm, set of rules, or autonomous process) that operates with some degree of autonomy, producing results that are not fully predetermined by the artist. The artist designs the system; the system creates the individual works.</p>
+      </div>
+
+
+      <!-- ===================================================================
+           2.6  Recreating Schotter Step by Step
+           =================================================================== -->
+      <h2 id="schotter">2.6 Recreating Schotter Step by Step</h2>
+
+      <h3>2.6.1 Setting Up the Grid</h3>
+
+      <p>We begin with a perfectly ordered grid of squares:</p>
+
+      <pre><code>let cols = 12;
+let rows = 22;
+let squareSize = 30;
+
+// Center the grid on the canvas
+let gridWidth = cols * squareSize;
+let gridHeight = rows * squareSize;
+let marginX = (width - gridWidth) / 2;
+let marginY = (height - gridHeight) / 2;</code></pre>
+
+      <h3>2.6.2 The Transform Pattern</h3>
+
+      <p>For each square, we use the standard <code>push/translate/rotate/pop</code> pattern so that each square rotates around its own center independently:</p>
+
+      <pre><code>push();
+translate(centerX + offsetX, centerY + offsetY);
+rotate(angle);
+rect(0, 0, squareSize, squareSize);
+pop();</code></pre>
+
+      <h3>2.6.3 Controlling Randomness by Row</h3>
+
+      <p>The key formula: a <strong>displacement factor</strong> that ranges from 0 (top row) to 1 (bottom row):</p>
+
+      <p>$$\text{displaceFactor} = \frac{\text{row}}{\text{rows} - 1}$$</p>
+
+      <p>This factor multiplies all random offsets, ensuring zero randomness at the top and maximum randomness at the bottom.</p>
+
+      <h3>2.6.4 The Complete Interactive Schotter</h3>
+
+      <div class="code-runner" data-height="550">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Georg Nees' Schotter &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(420, 700);
+  noLoop();
+}
+
+function draw() {
+  background(255);
+  randomSeed(42);
+
+  let cols = 12;
+  let rows = 22;
+  let sqSize = 28;
+
+  let gw = cols * sqSize;
+  let gh = rows * sqSize;
+  let mx = (width - gw) / 2;
+  let my = (height - gh) / 2;
+
+  noFill();
+  stroke(0);
+  strokeWeight(1);
+  rectMode(CENTER);
+
+  let maxDisp = sqSize * 0.5;
+  let maxRot = PI / 4;
+
+  for (let r = 0; r < rows; r++) {
+    let factor = r / (rows - 1);
+    for (let c = 0; c < cols; c++) {
+      let cx = mx + c * sqSize + sqSize / 2;
+      let cy = my + r * sqSize + sqSize / 2;
+
+      let ox = random(-maxDisp, maxDisp) * factor;
+      let oy = random(-maxDisp, maxDisp) * factor;
+      let ang = random(-maxRot, maxRot) * factor;
+
+      push();
+      translate(cx + ox, cy + oy);
+      rotate(ang);
+      rect(0, 0, sqSize, sqSize);
+      pop();
+    }
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Try changing <code>randomSeed(42)</code> to other numbers. Each seed produces a unique composition, but the structural rule &mdash; increasing disorder downward &mdash; remains the same.</p>
+
+      <h3>2.6.5 Analyzing the Structure</h3>
+
+      <p>Let us break down exactly what makes Schotter work as art:</p>
+
+      <ul>
+        <li><strong>The grid provides the order.</strong> Without the underlying grid, the displaced squares would just be random shapes on a canvas. The viewer perceives the grid as the &ldquo;expected&rdquo; state, making each deviation from it meaningful.</li>
+        <li><strong>The gradient provides the narrative.</strong> The eye naturally scans from top to bottom, experiencing a story: order dissolves into chaos. This temporal metaphor gives the static image a sense of process and time.</li>
+        <li><strong>The randomness provides the texture.</strong> No two squares in the disordered region are displaced identically. This organic variation makes the piece feel alive rather than mechanically repetitive.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Schmidhuber&rsquo;s beauty thesis:</strong> Juergen Schmidhuber proposed that humans find beauty in things that are <em>compressible but not trivially simple</em>. We enjoy discovering patterns &mdash; the &ldquo;aha!&rdquo; moment when apparent complexity resolves into an elegant rule. Schotter lives in this sweet spot: the underlying rule is simple, but the visual output is rich and varied.</p>
+      </div>
+
+      <h3>2.6.6 Variations on Schotter</h3>
+
+      <p>The Schotter algorithm is a template you can modify endlessly:</p>
+
+      <ul>
+        <li><strong>Radial Schotter:</strong> Arrange squares in concentric rings. Disorder increases from center outward.</li>
+        <li><strong>Color Schotter:</strong> Map the displacement factor to a color gradient (blue at top to red at bottom).</li>
+        <li><strong>Interactive Schotter:</strong> Remove <code>noLoop()</code> and tie the displacement factor to <code>mouseY</code>, letting the viewer control the chaos.</li>
+        <li><strong>3D Schotter:</strong> Use <code>WEBGL</code> mode and add z-axis displacement to create depth.</li>
+        <li><strong>Temporal Schotter:</strong> Animate the displacement factor increasing over time, so the grid visibly dissolves.</li>
+      </ul>
+
+
+      <!-- ===================================================================
+           2.7  Information Theory: Entropy and Compression
+           =================================================================== -->
+      <h2 id="information-theory">2.7 Information Theory: Entropy and Compression</h2>
+
+      <p>To understand <em>why</em> Schotter is interesting &mdash; why the gradient from order to disorder is compelling &mdash; we need the language of <strong>information theory</strong>, the mathematical framework invented by Claude Shannon in 1948.</p>
+
+      <h3>2.7.1 Claude Shannon and the Birth of Information Theory</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Claude Shannon</strong> (1916&ndash;2001) published &ldquo;A Mathematical Theory of Communication&rdquo; in the <em>Bell System Technical Journal</em> in 1948. This single paper founded the field of information theory, introduced the concept of the &ldquo;bit&rdquo; as a unit of information, and laid the mathematical groundwork for the entire digital age. Shannon was also an accomplished juggler, unicyclist, and builder of mechanical toys.</p>
+      </div>
+
+      <p>Shannon&rsquo;s key question: <strong>How much information does a message contain?</strong> He realized that information is fundamentally about <em>surprise</em>. A message that tells you something you already knew (or expected) carries little information. A message that tells you something unexpected carries a lot.</p>
+
+      <h3>2.7.2 Surprisal</h3>
+
+      <p>The <strong>surprisal</strong> (or self-information) of an event with probability $p$ is:</p>
+
+      <p>$$I(x) = -\log_2(p)$$</p>
+
+      <p>Measured in <strong>bits</strong>. Intuition:</p>
+      <ul>
+        <li>A certain event ($p = 1$): surprisal $= -\log_2(1) = 0$ bits. No surprise, no information.</li>
+        <li>A coin flip ($p = 0.5$): surprisal $= -\log_2(0.5) = 1$ bit. One bit of information.</li>
+        <li>Rolling a six ($p = 1/6$): surprisal $= -\log_2(1/6) \approx 2.58$ bits.</li>
+        <li>A one-in-a-million event ($p = 10^{-6}$): surprisal $\approx 19.9$ bits.</li>
+      </ul>
+
+      <h3>2.7.3 Shannon Entropy</h3>
+
+      <p><strong>Entropy</strong> is the <em>average</em> surprisal across all possible events. For a random variable $X$ with possible outcomes $x_1, x_2, \ldots, x_n$ having probabilities $p_1, p_2, \ldots, p_n$:</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Shannon Entropy</div>
+        <p>$$H(X) = -\sum_{i=1}^{n} p_i \log_2(p_i)$$</p>
+        <p>Entropy $H(X)$ is measured in <strong>bits</strong>. It represents the minimum average number of yes/no questions needed to determine the outcome, or equivalently, the minimum average number of bits needed to encode the outcome.</p>
+      </div>
+
+      <h3>2.7.4 Worked Examples</h3>
+
+      <p><strong>Example 1: Fair coin.</strong> Two outcomes, each with probability $0.5$.</p>
+      <p>$$H = -(0.5 \log_2 0.5 + 0.5 \log_2 0.5) = -(0.5 \times (-1) + 0.5 \times (-1)) = 1 \text{ bit}$$</p>
+
+      <p><strong>Example 2: Biased coin</strong> (90% heads, 10% tails).</p>
+      <p>$$H = -(0.9 \log_2 0.9 + 0.1 \log_2 0.1) \approx -(0.9 \times (-0.152) + 0.1 \times (-3.322)) \approx 0.469 \text{ bits}$$</p>
+
+      <p>The biased coin has <em>lower</em> entropy because the outcome is more predictable.</p>
+
+      <p><strong>Example 3: Fair six-sided die.</strong></p>
+      <p>$$H = -\sum_{i=1}^{6} \frac{1}{6} \log_2 \frac{1}{6} = \log_2 6 \approx 2.585 \text{ bits}$$</p>
+
+      <h3>2.7.5 Entropy and Art</h3>
+
+      <p>Consider Schotter in information-theoretic terms:</p>
+      <ul>
+        <li><strong>Top row:</strong> Every square is in its expected position. Low surprisal, low entropy.</li>
+        <li><strong>Bottom row:</strong> Each square could be anywhere within its displacement range. High surprisal, high entropy.</li>
+        <li><strong>The gradient:</strong> Entropy increases monotonically from top to bottom. This is a visual representation of the second law of thermodynamics.</li>
+      </ul>
+
+      <p>Schmidhuber&rsquo;s thesis suggests that we find Schotter beautiful precisely because it lives in the &ldquo;sweet spot&rdquo;: complex enough to engage, structured enough to comprehend.</p>
+
+      <h3>2.7.6 Properties of Entropy</h3>
+
+      <p>Shannon entropy has several important mathematical properties:</p>
+
+      <ul>
+        <li><strong>Non-negativity:</strong> $H(X) \geq 0$. You cannot have negative information.</li>
+        <li><strong>Maximum:</strong> For $n$ outcomes, $H(X) \leq \log_2 n$, achieved when all outcomes are equally likely (maximum uncertainty).</li>
+        <li><strong>Minimum:</strong> $H(X) = 0$ when one outcome has probability 1 (complete certainty).</li>
+        <li><strong>Additivity:</strong> For independent random variables, $H(X, Y) = H(X) + H(Y)$.</li>
+      </ul>
+
+      <h3>2.7.7 Entropy as a Lower Bound on Compression</h3>
+
+      <p>Shannon&rsquo;s <strong>source coding theorem</strong> (also called the noiseless coding theorem) establishes that entropy is the fundamental limit of lossless compression:</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem (Shannon&rsquo;s Source Coding Theorem)</div>
+        <p>The average number of bits per symbol in any lossless encoding of a source cannot be less than the source&rsquo;s entropy $H$. Furthermore, there exist encodings (like Huffman coding) that approach this limit arbitrarily closely.</p>
+      </div>
+
+      <p>This means entropy tells you the absolute best you can do with compression. If the entropy is 2.5 bits per symbol, you cannot compress below 2.5 bits per symbol on average, no matter how clever your algorithm is.</p>
+
+      <h3>2.7.8 Joint Entropy and Mutual Information</h3>
+
+      <p>When we have two random variables (for example, the color of pixel $(x, y)$ and the color of its neighbor $(x+1, y)$), we can ask how much information they share. This leads to:</p>
+
+      <ul>
+        <li><strong>Joint entropy</strong> $H(X, Y)$: the total uncertainty of both variables together.</li>
+        <li><strong>Conditional entropy</strong> $H(Y|X)$: the remaining uncertainty in $Y$ after observing $X$.</li>
+        <li><strong>Mutual information</strong> $I(X; Y) = H(X) + H(Y) - H(X, Y)$: how much knowing $X$ tells you about $Y$.</li>
+      </ul>
+
+      <p>Images are highly compressible precisely because neighboring pixels have high mutual information: knowing one pixel strongly predicts its neighbors. Random noise has zero mutual information between pixels, making it incompressible.</p>
+
+      <!-- Quiz after 2.7 -->
+      <div class="quiz" data-id="ch02-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">A random variable has 4 equally likely outcomes. What is its Shannon entropy?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q2" value="a"> 1 bit</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q2" value="b" data-correct> 2 bits</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q2" value="c"> 4 bits</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q2" value="d"> 0.25 bits</label></li>
+        </ul>
+        <div class="explanation">
+          <p>For $n$ equally likely outcomes, entropy is $H = \log_2 n$. With 4 outcomes: $H = \log_2 4 = 2$ bits. You need exactly 2 yes/no questions to identify which of the 4 outcomes occurred.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===================================================================
+           2.8  Kolmogorov Complexity
+           =================================================================== -->
+      <h2 id="kolmogorov-complexity">2.8 Kolmogorov Complexity</h2>
+
+      <p>While Shannon entropy measures the average information in a <em>random</em> source, <strong>Kolmogorov complexity</strong> measures the information content of a <em>specific individual</em> object.</p>
+
+      <h3>2.8.1 Formal Definition</h3>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p>The <strong>Kolmogorov complexity</strong> $K(x)$ of a string $x$ is the length of the shortest program (in some fixed universal programming language) that produces $x$ as output and then halts.</p>
+      </div>
+
+      <p>Consider two strings of length 1000:</p>
+      <ul>
+        <li><strong>String A:</strong> <code>010101010101...01</code> (alternating 0s and 1s)</li>
+        <li><strong>String B:</strong> <code>110010111010...01</code> (appears random)</li>
+      </ul>
+
+      <p>String A can be generated by a very short program: &ldquo;print &lsquo;01&rsquo; 500 times.&rdquo; Its Kolmogorov complexity is roughly $\log_2 500 + C$ bits, where $C$ is the overhead of the programming language. String B, if truly random, requires a program that essentially contains the entire string &mdash; its complexity is close to 1000 bits.</p>
+
+      <h3>2.8.2 Uncomputability</h3>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem</div>
+        <p><strong>Kolmogorov complexity is uncomputable.</strong> There is no algorithm that, given a string $x$, outputs $K(x)$. This follows from the <strong>halting problem</strong>: to find the shortest program, you would need to enumerate all possible programs and determine which ones halt and produce $x$, but the halting problem tells us this is impossible in general.</p>
+      </div>
+
+      <h3>2.8.3 Berry's Paradox</h3>
+
+      <p>The uncomputability of Kolmogorov complexity is related to an ancient logical paradox. <strong>Berry&rsquo;s paradox</strong> asks: consider &ldquo;the smallest positive integer not definable in fewer than twelve words.&rdquo; This sentence has eleven words, so it defines a number in eleven words that supposedly requires twelve &mdash; a contradiction.</p>
+
+      <p>In Kolmogorov&rsquo;s framework: suppose a program $P$ of length $n$ outputs &ldquo;the first string whose Kolmogorov complexity exceeds $n$.&rdquo; But $P$ itself is a program of length $n$ that produces that string, so the string&rsquo;s complexity is at most $n$ &mdash; contradicting the claim that it exceeds $n$. This contradiction proves that no such program can exist, which implies that Kolmogorov complexity is uncomputable.</p>
+
+      <h3>2.8.4 Kolmogorov Complexity and Art</h3>
+
+      <p>For generative art, Kolmogorov complexity provides a precise way to think about the relationship between a program and its output:</p>
+
+      <table>
+        <thead>
+          <tr><th>Image</th><th>Raw Size</th><th>PNG Size</th><th>Source Code Size</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Red circle on white</td><td>480 KB</td><td>~5 KB</td><td>~120 bytes</td></tr>
+          <tr><td>Random noise</td><td>480 KB</td><td>~470 KB</td><td>~480 KB</td></tr>
+          <tr><td>Schotter</td><td>480 KB</td><td>~15 KB</td><td>~500 bytes</td></tr>
+        </tbody>
+      </table>
+
+      <p>The source code is an <em>upper bound</em> on the Kolmogorov complexity (there might be a shorter program we have not found). Compression algorithms like PNG provide a practical approximation.</p>
+
+      <h3>2.8.5 Kolmogorov Complexity and Randomness</h3>
+
+      <p>A string is called <strong>Kolmogorov random</strong> (or algorithmically random) if its Kolmogorov complexity is approximately equal to its length: $K(x) \geq |x| - c$ for some small constant $c$. In other words, there is no shorter description of the string than the string itself. It is incompressible.</p>
+
+      <p>This gives us a formal definition of randomness that does not depend on probability theory. A string is random if it has no patterns, no structure, no regularity that could be exploited to produce a shorter description. This is a remarkably clean definition: randomness is simply incompressibility.</p>
+
+      <p>An important consequence: you can never <em>prove</em> that a specific string is Kolmogorov random, because you can never be certain that no shorter program exists. But you can prove that a string is <em>not</em> random by exhibiting a short program that generates it. This asymmetry mirrors our experience with art: it is easy to show that something has structure (by describing the pattern), but difficult to prove that something is truly &ldquo;random&rdquo; or structureless.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Most strings are random.</strong> For strings of length $n$, there are $2^n$ possible strings but fewer than $2^k$ programs of length less than $k$ (for any $k < n$). Therefore, only a vanishingly small fraction of strings can have low Kolmogorov complexity. The vast majority of strings are incompressible.</p>
+      </div>
+
+      <h3>2.8.6 The Invariance Theorem</h3>
+
+      <p>One might worry that Kolmogorov complexity depends on the choice of programming language. The <strong>invariance theorem</strong> resolves this: for any two universal programming languages $L_1$ and $L_2$, there exists a constant $c$ (depending only on the languages, not on the string) such that:</p>
+
+      <p>$$|K_{L_1}(x) - K_{L_2}(x)| \leq c$$</p>
+
+      <p>The constant $c$ is essentially the size of a compiler/interpreter from one language to the other. For long strings, this constant becomes negligible, so Kolmogorov complexity is essentially language-independent.</p>
+
+      <h3>2.8.7 Practical Implications for Artists</h3>
+
+      <p>While Kolmogorov complexity is uncomputable in theory, as an artist you can use the concept productively:</p>
+
+      <ul>
+        <li><strong>Source code length</strong> is an upper bound on complexity. A 500-byte program that produces a visually rich image is achieving a high ratio of &ldquo;visual complexity&rdquo; to &ldquo;descriptive complexity.&rdquo;</li>
+        <li><strong>Compression ratio</strong> of the output approximates its complexity. Save your output as PNG; the file size estimates the information content.</li>
+        <li><strong>Code golf</strong> (writing the shortest possible program) is a creative constraint that directly engages with Kolmogorov complexity. What is the shortest <code>draw()</code> function that produces something beautiful?</li>
+      </ul>
+
+      <!-- Quiz after 2.8 -->
+      <div class="quiz" data-id="ch02-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which string has <em>higher</em> Kolmogorov complexity?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q3" value="a"> "AAAAAAAAAA" (10 A's)</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q3" value="b" data-correct> "k8Qz7mWp3x" (10 random-looking characters)</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q3" value="c"> They have the same complexity since both are 10 characters</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q3" value="d"> It is impossible to compare them</label></li>
+        </ul>
+        <div class="explanation">
+          <p>"AAAAAAAAAA" can be produced by a short program ("print 'A' ten times"), giving it low Kolmogorov complexity. The random-looking string has no obvious pattern, so the shortest program likely needs to contain the entire string, giving it higher complexity. Note: Kolmogorov complexity is formally uncomputable, but we can reason about upper bounds.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===================================================================
+           2.9  Determinism and Pseudorandom Numbers
+           =================================================================== -->
+      <h2 id="pseudorandom">2.9 Determinism and Pseudorandom Numbers</h2>
+
+      <p>Computers are deterministic machines: given the same inputs, they produce the same outputs. Yet art thrives on variation, surprise, and organic irregularity. The bridge between these worlds is the <strong>pseudorandom number generator</strong> (PRNG).</p>
+
+      <h3>2.9.1 What Is a PRNG?</h3>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p>A <strong>pseudorandom number generator (PRNG)</strong> is a deterministic algorithm that, given an initial <strong>seed</strong>, produces a sequence of numbers that passes statistical tests for randomness. The same seed always produces the same sequence.</p>
+      </div>
+
+      <h3>2.9.2 Linear Congruential Generator (LCG)</h3>
+
+      <p>The oldest widely-used PRNG formula, dating to 1958:</p>
+
+      <p>$$x_{n+1} = (a \cdot x_n + c) \mod m$$</p>
+
+      <p>where $a$, $c$, and $m$ are carefully chosen constants and $x_0$ is the seed. The classic C standard library uses $a = 1103515245$, $c = 12345$, $m = 2^{31}$.</p>
+
+      <pre><code>// Linear Congruential Generator
+let state = seed;
+
+function nextRandom() {
+  state = (state * 1103515245 + 12345) & 0x7FFFFFFF;
+  return state / 0x7FFFFFFF; // Normalize to [0, 1)
+}</code></pre>
+
+      <p>LCGs are fast but have known weaknesses: the low-order bits cycle with short periods, and sequential outputs can fall on a small number of hyperplanes in higher dimensions.</p>
+
+      <h3>2.9.3 Xorshift</h3>
+
+      <p>A more modern approach, invented by George Marsaglia in 2003:</p>
+
+      <pre><code>function xorshift32(state) {
+  state ^= state << 13;  // XOR with left-shifted self
+  state ^= state >> 17;  // XOR with right-shifted self
+  state ^= state << 5;   // XOR with left-shifted self
+  return state >>> 0;     // Force unsigned 32-bit integer
+}</code></pre>
+
+      <p>Each XOR-shift operation mixes the bits. After three operations, every output bit depends on many input bits (the &ldquo;avalanche effect&rdquo;), making the output appear random. Xorshift is faster than LCG and produces better statistical distributions.</p>
+
+      <h3>2.9.4 Seeds in p5.js</h3>
+
+      <pre><code>randomSeed(42);          // Fix the sequence
+let a = random(100);     // Always the same for seed 42
+let b = random(100);     // Always the same next value
+
+// Without randomSeed(), p5.js derives the seed
+// from system entropy (time, hardware state),
+// so each run differs.</code></pre>
+
+      <h3>2.9.5 Why Determinism Matters for Art</h3>
+
+      <ul>
+        <li><strong>Reproducibility:</strong> Record the seed to recreate the exact composition later.</li>
+        <li><strong>Exploration:</strong> Systematically try seeds to find the best output.</li>
+        <li><strong>Sharing:</strong> Share code + seed; anyone can verify the result.</li>
+        <li><strong>Generative NFTs:</strong> The token ID <em>is</em> the seed. Each token produces a unique, permanent artwork.</li>
+      </ul>
+
+      <h3>2.9.6 Noise Functions: Structured Randomness</h3>
+
+      <p>Pure random numbers (<code>random()</code>) produce harsh, jagged variation. For many artistic applications, we want <strong>smooth</strong> randomness &mdash; values that change gradually rather than jumping erratically. p5.js provides <code>noise()</code>, an implementation of <strong>Perlin noise</strong>, invented by Ken Perlin in 1983 for the film <em>Tron</em>.</p>
+
+      <pre><code>// random() -- harsh, uncorrelated values
+let y1 = random(height);  // Each call is independent
+
+// noise() -- smooth, correlated values
+let y2 = noise(x * 0.01) * height;  // Nearby x values give nearby y values</code></pre>
+
+      <p>Perlin noise has a fractal-like quality: you can layer multiple &ldquo;octaves&rdquo; of noise at different frequencies and amplitudes to produce organic-looking textures for terrain, clouds, fire, and water.</p>
+
+      <h3>2.9.7 True Randomness vs Pseudorandomness</h3>
+
+      <p>For most artistic applications, pseudorandom numbers are indistinguishable from true randomness. But it is worth knowing the difference:</p>
+
+      <ul>
+        <li><strong>True random numbers</strong> come from physical processes: radioactive decay, atmospheric noise, thermal fluctuations. Services like random.org provide them via atmospheric noise.</li>
+        <li><strong>Pseudorandom numbers</strong> are deterministic sequences that <em>appear</em> random. They are periodic (eventually the sequence repeats), but the period can be astronomical (the Mersenne Twister has a period of $2^{19937} - 1$).</li>
+        <li><strong>Cryptographically secure PRNGs</strong> (CSPRNGs) are pseudorandom generators designed so that even knowing part of the sequence does not help predict the rest. Used for encryption, passwords, and security-critical applications. Slower than regular PRNGs.</li>
+      </ul>
+
+      <p>For creative coding, a standard PRNG is perfectly adequate. The key property you need is <strong>reproducibility</strong> (same seed, same output), not cryptographic security.</p>
+
+      <!-- Quiz after 2.9 -->
+      <div class="quiz" data-id="ch02-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">If you call <code>randomSeed(7)</code> at the start of <code>draw()</code> and the sketch runs for 1000 frames, what happens?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q4" value="a"> The random numbers are different each frame because draw() runs 1000 times</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q4" value="b" data-correct> The same sequence of random numbers is produced every frame, making the output static</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q4" value="c"> The seed increments automatically each frame</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q4" value="d"> Only the first frame uses the seed</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Calling <code>randomSeed(7)</code> at the start of each <code>draw()</code> call resets the PRNG to the same initial state every frame. Every call to <code>random()</code> within that frame produces the same value it produced in every other frame. The visual output appears frozen &mdash; identical each frame.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===================================================================
+           2.10  Recursion: Theory and Practice
+           =================================================================== -->
+      <h2 id="recursion">2.10 Recursion: Theory and Practice</h2>
+
+      <p><strong>Recursion</strong> is one of the most powerful ideas in computer science. A recursive function is one that calls <em>itself</em>, breaking a problem into smaller instances of the same problem until reaching a trivial <strong>base case</strong>.</p>
+
+      <h3>2.10.1 Anatomy of a Recursive Function</h3>
+
+      <p>Every recursive function has exactly two essential components:</p>
+
+      <ol>
+        <li><strong>Base case (termination condition):</strong> The simplest instance of the problem that can be solved directly, without making any further recursive calls. This is what prevents infinite recursion. Without a base case, the function would call itself forever.</li>
+        <li><strong>Recursive case (reduction step):</strong> Reduces the current problem to one or more <em>strictly smaller</em> instances of the same problem and combines their results to produce the answer. The key requirement is that each recursive call must make progress toward the base case &mdash; typically by operating on a smaller number, a shorter list, or a shallower tree.</li>
+      </ol>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The leap of faith:</strong> When writing recursive functions, trust that the recursive call correctly solves the smaller subproblem. Focus on (1) defining the base case, (2) showing that the recursive case reduces to a smaller version, and (3) combining the sub-result correctly. This &ldquo;recursive leap of faith&rdquo; is the key mental skill for thinking recursively.</p>
+      </div>
+
+      <pre><code>function factorial(n) {
+  if (n === 0) return 1;        // Base case
+  return n * factorial(n - 1);  // Recursive case
+}
+// factorial(5) = 5 * 4 * 3 * 2 * 1 * 1 = 120</code></pre>
+
+      <h3>2.10.2 The Call Stack</h3>
+
+      <p>When a function calls itself, the computer must remember where it was in the previous call. It does this using a <strong>call stack</strong> &mdash; a region of memory organized as a stack (LIFO). Each function call creates a new <strong>stack frame</strong> containing the function&rsquo;s local variables, parameters, and return address.</p>
+
+      <p>For <code>factorial(4)</code>, the call stack grows like this:</p>
+
+      <pre><code>factorial(4)  -- waits for factorial(3)
+  factorial(3)  -- waits for factorial(2)
+    factorial(2)  -- waits for factorial(1)
+      factorial(1)  -- waits for factorial(0)
+        factorial(0)  -- returns 1 (base case!)
+      returns 1 * 1 = 1
+    returns 2 * 1 = 2
+  returns 3 * 2 = 6
+returns 4 * 6 = 24</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Stack overflow:</strong> If the base case is missing or never reached, the function calls itself forever, filling the call stack until it exceeds the memory limit. In JavaScript, this produces a &ldquo;Maximum call stack size exceeded&rdquo; error. Always ensure your recursive case makes progress toward the base case.</p>
+      </div>
+
+      <h3>2.10.3 Linear vs Tree Recursion</h3>
+
+      <p><strong>Linear recursion:</strong> Each call makes at most <em>one</em> recursive call. Example: factorial. The call chain is a straight line. Time complexity: $O(n)$.</p>
+
+      <p><strong>Tree recursion:</strong> Each call makes <em>two or more</em> recursive calls. Example: Fibonacci. The calls branch like a tree.</p>
+
+      <pre><code>function fib(n) {
+  if (n &lt;= 1) return n;             // Base cases
+  return fib(n - 1) + fib(n - 2);  // TWO recursive calls
+}</code></pre>
+
+      <p>The number of calls grows exponentially: $O(2^n)$ for naive Fibonacci. <code>fib(30)</code> makes over a million calls. <code>fib(50)</code> would take years. This is why memoization or iterative solutions are important for tree-recursive problems &mdash; but the naive recursive form is valuable for understanding the concept.</p>
+
+      <h3>2.10.4 Time Complexity of Recursive Functions</h3>
+
+      <table>
+        <thead>
+          <tr><th>Function</th><th>Recursion Type</th><th>Time Complexity</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>factorial(n)</td><td>Linear</td><td>$O(n)$</td></tr>
+          <tr><td>fib(n) (naive)</td><td>Tree</td><td>$O(2^n)$</td></tr>
+          <tr><td>gcd(a, b)</td><td>Linear</td><td>$O(\log(\min(a, b)))$</td></tr>
+          <tr><td>binarySearch(arr, target)</td><td>Linear</td><td>$O(\log n)$</td></tr>
+          <tr><td>fractalTree(depth)</td><td>Tree</td><td>$O(2^{\text{depth}})$</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.10.5 Recursion vs Iteration</h3>
+
+      <p>Any recursive algorithm can be rewritten as an iterative one (using loops and an explicit stack), and vice versa. So why use recursion?</p>
+
+      <table>
+        <thead>
+          <tr><th>Aspect</th><th>Recursion</th><th>Iteration</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Clarity</td><td>Often more natural for self-similar problems</td><td>Often more natural for sequential problems</td></tr>
+          <tr><td>Performance</td><td>Function call overhead; risk of stack overflow</td><td>Generally faster; no stack overhead</td></tr>
+          <tr><td>Memory</td><td>Uses call stack (limited depth)</td><td>Uses explicit variables (more controllable)</td></tr>
+          <tr><td>Tree structures</td><td>Elegant and concise</td><td>Requires explicit stack management</td></tr>
+        </tbody>
+      </table>
+
+      <p>For visual art, recursion is often the natural choice because the structures we want to draw (trees, fractals, nested patterns) are inherently recursive. The code mirrors the visual structure, making it easier to understand and modify.</p>
+
+      <h3>2.10.6 Tail Recursion</h3>
+
+      <p>A recursive function is <strong>tail recursive</strong> if the recursive call is the very last operation in the function &mdash; nothing else happens after the recursive call returns. Tail-recursive functions can be optimized by the compiler/interpreter into loops (called <strong>tail call optimization</strong> or TCO), eliminating the stack overhead.</p>
+
+      <pre><code>// NOT tail recursive: multiplication happens AFTER the recursive call
+function factorial(n) {
+  if (n === 0) return 1;
+  return n * factorial(n - 1);  // Must multiply after return
+}
+
+// Tail recursive version: uses an accumulator
+function factorialTail(n, acc = 1) {
+  if (n === 0) return acc;
+  return factorialTail(n - 1, n * acc);  // Last operation is the call
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>JavaScript engines are <em>not required</em> to implement tail call optimization (only Safari does as of 2024). In practice, even tail-recursive functions in JavaScript can cause stack overflows for large inputs. For deep recursion (thousands of levels), consider an iterative approach or increase the recursion limit.</p>
+      </div>
+
+      <!-- Quiz after 2.10 -->
+      <div class="quiz" data-id="ch02-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What happens if you write a recursive function without a base case?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q5" value="a"> It returns undefined</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q5" value="b"> It runs forever silently</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q5" value="c" data-correct> It causes a stack overflow error because the call stack fills up</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q5" value="d"> JavaScript automatically adds a base case</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Without a base case, the function calls itself endlessly, each call adding a new frame to the call stack. The stack has a finite size (typically a few thousand frames in JavaScript), so eventually the runtime throws a &ldquo;Maximum call stack size exceeded&rdquo; error. This is called a <strong>stack overflow</strong>.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===================================================================
+           2.11  Recursive Art: Trees, Fractals, L-Systems
+           =================================================================== -->
+      <h2 id="recursive-art">2.11 Recursive Art: Trees, Fractals, L-Systems</h2>
+
+      <p>Recursion is not just a programming technique &mdash; it is the language of <em>self-similarity</em>, the property that a part of a structure resembles the whole. Nature is filled with self-similar structures: the branching of trees mirrors the branching of their individual limbs; a fern frond is composed of smaller fronds that are miniature copies of the whole; coastlines look equally jagged whether viewed from a satellite or a cliff top; blood vessels branch and re-branch at every scale from the aorta to the capillaries. Recursive algorithms express these forms directly, making them the natural tool for computational artists working with organic and fractal forms.</p>
+
+      <h3>2.11.1 Fractal Trees</h3>
+
+      <p>A fractal tree is drawn by a recursive function that: (1) draws a branch, (2) moves to its tip, (3) calls itself twice (or more) at different angles with a shorter length. The base case stops when the branch is too short.</p>
+
+      <div class="code-runner" data-height="500">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Recursive Fractal Tree &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(500, 500);
+  noLoop();
+}
+
+function draw() {
+  background(245, 243, 235);
+  stroke(60, 35, 10);
+  translate(width / 2, height);
+  drawBranch(120, 8);
+}
+
+function drawBranch(len, thickness) {
+  if (len < 5) {
+    // Base case: draw a leaf
+    fill(40, 160, 50, 140);
+    noStroke();
+    ellipse(0, 0, 7, 7);
+    return;
+  }
+
+  // Draw this branch
+  strokeWeight(thickness);
+  stroke(60 + (120 - len), 35, 10);
+  line(0, 0, 0, -len);
+
+  // Move to the tip
+  translate(0, -len);
+
+  // Right branch
+  push();
+  rotate(PI / 6);
+  drawBranch(len * 0.7, thickness * 0.7);
+  pop();
+
+  // Left branch
+  push();
+  rotate(-PI / 6);
+  drawBranch(len * 0.7, thickness * 0.7);
+  pop();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>2.11.2 The Sierpinski Triangle</h3>
+
+      <p>The <strong>Sierpinski triangle</strong> (or Sierpinski gasket) is a fractal named after the Polish mathematician Wac&#322;aw Sierpi&#324;ski. It is constructed by repeatedly removing the central triangle from an equilateral triangle:</p>
+
+      <ol>
+        <li>Start with a filled equilateral triangle.</li>
+        <li>Find the midpoints of the three sides. Connect them to form an inner triangle. Remove the inner triangle.</li>
+        <li>Repeat step 2 for each of the three remaining smaller triangles.</li>
+        <li>Continue to desired depth.</li>
+      </ol>
+
+      <div class="code-runner" data-height="460">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Sierpinski Triangle &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(500, 440);
+  noLoop();
+}
+
+function draw() {
+  background(255);
+
+  let margin = 30;
+  let side = width - 2 * margin;
+  let h = side * Math.sqrt(3) / 2;
+
+  // Three vertices of the outer triangle
+  let ax = width / 2, ay = margin;
+  let bx = margin, by = margin + h;
+  let cx = width - margin, cy = margin + h;
+
+  noStroke();
+  fill(30, 80, 160);
+  sierpinski(ax, ay, bx, by, cx, cy, 6);
+}
+
+function sierpinski(ax, ay, bx, by, cx, cy, depth) {
+  if (depth === 0) {
+    // Base case: draw a filled triangle
+    triangle(ax, ay, bx, by, cx, cy);
+    return;
+  }
+
+  // Midpoints
+  let abx = (ax + bx) / 2, aby = (ay + by) / 2;
+  let bcx = (bx + cx) / 2, bcy = (by + cy) / 2;
+  let acx = (ax + cx) / 2, acy = (ay + cy) / 2;
+
+  // Recurse on THREE sub-triangles (skip the middle)
+  sierpinski(ax, ay, abx, aby, acx, acy, depth - 1);   // Top
+  sierpinski(abx, aby, bx, by, bcx, bcy, depth - 1);   // Bottom-left
+  sierpinski(acx, acy, bcx, bcy, cx, cy, depth - 1);    // Bottom-right
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>2.11.3 The Koch Curve</h3>
+
+      <p>The <strong>Koch curve</strong> (Helge von Koch, 1904) is one of the earliest mathematically described fractals, published decades before the word &ldquo;fractal&rdquo; existed. It is constructed by repeatedly replacing the middle third of each line segment with two sides of an equilateral triangle:</p>
+
+      <ol>
+        <li>Start with a straight line segment.</li>
+        <li>Divide it into three equal parts.</li>
+        <li>Replace the middle third with two sides of an equilateral triangle (pointing outward).</li>
+        <li>Repeat for every line segment.</li>
+      </ol>
+
+      <p>At each iteration, the number of line segments multiplies by 4, but each segment is 1/3 the previous length. After $n$ iterations, there are $4^n$ segments, each of length $(1/3)^n$ times the original.</p>
+
+      <p>After infinite iterations, the Koch curve has <strong>infinite length</strong> (since $4/3 > 1$, the total length grows without bound) but encloses a <strong>finite area</strong> (bounded by the original triangle). Its fractal dimension is:</p>
+
+      <p>$$D = \frac{\log 4}{\log 3} \approx 1.2619$$</p>
+
+      <p>This non-integer dimension captures the intuition that the Koch curve is &ldquo;more than a line but less than a plane.&rdquo; It fills more space than a 1D curve but less than a 2D region.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The word <strong>fractal</strong> was coined by <strong>Benoit Mandelbrot</strong> in 1975, from the Latin <em>fractus</em> (broken, fragmented). Mandelbrot&rsquo;s 1982 book <em>The Fractal Geometry of Nature</em> brought fractals to wide attention and demonstrated their ubiquity in natural phenomena: coastlines, clouds, mountains, blood vessels, and galaxy distributions.</p>
+      </div>
+
+      <h3>2.11.4 L-Systems (Lindenmayer Systems)</h3>
+
+      <p>In 1968, the Hungarian biologist <strong>Aristid Lindenmayer</strong> invented <strong>L-systems</strong> as a mathematical formalism for modeling plant growth. An L-system consists of:</p>
+
+      <ul>
+        <li>An <strong>alphabet</strong> of symbols (e.g., <code>F</code>, <code>+</code>, <code>-</code>, <code>[</code>, <code>]</code>)</li>
+        <li>An <strong>axiom</strong> &mdash; the starting string</li>
+        <li><strong>Production rules</strong> &mdash; replacement rules applied in parallel</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>L-system turtle interpretation:</strong> <code>F</code> = move forward and draw, <code>+</code> = turn right, <code>-</code> = turn left, <code>[</code> = push state (position + angle), <code>]</code> = pop state. By choosing different rules and angles, L-systems can produce an extraordinary variety of plant-like forms.</p>
+      </div>
+
+      <p><strong>Example: Koch curve as an L-system.</strong></p>
+      <ul>
+        <li>Axiom: <code>F</code></li>
+        <li>Rule: <code>F &rarr; F+F--F+F</code></li>
+        <li>Angle: 60 degrees</li>
+      </ul>
+
+      <p>After 0 iterations: <code>F</code><br>
+      After 1 iteration: <code>F+F--F+F</code><br>
+      After 2 iterations: <code>F+F--F+F+F+F--F+F--F+F--F+F+F+F--F+F</code></p>
+
+      <p>Each iteration replaces every <code>F</code> with the full rule, producing exponentially longer strings that encode increasingly detailed curves.</p>
+
+      <h3>2.11.5 L-System Plant Example</h3>
+
+      <p>Here is a more elaborate L-system that produces a plant-like structure. The key additions are the bracket symbols <code>[</code> and <code>]</code>, which save and restore the turtle&rsquo;s state (position and heading), creating branches.</p>
+
+      <p><strong>Fractal Plant L-system:</strong></p>
+      <ul>
+        <li>Axiom: <code>X</code></li>
+        <li>Rules: <code>X &rarr; F+[[X]-X]-F[-FX]+X</code>, <code>F &rarr; FF</code></li>
+        <li>Angle: 25 degrees</li>
+      </ul>
+
+      <p>After just 5 iterations, this system produces a remarkably realistic branching structure from these two simple rules.</p>
+
+      <h3>2.11.6 Why Self-Similarity Appears in Nature</h3>
+
+      <p>The prevalence of self-similar structures in nature is not a coincidence. There are deep reasons:</p>
+
+      <ul>
+        <li><strong>Efficiency:</strong> Branching structures (trees, lungs, blood vessels) maximize surface area within a volume. A recursive branching pattern achieves this efficiently.</li>
+        <li><strong>Growth by local rules:</strong> Biological organisms grow by cells following local rules. An L-system models this: each symbol (cell) is replaced according to its own rule, in parallel, without global coordination.</li>
+        <li><strong>Fractal dimension:</strong> Natural coastlines, mountain ranges, and cloud boundaries have fractal dimensions between 1 and 2, meaning they are rougher than a line but smoother than a plane. This intermediate complexity is what makes natural scenes visually rich.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Fractal dimension</strong> quantifies the &ldquo;roughness&rdquo; of a fractal. A straight line has dimension 1, a filled square has dimension 2, and the Koch curve has dimension $\log 4 / \log 3 \approx 1.26$. The Sierpinski triangle has dimension $\log 3 / \log 2 \approx 1.585$. These non-integer dimensions capture the idea that fractals occupy &ldquo;more space&rdquo; than simple curves but less than filled regions.</p>
+      </div>
+
+      <h3>2.11.7 Recursion Depth and Computational Cost</h3>
+
+      <p>The fractal tree example demonstrates an important relationship between recursion depth and computational cost. Starting from a branch length of 120 pixels and shrinking by 30% (multiplying by 0.7) each level:</p>
+
+      <pre><code>Level 0: 120 px   (1 branch)
+Level 1: 84 px    (2 branches)
+Level 2: 58.8 px  (4 branches)
+Level 3: 41.2 px  (8 branches)
+...
+Level 9: 4.8 px   (512 branches)
+Level 10: 3.4 px  (1024 branches -- base case)</code></pre>
+
+      <p>Total branches drawn: $1 + 2 + 4 + \ldots + 512 = 2^{10} - 1 = 1023$ branches plus 1024 leaves. The tree <em>looks</em> enormously complex, but the program that generates it is only about 20 lines. This is Kolmogorov complexity in action: a short program producing high visual complexity.</p>
+
+
+      <!-- ===================================================================
+           2.12  Bitwise Operations and Enumeration
+           =================================================================== -->
+      <h2 id="bitwise">2.12 Bitwise Operations and Enumeration</h2>
+
+      <p>At the lowest level, computers store and manipulate data as sequences of <strong>bits</strong> &mdash; binary digits that are either 0 or 1. Everything in a computer &mdash; numbers, text, images, programs &mdash; is ultimately represented as patterns of bits. <strong>Bitwise operations</strong> manipulate these bits directly, giving us a powerful and efficient toolkit for enumeration, masking, and combinatorial problems.</p>
+
+      <p>Understanding bitwise operations connects you to the fundamental nature of computation. When Nees programmed his early works on the Siemens mainframe, he was much closer to the bit level than we are today. Modern high-level languages like JavaScript abstract away the bits, but they remain accessible through bitwise operators &mdash; and they enable elegant solutions that would be cumbersome with arithmetic alone.</p>
+
+      <h3>2.12.1 The Six Bitwise Operators</h3>
+
+      <table>
+        <thead>
+          <tr><th>Operator</th><th>Symbol</th><th>Description</th><th>Example (binary)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>AND</td><td><code>&amp;</code></td><td>1 only if both bits are 1</td><td><code>1010 &amp; 1100 = 1000</code></td></tr>
+          <tr><td>OR</td><td><code>|</code></td><td>1 if either bit is 1</td><td><code>1010 | 1100 = 1110</code></td></tr>
+          <tr><td>XOR</td><td><code>^</code></td><td>1 if bits differ</td><td><code>1010 ^ 1100 = 0110</code></td></tr>
+          <tr><td>NOT</td><td><code>~</code></td><td>Flips all bits</td><td><code>~1010 = 0101</code> (simplified)</td></tr>
+          <tr><td>Left shift</td><td><code>&lt;&lt;</code></td><td>Shift bits left (multiply by 2)</td><td><code>0011 &lt;&lt; 1 = 0110</code></td></tr>
+          <tr><td>Right shift</td><td><code>&gt;&gt;</code></td><td>Shift bits right (divide by 2)</td><td><code>1100 &gt;&gt; 1 = 0110</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.12.2 Checking a Specific Bit</h3>
+
+      <p>The fundamental technique for enumeration: check whether bit $k$ is set in number $n$:</p>
+
+      <pre><code>let isSet = (n &amp; (1 &lt;&lt; k)) !== 0;</code></pre>
+
+      <p><code>1 &lt;&lt; k</code> creates a <strong>mask</strong> with only bit $k$ set. The AND operation isolates that bit.</p>
+
+      <h3>2.12.3 Common Bitwise Patterns</h3>
+
+      <p>Several bitwise patterns appear frequently in creative coding and algorithms:</p>
+
+      <pre><code>// Check if bit k is set in n
+let isSet = (n &amp; (1 &lt;&lt; k)) !== 0;
+
+// Set bit k in n
+n = n | (1 &lt;&lt; k);
+
+// Clear bit k in n
+n = n &amp; ~(1 &lt;&lt; k);
+
+// Toggle bit k in n
+n = n ^ (1 &lt;&lt; k);
+
+// Check if n is a power of 2
+let isPow2 = (n &amp; (n - 1)) === 0 &amp;&amp; n > 0;
+
+// Count set bits (population count)
+function popcount(n) {
+  let count = 0;
+  while (n) { count += n &amp; 1; n >>>= 1; }
+  return count;
+}</code></pre>
+
+      <h3>2.12.4 Enumeration: All Subsets</h3>
+
+      <p>If you have $n$ elements, each either included or excluded, there are $2^n$ possible subsets. You represent each subset as a number from 0 to $2^n - 1$, where bit $k$ indicates whether element $k$ is included.</p>
+
+      <p>For example, with 4 edges of a square:</p>
+      <ul>
+        <li><code>0 = 0000</code> &mdash; no edges drawn</li>
+        <li><code>1 = 0001</code> &mdash; top edge only</li>
+        <li><code>5 = 0101</code> &mdash; top and bottom edges</li>
+        <li><code>15 = 1111</code> &mdash; all four edges</li>
+      </ul>
+
+      <p>This is an incredibly compact representation. A single 32-bit integer can represent any subset of up to 32 elements. Operations like &ldquo;is element $k$ in the subset?&rdquo; take a single CPU instruction.</p>
+
+      <h3>2.12.5 Sol LeWitt's Incomplete Open Cubes</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Sol LeWitt</strong> (1928&ndash;2007) was an American artist widely regarded as a founder of Conceptual Art and Minimalism. His 1974 work <em>Incomplete Open Cubes</em> systematically enumerates all ways to remove edges from a wireframe cube while keeping the structure connected and three-dimensional. A cube has 12 edges, giving $2^{12} = 4096$ possible subsets. LeWitt identified 122 valid configurations. The work exemplifies art as exhaustive enumeration &mdash; an algorithm executed by hand.</p>
+      </div>
+
+      <p>LeWitt&rsquo;s process is essentially a computational algorithm, which we can express precisely:</p>
+
+      <ol>
+        <li>For each of the 4096 subsets of 12 edges:
+          <ol>
+            <li>Check if the remaining edges form a connected graph.</li>
+            <li>Check if the structure spans all three dimensions (not flat).</li>
+            <li>If both conditions are met, include it in the collection.</li>
+          </ol>
+        </li>
+        <li>Remove configurations that are rotational duplicates.</li>
+        <li>Display all valid, unique configurations.</li>
+      </ol>
+
+      <p>A computer can perform this enumeration in milliseconds. LeWitt did it by hand &mdash; which is itself a kind of performance art. The work prefigures computational thinking: defining precise rules and exhaustively exploring the resulting space.</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Cube Edge Enumeration &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">let current = 0;
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(245);
+  translate(width / 2, height / 2);
+
+  if (frameCount % 5 === 0) {
+    current = (current + 1) % 4096;
+  }
+
+  let s = 80;
+  let d = s * 0.5;
+
+  // 8 vertices (isometric projection)
+  let v = [
+    {x:-s, y:s},  {x:s, y:s},
+    {x:s, y:-s},  {x:-s, y:-s},
+    {x:-s+d, y:s-d}, {x:s+d, y:s-d},
+    {x:s+d, y:-s-d}, {x:-s+d, y:-s-d}
+  ];
+
+  // 12 edges
+  let edges = [
+    [0,1],[1,2],[2,3],[3,0],
+    [4,5],[5,6],[6,7],[7,4],
+    [0,4],[1,5],[2,6],[3,7]
+  ];
+
+  for (let i = 0; i < 12; i++) {
+    if (current & (1 << i)) {
+      stroke(30); strokeWeight(2.5);
+    } else {
+      stroke(220); strokeWeight(0.5);
+    }
+    let e = edges[i];
+    line(v[e[0]].x, v[e[0]].y, v[e[1]].x, v[e[1]].y);
+  }
+
+  // Label
+  let count = 0;
+  for (let i = 0; i < 12; i++) if (current & (1 << i)) count++;
+  fill(0); noStroke(); textAlign(CENTER); textSize(14);
+  text('#' + current + ' | ' + count + ' edges', 0, s + 40);
+  text(current.toString(2).padStart(12, '0'), 0, s + 58);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz after 2.12 -->
+      <div class="quiz" data-id="ch02-q6">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the result of <code>12 &amp; 10</code> in decimal? (Hint: 12 = <code>1100</code>, 10 = <code>1010</code> in binary.)</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q6" value="a"> 22</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q6" value="b"> 6</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q6" value="c" data-correct> 8</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q6" value="d"> 2</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Bitwise AND compares each bit position: <code>1100 &amp; 1010 = 1000</code>. In decimal, <code>1000</code> binary = 8. Only bit position 3 has a 1 in both numbers.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===================================================================
+           2.13  Data Compression: RLE and Huffman
+           =================================================================== -->
+      <h2 id="data-compression">2.13 Data Compression: RLE and Huffman</h2>
+
+      <p>Data compression turns theoretical complexity into practical technology. We now examine two foundational compression algorithms in detail.</p>
+
+      <h3>2.13.1 Run-Length Encoding (RLE)</h3>
+
+      <p>The simplest compression algorithm. Replace <em>runs</em> of identical values with a count and the value:</p>
+
+      <pre><code>AAAAABBBCC  -->  5A3B2C    (10 chars --> 6 chars, 60%)
+ABCDEFGH    -->  1A1B1C1D1E1F1G1H  (8 chars --> 16 chars, 200% -- WORSE!)</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>RLE can make data <em>larger</em> if there are no runs. Always check whether the compressed version is actually smaller than the original. This is why real-world formats combine multiple techniques.</p>
+      </div>
+
+      <div class="code-runner" data-height="380">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>RLE Compression Visualizer &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(500, 300);
+  noLoop();
+}
+
+function draw() {
+  background(255);
+  textFont('monospace');
+
+  let tests = [
+    'AAAAAABBBCCDDDDDDDD',
+    'ABCDEFGH',
+    'RRRRRRRRRRRRRRR',
+    'AABBCCDD'
+  ];
+
+  let y = 30;
+  for (let t of tests) {
+    let enc = rleEncode(t);
+    let ratio = (enc.length / t.length * 100).toFixed(0);
+    let color = enc.length < t.length ? [0,130,0] : [200,0,0];
+
+    fill(0); textSize(13);
+    text('Original: ' + t, 20, y);
+    fill(color[0], color[1], color[2]);
+    text('Encoded:  ' + enc + '  (' + ratio + '%)', 20, y + 18);
+    fill(100);
+    text('Savings:  ' + (t.length - enc.length) + ' chars', 20, y + 36);
+    y += 60;
+  }
+}
+
+function rleEncode(str) {
+  let result = '';
+  let i = 0;
+  while (i < str.length) {
+    let ch = str[i];
+    let count = 1;
+    while (i + count < str.length && str[i + count] === ch) count++;
+    result += count + ch;
+    i += count;
+  }
+  return result;
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>2.13.2 Huffman Coding</h3>
+
+      <p>David Huffman invented this algorithm as a graduate student at MIT in 1952 (it was a homework assignment). Huffman coding assigns <strong>variable-length binary codes</strong> to symbols: frequent symbols get short codes, rare symbols get long codes.</p>
+
+      <p><strong>The Algorithm:</strong></p>
+      <ol>
+        <li>Count the frequency of each symbol.</li>
+        <li>Create a leaf node for each symbol, weighted by frequency.</li>
+        <li>Repeatedly merge the two lowest-weight nodes into a parent. The parent&rsquo;s weight is the sum of its children.</li>
+        <li>Continue until one root node remains. This is the Huffman tree.</li>
+        <li>The code for each symbol is the path from root to leaf: left = 0, right = 1.</li>
+      </ol>
+
+      <p><strong>Worked Example:</strong> Encode the string <code>ABRACADABRA</code>.</p>
+
+      <table>
+        <thead>
+          <tr><th>Symbol</th><th>Frequency</th><th>Huffman Code</th><th>Fixed-Width Code</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A</td><td>5</td><td><code>0</code> (1 bit)</td><td><code>00</code> (2 bits)</td></tr>
+          <tr><td>B</td><td>2</td><td><code>10</code> (2 bits)</td><td><code>01</code> (2 bits)</td></tr>
+          <tr><td>R</td><td>2</td><td><code>110</code> (3 bits)</td><td><code>10</code> (2 bits)</td></tr>
+          <tr><td>C</td><td>1</td><td><code>1110</code> (4 bits)</td><td><code>11</code> (2 bits)</td></tr>
+          <tr><td>D</td><td>1</td><td><code>1111</code> (4 bits)</td><td><code>11</code> (2 bits)</td></tr>
+        </tbody>
+      </table>
+
+      <p>Fixed-width encoding: 11 symbols &times; 3 bits (need 3 bits for 5 symbols) = 33 bits.<br>
+      Huffman encoding: $5 \times 1 + 2 \times 2 + 2 \times 3 + 1 \times 4 + 1 \times 4 = 23$ bits.</p>
+
+      <p>Huffman achieves <strong>30% compression</strong> on this small example. For English text with its highly unequal letter frequencies, the savings are even greater.</p>
+
+      <p>The key property that makes Huffman coding decodable is the <strong>prefix-free</strong> property: no codeword is a prefix of any other codeword. For example, if &ldquo;A&rdquo; is coded as <code>0</code>, then no other symbol&rsquo;s code can start with <code>0</code>. This means the decoder can read the bitstream left to right and unambiguously determine where each codeword ends.</p>
+
+      <p><strong>Building the Huffman Tree step by step for ABRACADABRA:</strong></p>
+      <ol>
+        <li>Start with five leaf nodes: A(5), B(2), R(2), C(1), D(1).</li>
+        <li>Merge the two smallest: C(1) and D(1) become CD(2).</li>
+        <li>Merge the two smallest: B(2) and CD(2) become BCD(4). (Or R(2) and CD(2) &mdash; ties can be broken arbitrarily.)</li>
+        <li>Merge R(2) and BCD(4) to get RBCD(6). (Or merge R(2) with something else &mdash; multiple valid trees exist.)</li>
+        <li>Merge A(5) and RBCD(6) to get the root ARBCD(11).</li>
+      </ol>
+
+      <p>Different tie-breaking choices produce different trees, but all valid Huffman trees for the same frequency distribution achieve the <em>same</em> optimal average code length.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem</div>
+        <p><strong>Optimality of Huffman coding:</strong> Among all prefix-free codes (where no codeword is a prefix of another), Huffman coding produces the shortest average codeword length. The average length approaches the Shannon entropy $H$ as a lower bound.</p>
+      </div>
+
+      <h3>2.13.3 How PNG Combines Techniques</h3>
+
+      <p>Real-world image compression (like PNG) combines multiple layers:</p>
+      <ol>
+        <li><strong>Row filtering:</strong> Each row is compared to the row above (delta encoding), producing smaller values for smooth gradients.</li>
+        <li><strong>LZ77:</strong> Finds repeated sequences and replaces them with back-references to earlier occurrences.</li>
+        <li><strong>Huffman coding:</strong> Encodes the LZ77 output with optimal variable-length codes.</li>
+      </ol>
+
+      <p>This is why PNG excels at geometric art and screenshots (lots of repeated patterns) but performs poorly on photographs (use JPEG) or random noise (incompressible).</p>
+
+      <h3>2.13.4 Compression as a Complexity Measure</h3>
+
+      <p>Since Kolmogorov complexity is uncomputable, compression provides a practical substitute. The <strong>compressed size</strong> of a file is an upper bound on its Kolmogorov complexity. The closer the compressed size is to the original, the more &ldquo;random&rdquo; (complex) the data.</p>
+
+      <p>This gives us a concrete tool for analyzing art:</p>
+
+      <ul>
+        <li>Create an image in p5.js and save it as PNG.</li>
+        <li>The PNG file size approximates the image&rsquo;s Kolmogorov complexity.</li>
+        <li>Compare to the source code size. The ratio of visual complexity (PNG size) to descriptive complexity (code size) is a measure of how much &ldquo;amplification&rdquo; your program achieves.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Compression ratio as art metric:</strong> A generative art program is like a compression algorithm running in reverse. Instead of finding the shortest description of existing data, it <em>expands</em> a short description (the code) into rich visual output. The best generative art achieves the highest &ldquo;amplification factor&rdquo; &mdash; the most visual complexity per byte of source code.</p>
+      </div>
+
+      <h3>2.13.5 Lossless vs Lossy Compression</h3>
+
+      <p>Compression algorithms fall into two categories:</p>
+
+      <p><strong>Lossless compression</strong> (PNG, ZIP, FLAC) preserves every bit of the original data. The decompressed output is identical to the input. Used when exactness matters: text, source code, medical images.</p>
+
+      <p><strong>Lossy compression</strong> (JPEG, MP3, H.264) discards information that is &ldquo;less important&rdquo; to human perception. A JPEG photo looks nearly identical to the original but is 10&ndash;50x smaller. Used when perceptual quality matters more than bit-perfect accuracy: photographs, music, video.</p>
+
+      <p>For generative art, the distinction is significant. If you save a p5.js canvas as PNG (lossless), the file size reflects the actual information content. If you save as JPEG (lossy), the file size reflects the <em>perceptually relevant</em> information content, which is always less.</p>
+
+      <h3>2.13.6 The Pigeonhole Principle and Compression Limits</h3>
+
+      <p>A fundamental result: <strong>no compression algorithm can compress all possible inputs</strong>. Here is why:</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem (Pigeonhole Principle for Compression)</div>
+        <p>If a compression algorithm maps every $n$-bit string to a string of fewer than $n$ bits, then by the pigeonhole principle, some compressed strings must correspond to multiple originals, making decompression ambiguous. Therefore, any lossless compression algorithm must <em>expand</em> some inputs.</p>
+      </div>
+
+      <p>This is why RLE makes <code>ABCDEFGH</code> longer: the algorithm compresses repetitive data at the cost of expanding non-repetitive data. No free lunch.</p>
+
+
+      <!-- ===================================================================
+           2.14  Anemic Cinema and Kinetic Art
+           =================================================================== -->
+      <h2 id="anemic-cinema">2.14 Anemic Cinema and Kinetic Art</h2>
+
+      <h3>2.14.1 Marcel Duchamp: Beyond the Readymade</h3>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Marcel Duchamp</strong> (1887&ndash;1968) is one of the most influential artists of the 20th century. He is best known for his &ldquo;readymades&rdquo; &mdash; everyday objects (a urinal, a bicycle wheel) presented as art. But Duchamp was also deeply interested in motion, optics, and mechanical systems, which led him to create kinetic artworks decades before the Op Art movement.</p>
+      </div>
+
+      <h3>2.14.2 Anemic Cinema (1926)</h3>
+
+      <p>In collaboration with Man Ray and Marc All&eacute;gret, Duchamp created <em>Anemic Cinema</em> &mdash; a seven-minute film alternating between spinning discs bearing spiral patterns (which produce optical illusions of depth) and rotating discs displaying French puns arranged in spirals. The film was produced under Duchamp&rsquo;s pseudonym &ldquo;Rrose S&eacute;lavy&rdquo; (a pun on &ldquo;Eros, c&rsquo;est la vie&rdquo; &mdash; &ldquo;Eros, that&rsquo;s life&rdquo;).</p>
+
+      <p>The title itself is an anagram: &ldquo;anemic&rdquo; rearranges to &ldquo;cinema.&rdquo; This reflects Duchamp&rsquo;s love of wordplay and his wry commentary on the new medium of film. The film is both a genuine experiment in optical illusion and a conceptual joke &mdash; a characteristic Duchamp duality that foreshadowed decades of conceptual art.</p>
+
+      <h3>2.14.3 Rotoreliefs (1935)</h3>
+
+      <p>Duchamp&rsquo;s <strong>Rotoreliefs</strong> are flat cardboard discs printed with patterns of eccentric circles, spirals, and geometric forms. When placed on a turntable spinning at 33&#8531; RPM, the flat patterns create vivid illusions of three-dimensional cones, funnels, and undulating surfaces.</p>
+
+      <p>The key principle: a simple set of rules (geometry + constant rotation) produces an <strong>emergent experience</strong> (perceived depth and motion) that is far richer than the input. This is the same principle that makes generative art compelling.</p>
+
+      <h3>2.14.4 The Op Art Connection</h3>
+
+      <p>Duchamp&rsquo;s optical experiments preceded the <strong>Op Art</strong> (Optical Art) movement of the 1960s by decades. Op Art artists like <strong>Bridget Riley</strong> and <strong>Victor Vasarely</strong> created paintings that produce optical illusions through precise geometric patterns. The movement was formalized by the 1965 MoMA exhibition <em>The Responsive Eye</em>.</p>
+
+      <p>Op Art shares a fundamental principle with generative art: a precise set of rules (geometric relationships, color contrasts) produces perceptual experiences that transcend the physical medium. The rules are simple; the experience is complex.</p>
+
+      <h3>2.14.5 Adaptation as Translation</h3>
+
+      <p>Moving art between media is an act of translation. You must decide what is <em>essential</em> to the work and what is merely a feature of the original medium:</p>
+
+      <table>
+        <thead>
+          <tr><th>Aspect</th><th>Essential?</th><th>Reasoning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The geometric pattern</td><td>Yes</td><td>Without the pattern, there is no optical illusion</td></tr>
+          <tr><td>Constant rotation</td><td>Yes</td><td>Without motion, the depth illusion does not work</td></tr>
+          <tr><td>The physical cardboard disc</td><td>No</td><td>The disc is merely a delivery mechanism</td></tr>
+          <tr><td>Specific turntable speed</td><td>Partially</td><td>The effect works at various speeds, but speed affects the experience</td></tr>
+          <tr><td>The viewer&rsquo;s perceptual system</td><td>Yes</td><td>The illusion is constructed in the brain, not on the disc</td></tr>
+        </tbody>
+      </table>
+
+      <p>When we write p5.js code for a rotorelief, we preserve the pattern and rotation while discarding the physical medium. But we also <em>add</em> something new: <strong>interactivity</strong>. The digital version can let the viewer control speed, eccentricity, color, and number of rings &mdash; parameters that were fixed in Duchamp&rsquo;s original.</p>
+
+      <h3>2.14.6 Using LLMs as Creative Partners</h3>
+
+      <p>Large Language Models represent a new link in the adaptation chain:</p>
+
+      <p><strong>Original artwork</strong> &rarr; <strong>Description of rules</strong> &rarr; <strong>LLM prompt</strong> &rarr; <strong>Generated code</strong> &rarr; <strong>Digital artwork</strong></p>
+
+      <p>The artistic decisions remain with you: what to create, how to evaluate results, when to iterate. The LLM handles the translation from natural language to code. This is analogous to Sol LeWitt writing instructions and assistants executing them, or Duchamp choosing a readymade and the gallery context doing the rest.</p>
+
+      <p>Tips for working with LLMs on creative code:</p>
+      <ul>
+        <li>Describe the <strong>effect</strong> you want, not just the shapes.</li>
+        <li>Provide <strong>constraints</strong> (canvas size, color palette, number of elements).</li>
+        <li><strong>Iterate:</strong> run the code, evaluate, describe changes.</li>
+        <li><strong>Understand</strong> the generated code so you can modify it yourself.</li>
+      </ul>
+
+      <h3>2.14.7 A Digital Rotorelief</h3>
+
+      <div class="code-runner" data-height="520">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Duchamp Rotorelief &mdash; Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(450, 450);
+}
+
+function draw() {
+  background(250, 245, 235);
+  translate(width / 2, height / 2);
+
+  // Map mouseX to speed, mouseY to eccentricity
+  let speed = map(mouseX, 0, width, 0.005, 0.06);
+  let maxEcc = map(mouseY, 0, height, 10, 80);
+
+  rotate(frameCount * speed);
+
+  noFill();
+  strokeWeight(1.5);
+
+  for (let i = 0; i < 28; i++) {
+    let t = i / 28;
+    let eccentric = sin(t * PI) * maxEcc;
+    let r = 15 + i * 14;
+
+    // Subtle color variation
+    let gray = map(i, 0, 28, 20, 120);
+    stroke(gray);
+
+    ellipse(eccentric, 0, r, r);
+  }
+
+  // HUD
+  resetMatrix();
+  fill(100); noStroke(); textSize(11);
+  text('mouseX = speed, mouseY = eccentricity', 10, height - 10);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===================================================================
+           2.15  Summary
+           =================================================================== -->
+      <h2 id="summary">2.15 Summary</h2>
+
+      <p>This chapter covered the mathematical and conceptual foundations of generative art:</p>
+
+      <ol>
+        <li><strong>p5.js</strong> descends from Processing (Reas &amp; Fry, 2001, MIT Media Lab). It provides an accessible creative coding environment in the browser.</li>
+
+        <li><strong>CPU vs GPU:</strong> CPUs process sequentially (few powerful cores); GPUs process in parallel (thousands of small cores). Default p5.js uses the CPU; WebGL and shaders use the GPU.</li>
+
+        <li><strong>Geometric transformations</strong> (<code>translate</code>, <code>rotate</code>, <code>scale</code>) work by moving the coordinate system, not individual shapes. They are represented internally as matrix multiplication.</li>
+
+        <li><strong>push() and pop()</strong> save and restore the transformation state, enabling independent and nested transformations. They use a stack data structure (LIFO).</li>
+
+        <li><strong>Algorithmic art pioneers</strong> (Nees, Nake, Noll, Cohen) established that the algorithm <em>is</em> the artwork. Georg Nees&rsquo; <em>Schotter</em> (1968) visualizes the transition from order to disorder.</li>
+
+        <li><strong>Shannon entropy</strong> $H = -\sum p_i \log_2 p_i$ measures the average information content of a random source. High entropy means high unpredictability.</li>
+
+        <li><strong>Kolmogorov complexity</strong> $K(x)$ is the length of the shortest program that produces $x$. It is uncomputable but can be approximated by compression. Generative art thrives in the sweet spot: low program complexity, high visual complexity.</li>
+
+        <li><strong>PRNGs</strong> are deterministic algorithms that produce random-looking sequences from a seed. Seeds make generative art reproducible.</li>
+
+        <li><strong>Recursion</strong> (base case + recursive case) naturally expresses self-similar structures: fractal trees, Sierpinski triangles, Koch curves, and L-systems.</li>
+
+        <li><strong>Bitwise operations</strong> and enumeration let you systematically explore all configurations (subsets), as in Sol LeWitt&rsquo;s <em>Incomplete Open Cubes</em>.</li>
+
+        <li><strong>Data compression</strong> (RLE, Huffman, PNG) exploits patterns to reduce data size and provides a practical measure of complexity.</li>
+
+        <li><strong>Kinetic art</strong> (Duchamp&rsquo;s rotoreliefs, Op Art) demonstrates how simple geometric rules plus motion produce emergent perceptual experiences &mdash; the same principle underlying generative art.</li>
+      </ol>
+
+      <p>These ideas form an interconnected web. Transformations enable the structured compositions that Nees and Moln&aacute;r pioneered. Recursion generates the self-similar forms that Mandelbrot identified everywhere in nature. Information theory gives us the vocabulary to discuss why some images are interesting (moderate entropy) while others are boring (zero entropy) or overwhelming (maximum entropy). Compression connects information theory to practical computing. And the historical thread from Duchamp through Nees to modern generative art shows how these mathematical concepts have always been intertwined with artistic vision.</p>
+
+      <p>As you work through the exercises, pay attention to the relationships between code length (Kolmogorov complexity), visual richness (apparent complexity), and the transformation/recursion techniques that amplify simple rules into complex outputs. This amplification &mdash; short programs producing rich results &mdash; is the essence of computing arts.</p>
+
+
+      <!-- ===================================================================
+           2.16  Glossary
+           =================================================================== -->
+      <h2 id="glossary">2.16 Glossary</h2>
+
+      <dl>
+        <dt>Affine transformation</dt>
+        <dd>A geometric transformation (translation, rotation, scaling, shear) that preserves parallel lines. Represented by matrix multiplication in homogeneous coordinates.</dd>
+
+        <dt>Base case</dt>
+        <dd>The condition in a recursive function that stops the recursion and returns a value directly.</dd>
+
+        <dt>Bit</dt>
+        <dd>The fundamental unit of information, representing a single binary digit (0 or 1). Named by Claude Shannon as a contraction of &ldquo;binary digit.&rdquo;</dd>
+
+        <dt>Bitwise operation</dt>
+        <dd>An operation that manipulates individual bits of a number: AND, OR, XOR, NOT, shifts.</dd>
+
+        <dt>Call stack</dt>
+        <dd>A region of memory that stores function call frames in LIFO order. Each recursive call adds a frame; returning removes one.</dd>
+
+        <dt>Entropy (Shannon)</dt>
+        <dd>A measure of the average information content (unpredictability) of a random variable. $H = -\sum p_i \log_2 p_i$.</dd>
+
+        <dt>Fractal</dt>
+        <dd>A geometric object exhibiting self-similarity at different scales. Examples: Koch curve, Sierpinski triangle, fractal trees.</dd>
+
+        <dt>Homogeneous coordinates</dt>
+        <dd>A coordinate system that adds an extra dimension (e.g., $(x, y, 1)$ for 2D) to represent translations as matrix multiplications.</dd>
+
+        <dt>Huffman coding</dt>
+        <dd>An optimal prefix-free compression algorithm that assigns shorter binary codes to more frequent symbols.</dd>
+
+        <dt>Kolmogorov complexity</dt>
+        <dd>The length of the shortest program that produces a given string. Uncomputable but approximable by compression.</dd>
+
+        <dt>L-system (Lindenmayer system)</dt>
+        <dd>A string-rewriting system used to model plant growth and generate fractal curves.</dd>
+
+        <dt>Linear Congruential Generator (LCG)</dt>
+        <dd>A PRNG defined by $x_{n+1} = (ax_n + c) \bmod m$. Simple and fast but with known statistical weaknesses.</dd>
+
+        <dt>PRNG (Pseudorandom Number Generator)</dt>
+        <dd>A deterministic algorithm producing a sequence that appears random. Same seed yields same sequence.</dd>
+
+        <dt>Recursion</dt>
+        <dd>A technique where a function calls itself with simpler inputs. Requires a base case to terminate.</dd>
+
+        <dt>Rotorelief</dt>
+        <dd>A flat disc with geometric patterns that creates optical illusions of depth when rotated. Invented by Marcel Duchamp (1935).</dd>
+
+        <dt>Run-Length Encoding (RLE)</dt>
+        <dd>A compression algorithm replacing runs of identical values with a count and the value.</dd>
+
+        <dt>Seed</dt>
+        <dd>The initial value given to a PRNG that determines the entire sequence of pseudorandom numbers.</dd>
+
+        <dt>Self-similarity</dt>
+        <dd>A property of objects whose parts resemble the whole at different scales.</dd>
+
+        <dt>Stack frame</dt>
+        <dd>A block of memory on the call stack containing a function&rsquo;s local variables, parameters, and return address.</dd>
+
+        <dt>Stack overflow</dt>
+        <dd>An error caused by exceeding the call stack&rsquo;s memory limit, typically from infinite or excessively deep recursion.</dd>
+
+        <dt>Surprisal</dt>
+        <dd>The information content of a single event: $I(x) = -\log_2 p(x)$ bits.</dd>
+
+        <dt>Transformation matrix</dt>
+        <dd>A matrix that, when multiplied by a coordinate vector, applies a geometric transformation.</dd>
+
+        <dt>Vera Moln&aacute;r</dt>
+        <dd>Hungarian-French artist (1924&ndash;2023) who pioneered computer-generated geometric art, exploring the boundary between order and randomness.</dd>
+
+        <dt>Xorshift</dt>
+        <dd>A family of fast PRNGs based on XOR and bit-shift operations, invented by George Marsaglia (2003).</dd>
+
+        <dt>Perlin noise</dt>
+        <dd>A gradient noise function invented by Ken Perlin (1983) that produces smooth, natural-looking randomness. Available in p5.js as <code>noise()</code>.</dd>
+
+        <dt>Op Art</dt>
+        <dd>Optical Art &mdash; an art movement of the 1960s that creates visual illusions through precise geometric patterns. Key artists: Bridget Riley, Victor Vasarely.</dd>
+
+        <dt>Pigeonhole principle</dt>
+        <dd>If $n$ items are placed into $m$ containers with $n > m$, at least one container must hold more than one item. Applied to compression: not all files can be made shorter.</dd>
+
+        <dt>Source coding theorem</dt>
+        <dd>Shannon&rsquo;s theorem stating that entropy is the fundamental limit of lossless compression. No encoding can average fewer than $H$ bits per symbol.</dd>
+
+        <dt>Tail recursion</dt>
+        <dd>A form of recursion where the recursive call is the last operation in the function, enabling potential optimization into a loop.</dd>
+
+        <dt>Fractal dimension</dt>
+        <dd>A non-integer measure of a fractal&rsquo;s geometric complexity. The Koch curve has dimension $\approx 1.26$; the Sierpinski triangle has dimension $\approx 1.585$.</dd>
+      </dl>
+
+
+      <!-- ===================================================================
+           CODE CHALLENGES
+           =================================================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <!-- Challenge 1: factorial -->
+      <div class="code-challenge" data-id="ch02-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1</div>
+        <p class="prompt">Write a function called <code>factorial</code> that takes a non-negative integer <code>n</code> and returns $n!$ using recursion. Recall that $0! = 1$ and $n! = n \times (n-1)!$.</p>
+        <textarea class="cm-editor">function factorial(n) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "factorial(0)", "expected": 1},
+          {"call": "factorial(1)", "expected": 1},
+          {"call": "factorial(5)", "expected": 120},
+          {"call": "factorial(10)", "expected": 3628800}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2: fibonacci -->
+      <div class="code-challenge" data-id="ch02-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2</div>
+        <p class="prompt">Write a function called <code>fibonacci</code> that takes a non-negative integer <code>n</code> and returns the $n$th Fibonacci number using recursion. The sequence starts: $F(0) = 0$, $F(1) = 1$, $F(n) = F(n-1) + F(n-2)$.</p>
+        <textarea class="cm-editor">function fibonacci(n) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "fibonacci(0)", "expected": 0},
+          {"call": "fibonacci(1)", "expected": 1},
+          {"call": "fibonacci(6)", "expected": 8},
+          {"call": "fibonacci(10)", "expected": 55}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3: gcd -->
+      <div class="code-challenge" data-id="ch02-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3</div>
+        <p class="prompt">Write a function called <code>gcd</code> that takes two positive integers <code>a</code> and <code>b</code> and returns their greatest common divisor using the Euclidean algorithm. Recall: $\gcd(a, 0) = a$ and $\gcd(a, b) = \gcd(b, \; a \bmod b)$.</p>
+        <textarea class="cm-editor">function gcd(a, b) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "gcd(48, 18)", "expected": 6},
+          {"call": "gcd(100, 75)", "expected": 25},
+          {"call": "gcd(17, 13)", "expected": 1},
+          {"call": "gcd(270, 192)", "expected": 6}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 4: countBits -->
+      <div class="code-challenge" data-id="ch02-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge 4</div>
+        <p class="prompt">Write a function called <code>countBits</code> that takes a non-negative integer <code>n</code> and returns the number of 1-bits in its binary representation. For example, $13 = 1101_2$ has three 1-bits.</p>
+        <textarea class="cm-editor">function countBits(n) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "countBits(0)", "expected": 0},
+          {"call": "countBits(1)", "expected": 1},
+          {"call": "countBits(13)", "expected": 3},
+          {"call": "countBits(255)", "expected": 8},
+          {"call": "countBits(1023)", "expected": 10}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===================================================================
+           OPEN-ENDED EXERCISES
+           =================================================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <!-- Exercise 1: Modified Schotter -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 2.1 &mdash; Modified Schotter</div>
+        <p class="prompt">Modify the Schotter program so that randomness increases from <strong>left to right</strong> instead of top to bottom. The leftmost column should be perfectly ordered and the rightmost column should be maximally disordered.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(600, 700);
+  noLoop();
+}
+
+function draw() {
+  background(255);
+  randomSeed(42);
+
+  let cols = 12;
+  let rows = 22;
+  let sqSize = 28;
+  let gw = cols * sqSize;
+  let gh = rows * sqSize;
+  let mx = (width - gw) / 2;
+  let my = (height - gh) / 2;
+
+  noFill(); stroke(0); strokeWeight(1);
+  rectMode(CENTER);
+
+  let maxDisp = sqSize * 0.5;
+  let maxRot = PI / 4;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      // TODO: change the factor so disorder
+      // increases left-to-right instead of top-to-bottom
+      let factor = r / (rows - 1);
+
+      let cx = mx + c * sqSize + sqSize / 2;
+      let cy = my + r * sqSize + sqSize / 2;
+      let ox = random(-maxDisp, maxDisp) * factor;
+      let oy = random(-maxDisp, maxDisp) * factor;
+      let ang = random(-maxRot, maxRot) * factor;
+
+      push();
+      translate(cx + ox, cy + oy);
+      rotate(ang);
+      rect(0, 0, sqSize, sqSize);
+      pop();
+    }
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(600, 700);
+  noLoop();
+}
+
+function draw() {
+  background(255);
+  randomSeed(42);
+
+  let cols = 12;
+  let rows = 22;
+  let sqSize = 28;
+  let gw = cols * sqSize;
+  let gh = rows * sqSize;
+  let mx = (width - gw) / 2;
+  let my = (height - gh) / 2;
+
+  noFill(); stroke(0); strokeWeight(1);
+  rectMode(CENTER);
+
+  let maxDisp = sqSize * 0.5;
+  let maxRot = PI / 4;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      // Key change: use column instead of row
+      let factor = c / (cols - 1);
+
+      let cx = mx + c * sqSize + sqSize / 2;
+      let cy = my + r * sqSize + sqSize / 2;
+      let ox = random(-maxDisp, maxDisp) * factor;
+      let oy = random(-maxDisp, maxDisp) * factor;
+      let ang = random(-maxRot, maxRot) * factor;
+
+      push();
+      translate(cx + ox, cy + oy);
+      rotate(ang);
+      rect(0, 0, sqSize, sqSize);
+      pop();
+    }
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 2: Three-branch fractal tree -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 2.2 &mdash; Three-Branch Fractal Tree</div>
+        <p class="prompt">Modify the fractal tree so that each branch splits into <strong>three</strong> sub-branches instead of two. One branch should go left, one should go straight (or nearly straight), and one should go right. Experiment with angles and shrink factors.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(500, 500);
+  noLoop();
+}
+
+function draw() {
+  background(245, 243, 235);
+  stroke(60, 35, 10);
+  translate(width / 2, height);
+  drawBranch(100, 7);
+}
+
+function drawBranch(len, thickness) {
+  if (len < 4) {
+    fill(40, 160, 50, 140);
+    noStroke();
+    ellipse(0, 0, 6, 6);
+    return;
+  }
+
+  strokeWeight(thickness);
+  stroke(60 + (100 - len), 35, 10);
+  line(0, 0, 0, -len);
+  translate(0, -len);
+
+  // TODO: Add a THIRD branch (center/straight)
+  // Right branch
+  push();
+  rotate(PI / 5);
+  drawBranch(len * 0.67, thickness * 0.67);
+  pop();
+
+  // Left branch
+  push();
+  rotate(-PI / 5);
+  drawBranch(len * 0.67, thickness * 0.67);
+  pop();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(500, 500);
+  noLoop();
+}
+
+function draw() {
+  background(245, 243, 235);
+  stroke(60, 35, 10);
+  translate(width / 2, height);
+  drawBranch(90, 6);
+}
+
+function drawBranch(len, thickness) {
+  if (len < 4) {
+    fill(40, 160, 50, 140);
+    noStroke();
+    ellipse(0, 0, 6, 6);
+    return;
+  }
+
+  strokeWeight(thickness);
+  stroke(60 + (90 - len), 35, 10);
+  line(0, 0, 0, -len);
+  translate(0, -len);
+
+  // Right branch
+  push();
+  rotate(PI / 5);
+  drawBranch(len * 0.6, thickness * 0.6);
+  pop();
+
+  // Center branch (slightly shorter, no rotation)
+  push();
+  rotate(0.05); // Tiny offset for organic feel
+  drawBranch(len * 0.55, thickness * 0.55);
+  pop();
+
+  // Left branch
+  push();
+  rotate(-PI / 5);
+  drawBranch(len * 0.6, thickness * 0.6);
+  pop();
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3: Interactive Rotorelief -->
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 2.3 &mdash; Interactive Rotorelief</div>
+        <p class="prompt">Create an interactive rotorelief where <code>mouseX</code> controls the rotation speed and pressing the mouse toggles between two different patterns (concentric circles vs. spiral). Add color that shifts over time.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(450, 450);
+}
+
+function draw() {
+  background(250, 245, 235);
+  translate(width / 2, height / 2);
+
+  // TODO: Map mouseX to rotation speed
+  // TODO: Use mouseIsPressed to switch patterns
+  // TODO: Add color variation
+
+  rotate(frameCount * 0.02);
+
+  noFill();
+  stroke(30);
+  strokeWeight(1.5);
+
+  for (let i = 0; i < 25; i++) {
+    let t = i / 25;
+    let eccentric = sin(t * PI) * 50;
+    let r = 20 + i * 16;
+    ellipse(eccentric, 0, r, r);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let patternMode = 0;
+
+function setup() {
+  createCanvas(450, 450);
+}
+
+function draw() {
+  background(250, 245, 235);
+  translate(width / 2, height / 2);
+
+  let speed = map(mouseX, 0, width, 0.005, 0.07);
+  rotate(frameCount * speed);
+
+  noFill();
+  strokeWeight(1.5);
+
+  for (let i = 0; i < 28; i++) {
+    let t = i / 28;
+
+    // Color shifts over time
+    let hue = (frameCount * 0.5 + i * 10) % 360;
+    let r2 = 128 + 127 * sin(radians(hue));
+    let g = 128 + 127 * sin(radians(hue + 120));
+    let b = 128 + 127 * sin(radians(hue + 240));
+    stroke(r2, g, b, 200);
+
+    let r = 15 + i * 14;
+
+    if (patternMode === 0) {
+      // Eccentric circles (Duchamp style)
+      let ecc = sin(t * PI) * 55;
+      ellipse(ecc, 0, r, r);
+    } else {
+      // Spiral pattern
+      let angle = t * TWO_PI * 3;
+      let sx = cos(angle) * r * 0.3;
+      let sy = sin(angle) * r * 0.3;
+      ellipse(sx, sy, r, r * 0.8);
+    }
+  }
+}
+
+function mousePressed() {
+  patternMode = 1 - patternMode;
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===================================================================
+           CHAPTER END QUIZ
+           =================================================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 2 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of transformations, recursion, and complexity.</p>
+
+        <div class="quiz" data-id="ch02-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">In p5.js, what does <code>rectMode(CENTER)</code> change about how rectangles are drawn?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch02-fq1" value="a"> It centers the canvas</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq1" value="b" data-correct> The (x, y) arguments to rect() specify the center instead of the top-left corner</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq1" value="c"> It draws the rectangle at the center of the canvas</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq1" value="d"> It changes the coordinate system origin to the center</label></li>
+          </ul>
+          <div class="explanation">
+            <p>By default, <code>rect(x, y, w, h)</code> positions the rectangle with its top-left corner at (x, y). After calling <code>rectMode(CENTER)</code>, the (x, y) values specify the <em>center</em> of the rectangle. This is essential when rotating shapes around their centers.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch02-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">Georg Nees&rsquo; <em>Schotter</em> was first exhibited in which decade?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch02-fq2" value="a"> 1950s</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq2" value="b" data-correct> 1960s</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq2" value="c"> 1970s</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq2" value="d"> 1980s</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Georg Nees created <em>Schotter</em> in 1968, and his first computer art exhibition was at the University of Stuttgart in 1965. He was one of the earliest pioneers of algorithmic art.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch02-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">What is the Kolmogorov complexity of a truly random 1000-bit string?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch02-fq3" value="a"> 0 bits (it has no pattern)</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq3" value="b"> 500 bits (half the length)</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq3" value="c" data-correct> Approximately 1000 bits (the shortest program must contain the entire string)</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq3" value="d"> It is undefined for random strings</label></li>
+          </ul>
+          <div class="explanation">
+            <p>A truly random string has no compressible patterns. The shortest program to produce it must essentially contain the string itself (plus a small constant for the &ldquo;print&rdquo; instruction). Therefore, its Kolmogorov complexity is approximately equal to its length.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch02-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">How many leaf nodes does a binary fractal tree have if it recurses to depth 8?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch02-fq4" value="a"> 8</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq4" value="b"> 16</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq4" value="c"> 128</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq4" value="d" data-correct> 256</label></li>
+          </ul>
+          <div class="explanation">
+            <p>A binary tree (each branch splits into 2) at depth $d$ has $2^d$ leaf nodes. At depth 8: $2^8 = 256$ leaves. This exponential growth is characteristic of tree recursion and is why fractal trees look so complex despite being generated by short programs.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch02-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">Which compression algorithm assigns shorter binary codes to more frequent symbols?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch02-fq5" value="a"> Run-Length Encoding (RLE)</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq5" value="b" data-correct> Huffman coding</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq5" value="c"> LZ77</label></li>
+            <li class="option"><label><input type="radio" name="ch02-fq5" value="d"> Base64 encoding</label></li>
+          </ul>
+          <div class="explanation">
+            <p>Huffman coding builds a binary tree where frequent symbols are near the root (short codes) and rare symbols are far from the root (long codes). RLE replaces runs of identical values. LZ77 finds repeated sequences. Base64 is an encoding, not a compression algorithm.</p>
+          </div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===================================================================
+           CHAPTER NAVIGATION
+           =================================================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch01/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 1: Introduction to Creative Coding</span>
+        </a>
+        <a href="../ch03/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 3: Iteration, Chaos &amp; Fractals</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

@@ -1,0 +1,2802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 3: Iteration, Chaos &amp; Fractals — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch03">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 3: Iteration, Chaos &amp; Fractals</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 3: Iteration, Chaos &amp; Fractals</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; From simple feedback loops to the infinite complexity of the Mandelbrot set, rendered on both CPU and GPU.</p>
+
+      <p>This chapter is the mathematical heart of the course. We begin with the simplest possible concept &mdash; repeating a calculation &mdash; and follow the consequences to their astonishing conclusion: shapes of infinite complexity that emerge from a few characters of algebra. Along the way, we encounter chaos theory, complex numbers, fractal geometry, and GPU programming. Each builds on the last, and by the end you will have written code that renders one of the most famous images in all of mathematics.</p>
+
+      <p>The path we follow mirrors the historical development of these ideas. Mathematicians spent centuries developing the tools of sequences and series. In the 1800s, the theory of complex numbers matured. In the 1960s, Lorenz accidentally discovered chaos. And in the 1980s, Mandelbrot used computers to visualize fractals for the first time. We compress these centuries into a single chapter, ending with GPU shaders that render fractals in real time &mdash; something that would have seemed like magic to mathematicians just 40 years ago.</p>
+
+      <!-- ===============================================================
+           SECTION 3.1 -- SEQUENCES AND SERIES
+           =============================================================== -->
+      <h2 id="sequences-series">3.1 Sequences and Series</h2>
+
+      <p>Before we can understand fractals, we need the mathematical language of <strong>sequences</strong> and <strong>series</strong>. These concepts tell us how repeated processes behave over time &mdash; whether they settle down, blow up, or oscillate forever. While these may seem like abstract mathematical concepts, they are the precise tools we need to answer the question at the heart of the Mandelbrot set: "does this sequence stay bounded?"</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Sequence</strong> &mdash; An ordered list of numbers $a_1, a_2, a_3, \ldots$ generated by some rule. Each number $a_n$ is called a <em>term</em>, and $n$ is its <em>index</em>.</p>
+      </div>
+
+      <h3>Arithmetic Sequences</h3>
+
+      <p>An <strong>arithmetic sequence</strong> has a constant difference $d$ between consecutive terms:</p>
+
+      <p>$$a_n = a_1 + (n-1)d$$</p>
+
+      <p>For example, $2, 5, 8, 11, 14, \ldots$ is arithmetic with $a_1 = 2$ and $d = 3$. The <strong>partial sum</strong> of the first $n$ terms of an arithmetic sequence is:</p>
+
+      <p>$$S_n = \frac{n}{2}(a_1 + a_n) = \frac{n}{2}\bigl(2a_1 + (n-1)d\bigr)$$</p>
+
+      <p>The famous story of young Carl Friedrich Gauss summing $1 + 2 + 3 + \cdots + 100$ uses this formula: $S_{100} = \frac{100}{2}(1 + 100) = 5050$.</p>
+
+      <h3>Geometric Sequences</h3>
+
+      <p>A <strong>geometric sequence</strong> has a constant ratio $r$ between consecutive terms:</p>
+
+      <p>$$a_n = a_1 \cdot r^{\,n-1}$$</p>
+
+      <p>For example, $1, \tfrac{1}{2}, \tfrac{1}{4}, \tfrac{1}{8}, \ldots$ is geometric with $a_1 = 1$ and $r = \tfrac{1}{2}$. The partial sum is:</p>
+
+      <p>$$S_n = a_1 \cdot \frac{1 - r^n}{1 - r} \quad (r \neq 1)$$</p>
+
+      <p>When $|r| &lt; 1$, the infinite sum converges:</p>
+
+      <p>$$S_\infty = \frac{a_1}{1 - r}$$</p>
+
+      <p>So $1 + \tfrac{1}{2} + \tfrac{1}{4} + \tfrac{1}{8} + \cdots = \frac{1}{1 - 1/2} = 2$. This is the mathematical foundation for understanding which iterations stay bounded and which escape to infinity.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">Key Concept</div>
+        <p>The Mandelbrot set is fundamentally about classifying whether a sequence converges or diverges. For each point in the complex plane, we generate a sequence through iteration and ask: does it stay bounded, or does it escape to infinity?</p>
+      </div>
+
+      <h3>Series and Partial Sums</h3>
+
+      <p>A <strong>series</strong> is the sum of the terms of a sequence. We distinguish between:</p>
+
+      <ul>
+        <li><strong>Finite series</strong> (partial sums): $S_n = \displaystyle\sum_{k=1}^{n} a_k$</li>
+        <li><strong>Infinite series</strong>: $S = \displaystyle\sum_{k=1}^{\infty} a_k = \lim_{n \to \infty} S_n$</li>
+      </ul>
+
+      <p>The infinite series exists (converges) only if the sequence of partial sums approaches a finite limit.</p>
+
+      <h3>The Harmonic Series: A Subtle Trap</h3>
+
+      <p>The <strong>harmonic series</strong> $\sum_{n=1}^{\infty} \tfrac{1}{n} = 1 + \tfrac{1}{2} + \tfrac{1}{3} + \tfrac{1}{4} + \cdots$ is one of the most important examples in mathematics. Even though each term shrinks toward zero, the sum grows without bound. The proof (by Nicole Oresme, c. 1350) groups terms cleverly:</p>
+
+      <p>$$1 + \frac{1}{2} + \underbrace{\frac{1}{3} + \frac{1}{4}}_{&gt; 1/2} + \underbrace{\frac{1}{5} + \frac{1}{6} + \frac{1}{7} + \frac{1}{8}}_{&gt; 1/2} + \cdots$$</p>
+
+      <p>Each group of $2^k$ terms sums to more than $\tfrac{1}{2}$, so the total exceeds $\tfrac{1}{2} \cdot k$ for any $k$ &mdash; it grows without limit. However, it grows <em>extraordinarily</em> slowly: you need about $e^{10} \approx 22{,}000$ terms for the sum to exceed $10$, and about $e^{100} \approx 10^{43}$ terms to exceed $100$.</p>
+
+      <p>This matters for fractals because it teaches us that convergence of <em>terms</em> does not guarantee convergence of <em>sums</em>. We need to be careful about what "bounded" means.</p>
+
+      <h3>Zeno's Paradox and Geometric Series</h3>
+
+      <p>The ancient Greek philosopher Zeno of Elea (c. 490&ndash;430 BCE) posed a famous paradox: to walk across a room, you must first cross half the distance, then half the remaining distance, then half again, and so on. This requires completing infinitely many tasks &mdash; which seems impossible.</p>
+
+      <p>The resolution is the convergence of the geometric series:</p>
+
+      <p>$$\frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \frac{1}{16} + \cdots = \frac{1/2}{1 - 1/2} = 1$$</p>
+
+      <p>The infinitely many steps take a finite total distance (and time). This is precisely the kind of thinking we need for the Mandelbrot set: we ask whether <em>infinitely</em> many iterations produce a bounded result, and the mathematics of series gives us the framework to answer.</p>
+
+      <h3>Power Series and Radius of Convergence</h3>
+
+      <p>A <strong>power series</strong> $\sum_{n=0}^{\infty} a_n x^n$ converges for some values of $x$ and diverges for others. The <strong>radius of convergence</strong> $R$ defines the boundary: the series converges absolutely for $|x| &lt; R$ and diverges for $|x| &gt; R$.</p>
+
+      <p>This concept directly parallels the Mandelbrot set: for the iteration $z^2 + c$, we are asking whether the "orbit" of $z$ stays within a radius of convergence (the escape radius $2$). Points inside the set are like values inside the radius of convergence; points outside are like values where the series diverges.</p>
+
+      <h3>Telescoping Series</h3>
+
+      <p>A <strong>telescoping series</strong> is one where most terms cancel when the partial sum is expanded. For example:</p>
+
+      <p>$$\sum_{n=1}^{N} \frac{1}{n(n+1)} = \sum_{n=1}^{N} \left(\frac{1}{n} - \frac{1}{n+1}\right) = 1 - \frac{1}{N+1} \to 1$$</p>
+
+      <p>The intermediate terms cancel like the sections of a collapsing telescope, leaving only the first and last terms. This elegant technique is used in proofs about convergence and in some fractal coloring algorithms where we need to compute sums efficiently.</p>
+
+      <h3>Connecting to Computation</h3>
+
+      <p>In a computer program, we can never compute an infinite series exactly. We always truncate at some finite $N$ (the <code>maxIter</code> parameter in our Mandelbrot code). The key question is: is $N$ large enough that our approximation is good?</p>
+
+      <p>For the Mandelbrot set, we are not computing a sum but classifying behavior &mdash; does the orbit escape or stay bounded? We use two heuristics:</p>
+
+      <ol>
+        <li><strong>Early termination:</strong> If $|z_n| &gt; 2$, the orbit will definitely diverge. We stop immediately.</li>
+        <li><strong>Maximum iterations:</strong> If $|z_n| \leq 2$ after <code>maxIter</code> steps, we <em>assume</em> the orbit is bounded. Higher <code>maxIter</code> values give more accurate boundaries but cost more computation.</li>
+      </ol>
+
+      <p>Near the boundary of the Mandelbrot set, orbits can remain bounded for thousands of iterations before finally escaping. This is why zooming into the boundary requires increasing <code>maxIter</code> proportionally &mdash; the fractal&rsquo;s infinite detail demands infinite patience (or infinite iterations) to resolve perfectly.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">Common Mistake</div>
+        <p>Using too few iterations (<code>maxIter</code>) is the most common source of poor Mandelbrot renders. With <code>maxIter = 20</code>, the boundary looks smooth and boring. With <code>maxIter = 100</code>, fine detail appears. With <code>maxIter = 1000</code>, extraordinary filaments and spirals emerge. When zooming in, always increase <code>maxIter</code> to match the zoom level.</p>
+      </div>
+
+      <h3>Visualizing Partial Sums</h3>
+
+      <p>Run this sketch to see how the partial sums of a geometric series accumulate toward their limit:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Geometric Series Partial Sums</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  background(245);
+  textFont('monospace');
+
+  let r = 0.5;       // ratio -- try 0.7, 0.9, or 1.5
+  let a1 = 1;
+  let limit = a1 / (1 - r);  // theoretical infinite sum
+  let sum = 0;
+  let n = 20;
+
+  // Draw axes
+  stroke(150);
+  line(40, 360, 380, 360);
+  line(40, 360, 40, 20);
+
+  // Draw the limit line
+  let limitY = map(limit, 0, limit * 1.2, 360, 40);
+  stroke(255, 0, 0, 100);
+  strokeWeight(1);
+  line(40, limitY, 380, limitY);
+  noStroke();
+  fill(255, 0, 0);
+  textSize(11);
+  text('limit = ' + limit.toFixed(2), 45, limitY - 5);
+
+  // Plot partial sums as blue dots
+  fill(30, 100, 220);
+  noStroke();
+  for (let k = 0; k < n; k++) {
+    sum += a1 * pow(r, k);
+    let x = map(k, 0, n - 1, 60, 370);
+    let y = map(sum, 0, limit * 1.2, 360, 40);
+    ellipse(x, y, 8, 8);
+  }
+
+  // Labels
+  fill(0);
+  textSize(12);
+  text('Partial sums: 1 + 1/2 + 1/4 + ...', 60, 25);
+  textSize(10);
+  text('n (terms)', 340, 378);
+  text('Sum', 10, 30);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.2 -- CONVERGENCE AND DIVERGENCE
+           =============================================================== -->
+      <h2 id="convergence-divergence">3.2 Convergence and Divergence</h2>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Convergence</strong> &mdash; A sequence $\{a_n\}$ <em>converges</em> to a limit $L$ if, for every $\varepsilon &gt; 0$, there exists an integer $N$ such that $|a_n - L| &lt; \varepsilon$ for all $n &gt; N$. We write $\lim_{n \to \infty} a_n = L$.</p>
+      </div>
+
+      <p>In plain language: no matter how tiny a target band you draw around $L$, the sequence eventually enters that band and never leaves. Think of it like a dartboard with an infinitely shrinkable bullseye &mdash; no matter how small you make the bullseye, all darts thrown after some point $N$ will land inside it.</p>
+
+      <h3>The Epsilon-N Definition Visualized</h3>
+
+      <p>Consider the sequence $a_n = 1/n$. We claim it converges to $L = 0$. To verify:</p>
+
+      <ul>
+        <li>Choose $\varepsilon = 0.1$. Then $|a_n - 0| = 1/n &lt; 0.1$ whenever $n &gt; 10$. So $N = 10$.</li>
+        <li>Choose $\varepsilon = 0.01$. Then $1/n &lt; 0.01$ whenever $n &gt; 100$. So $N = 100$.</li>
+        <li>Choose $\varepsilon = 0.001$. Then $N = 1000$.</li>
+      </ul>
+
+      <p>No matter how small we make $\varepsilon$, we can always find a large enough $N$. This is exactly what the definition requires.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Divergence</strong> &mdash; A sequence <em>diverges</em> if it does not converge. The terms may grow without bound ($a_n \to \pm\infty$) or fail to settle on any single value (oscillation).</p>
+      </div>
+
+      <h3>Examples</h3>
+
+      <ul>
+        <li><strong>Converges:</strong> $1, \tfrac{1}{2}, \tfrac{1}{4}, \tfrac{1}{8}, \ldots \to 0$. Each term is half the previous.</li>
+        <li><strong>Diverges (growth):</strong> $1, 2, 4, 8, 16, \ldots \to \infty$. Exponential growth.</li>
+        <li><strong>Diverges (oscillation):</strong> $1, -1, 1, -1, \ldots$ bounces forever without settling.</li>
+        <li><strong>Subtle divergence:</strong> The harmonic series $\sum 1/n$ diverges even though each term approaches $0$. The partial sums grow without bound, just very slowly.</li>
+      </ul>
+
+      <h3>Tests for Convergence</h3>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: Geometric Series Test</div>
+        <p>The geometric series $\displaystyle\sum_{n=0}^{\infty} ar^n$ converges to $\dfrac{a}{1-r}$ if $|r| &lt; 1$, and diverges if $|r| \geq 1$.</p>
+      </div>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: Divergence Test (Necessary Condition)</div>
+        <p>If $\displaystyle\lim_{n \to \infty} a_n \neq 0$, then $\sum a_n$ diverges. (Warning: the converse is <em>not</em> true &mdash; $\lim a_n = 0$ does <em>not</em> guarantee convergence, as the harmonic series shows.)</p>
+      </div>
+
+      <p><strong>Ratio Test:</strong> For a series $\sum a_n$, if $\lim_{n \to \infty} |a_{n+1}/a_n| = L$, then the series converges if $L &lt; 1$ and diverges if $L &gt; 1$.</p>
+
+      <p><strong>Comparison Test:</strong> If $0 \leq a_n \leq b_n$ for all $n$ and $\sum b_n$ converges, then $\sum a_n$ converges. Conversely, if $\sum a_n$ diverges, then $\sum b_n$ diverges.</p>
+
+      <p>For our fractal purposes, the key test is simple: if the magnitudes of our iterated values stay below some bound (we use $|z| \leq 2$ for the Mandelbrot set), the sequence is bounded and potentially convergent. If $|z|$ exceeds $2$, it will diverge to infinity.</p>
+
+      <h3>Interactive: Convergence vs. Divergence</h3>
+
+      <p>This sketch plots three sequences simultaneously. Watch their different behaviors:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Convergent, Divergent, and Oscillating Sequences</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  background(245);
+  textFont('monospace');
+
+  let n = 40;
+  let seqA = [];  // converges: (0.9)^n
+  let seqB = [];  // diverges: 1.1^n
+  let seqC = [];  // oscillates: (-0.8)^n
+
+  for (let i = 0; i < n; i++) {
+    seqA.push(pow(0.9, i));
+    seqB.push(pow(1.1, i));
+    seqC.push(pow(-0.8, i));
+  }
+
+  // Axes
+  stroke(200); strokeWeight(1);
+  line(40, 300, 390, 300);
+  line(40, 20, 40, 380);
+
+  // Converging (blue)
+  noFill(); stroke(30, 100, 220); strokeWeight(2);
+  beginShape();
+  for (let i = 0; i < n; i++) {
+    vertex(map(i, 0, n-1, 50, 380), map(seqA[i], -2, 6, 380, 20));
+  }
+  endShape();
+
+  // Diverging (red)
+  stroke(220, 50, 50);
+  beginShape();
+  for (let i = 0; i < n; i++) {
+    vertex(map(i, 0, n-1, 50, 380), map(min(seqB[i], 6), -2, 6, 380, 20));
+  }
+  endShape();
+
+  // Oscillating (green)
+  stroke(50, 180, 80);
+  beginShape();
+  for (let i = 0; i < n; i++) {
+    vertex(map(i, 0, n-1, 50, 380), map(seqC[i], -2, 6, 380, 20));
+  }
+  endShape();
+
+  // Legend
+  noStroke(); textSize(11);
+  fill(30, 100, 220); text('(0.9)^n  converges', 200, 30);
+  fill(220, 50, 50);  text('(1.1)^n  diverges', 200, 48);
+  fill(50, 180, 80);  text('(-0.8)^n oscillates', 200, 66);
+  fill(0); textSize(10); text('n', 375, 315);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 1 -->
+      <div class="quiz" data-id="ch03-q1">
+        <div class="quiz-header">Knowledge Check</div>
+        <p class="question">Which of the following sequences converges?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch03-q1" value="a"> $1, 2, 4, 8, 16, \ldots$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q1" value="b"> $1, -1, 1, -1, 1, \ldots$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q1" value="c" data-correct> $1, \tfrac{1}{2}, \tfrac{1}{4}, \tfrac{1}{8}, \ldots$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q1" value="d"> $1, 2, 3, 4, 5, \ldots$</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The sequence $1, \tfrac{1}{2}, \tfrac{1}{4}, \tfrac{1}{8}, \ldots$ converges to $0$. It is geometric with ratio $r = \tfrac{1}{2}$, and since $|r| &lt; 1$ the terms approach zero. Options (a) and (d) diverge to infinity, and (b) oscillates without settling.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.3 -- ITERATION AND FEEDBACK
+           =============================================================== -->
+      <h2 id="iteration-feedback">3.3 Iteration and Feedback</h2>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Iteration</strong> &mdash; The repetition of a process where the output of each step becomes the input to the next. Given a function $f$ and a starting value $x_0$, we define the <em>recurrence relation</em>: $$x_{n+1} = f(x_n)$$</p>
+      </div>
+
+      <p>Iteration is the engine of chaos and fractals. A simple rule, applied repeatedly, can produce behavior ranging from calm convergence to wild, unpredictable chaos. In computing, iteration is ubiquitous &mdash; every loop, every recursive algorithm, every simulation timestep is an instance of iteration.</p>
+
+      <blockquote>
+        <p>"...the repetition of a process in order to generate a (possibly unbounded) sequence of outcomes. Each repetition of the process is a single iteration, and the outcome of each iteration is then the starting point of the next iteration." &mdash; Wikipedia</p>
+      </blockquote>
+
+      <h3>Feedback</h3>
+
+      <p><strong>Feedback</strong> occurs when the output of a system is routed back as input, forming a loop. Audio feedback &mdash; a microphone picking up its own speaker output &mdash; is a familiar example. The screech you hear results from a signal being amplified, output, captured, and amplified again: iteration with feedback.</p>
+
+      <p>In code, a <code>for</code> loop with the assignment <code>x = f(x)</code> is exactly this pattern: the output of <code>f</code> becomes the next input.</p>
+
+      <h3>Fixed Points</h3>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Fixed Point</strong> &mdash; A value $x^*$ where $f(x^*) = x^*$. Applying the function does not change the value. A fixed point is <em>attracting</em> (stable) if nearby iterations converge toward it, and <em>repelling</em> (unstable) if they move away.</p>
+      </div>
+
+      <p>The stability criterion is elegant: if $|f'(x^*)| &lt; 1$, the fixed point is attracting. If $|f'(x^*)| &gt; 1$, it is repelling. When $|f'(x^*)| = 1$, the behavior is marginal and requires more careful analysis.</p>
+
+      <h3>Finding Fixed Points</h3>
+
+      <p>To find the fixed points of a function $f$, we solve $f(x) = x$, or equivalently $f(x) - x = 0$. For example:</p>
+
+      <ul>
+        <li><strong>$f(x) = x^2$:</strong> Solve $x^2 = x$, giving $x(x-1) = 0$, so $x^* = 0$ or $x^* = 1$. Since $f'(x) = 2x$, we have $|f'(0)| = 0 &lt; 1$ (super-attracting) and $|f'(1)| = 2 &gt; 1$ (repelling).</li>
+        <li><strong>$f(x) = 2x(1-x)$:</strong> (logistic map with $r=2$) Solve $2x(1-x) = x$, giving $2x - 2x^2 = x$, so $x(1 - 2x) = 0$. Fixed points: $x^* = 0$ and $x^* = 1/2$. Since $f'(x) = 2 - 4x$, we get $|f'(0)| = 2 &gt; 1$ (repelling) and $|f'(1/2)| = 0$ (super-attracting).</li>
+        <li><strong>$f(x) = \cos(x)$:</strong> Solve $\cos(x) = x$ numerically: $x^* \approx 0.7390851332$. Since $|f'(x^*)| = |-\sin(0.739)| \approx 0.674 &lt; 1$, the fixed point is attracting.</li>
+      </ul>
+
+      <p>Examples:</p>
+      <ul>
+        <li>$\cos(0.7390851\ldots) = 0.7390851\ldots$ &mdash; attracting fixed point of cosine. Since $|\!-\!\sin(0.739)| \approx 0.674 &lt; 1$, convergence is quick.</li>
+        <li>$\sin(0) = 0$ &mdash; attracting fixed point of sine. Since $|\cos(0)| = 1$, convergence is extremely slow (marginal stability).</li>
+        <li>$2 \cdot 0 = 0$ &mdash; fixed point of doubling, but repelling since $|f'(0)| = 2 &gt; 1$. Any tiny perturbation gets amplified.</li>
+      </ul>
+
+      <h3>Periodic Orbits and $n$-Cycles</h3>
+
+      <p>Not every iteration converges to a fixed point. Sometimes the values cycle through a repeating pattern:</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>$n$-Cycle (Periodic Orbit)</strong> &mdash; A sequence of $n$ distinct values $x_1, x_2, \ldots, x_n$ such that $f(x_1) = x_2, f(x_2) = x_3, \ldots, f(x_n) = x_1$. Equivalently, $f^n(x_1) = x_1$ where $f^n$ denotes applying $f$ a total of $n$ times. A <strong>2-cycle</strong> alternates between two values; a <strong>3-cycle</strong> visits three values before repeating.</p>
+      </div>
+
+      <p>For the logistic map $f(x) = rx(1-x)$, increasing $r$ past $3.0$ causes the stable fixed point to lose stability and give birth to a stable 2-cycle. The orbit bounces back and forth between two values. As $r$ increases further, this 2-cycle itself bifurcates into a 4-cycle, then an 8-cycle, and so on &mdash; the period-doubling cascade we explore in the next section.</p>
+
+      <p>A remarkable theorem due to Li and Yorke (1975) states: <strong>"Period three implies chaos."</strong> If a one-dimensional map has a 3-cycle, then it must also have periodic orbits of every period $n$, and must exhibit chaotic behavior for some starting points. This theorem, whose title became one of the most famous phrases in dynamical systems theory, shows that even the existence of a single period-3 orbit guarantees the full complexity of chaos.</p>
+
+      <h3>Interactive: Iteration with Different Rules</h3>
+
+      <div class="code-runner" data-height="320">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Iteration Convergence Demo</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 300);
+  background(245);
+  textFont('monospace');
+  textSize(11);
+
+  // Change 'rule' to try different functions:
+  //   'cos' -> converges to 0.7390851...
+  //   'sin' -> converges very slowly to 0
+  //   'double' -> diverges!
+  let x = 1.2;
+  let rule = 'cos';
+
+  fill(0);
+  text('Iterating f(x) = ' + rule + '(x),  x0 = ' + x, 10, 20);
+
+  for (let i = 0; i < 60; i++) {
+    if (rule === 'cos') x = cos(x);
+    else if (rule === 'sin') x = sin(x);
+    else x = x * 2;
+
+    let px = map(i, 0, 59, 30, 390);
+    let py = map(x, -2, 2, 280, 40);
+    py = constrain(py, 30, 290);
+
+    noStroke();
+    fill(30, 100, 220);
+    ellipse(px, py, 5, 5);
+
+    if (i < 10) {
+      fill(80); text('x_' + (i+1) + ' = ' + x.toFixed(8), 10, 50 + i * 14);
+    }
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <h3>Convergence Speed</h3>
+
+      <p>Not all convergent iterations converge at the same rate. The speed depends on the derivative of $f$ at the fixed point:</p>
+
+      <ul>
+        <li><strong>Fast convergence</strong> ($|f'(x^*)| \ll 1$): $x_{n+1} = \cos(x_n)$ converges to $0.7390851\ldots$ within about 50 iterations. Since $|f'(x^*)| = |\!-\!\sin(0.739)| \approx 0.674$, each error is multiplied by roughly $0.674$ per step.</li>
+        <li><strong>Slow convergence</strong> ($|f'(x^*)| \approx 1$): $x_{n+1} = \sin(x_n)$ converges to $0$, but $|f'(0)| = |\cos(0)| = 1$ (marginal). Even after 1000 iterations, $x$ has only decreased to about $0.044$. The convergence rate is <em>sub-linear</em>.</li>
+        <li><strong>Divergence</strong> ($|f'(x^*)| &gt; 1$): $x_{n+1} = 2x_n$ has a fixed point at $0$ with $|f'(0)| = 2$. Any perturbation doubles each step &mdash; exponential divergence.</li>
+      </ul>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: Linear Convergence</div>
+        <p>If $|f'(x^*)| = \rho &lt; 1$ at a fixed point $x^*$, then the iteration $x_{n+1} = f(x_n)$ converges <em>linearly</em> with rate $\rho$. That is, the error satisfies $|x_{n+1} - x^*| \approx \rho \cdot |x_n - x^*|$ for $x_n$ near $x^*$. The smaller $\rho$ is, the faster the convergence.</p>
+      </div>
+
+      <h3>Cobweb Plots</h3>
+
+      <p>A <strong>cobweb plot</strong> (also called a <strong>staircase diagram</strong>) is a graphical tool for visualizing iteration. On the same axes we plot both the function $y = f(x)$ and the identity line $y = x$. Starting from $x_0$:</p>
+
+      <ol>
+        <li>Go <strong>vertically</strong> to the curve $y = f(x)$: this gives $f(x_0)$.</li>
+        <li>Go <strong>horizontally</strong> to the line $y = x$: this transfers the new value back to the x-axis.</li>
+        <li>Repeat.</li>
+      </ol>
+
+      <p>If the cobweb spirals inward toward the intersection of the curve and the line, the iteration converges to that fixed point. If it spirals outward, the iteration diverges.</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Interactive Cobweb Plot</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(250);
+  let margin = 40, sz = 320;
+  let lo = -0.5, hi = 2.0;
+
+  // Axes
+  stroke(200); strokeWeight(1);
+  line(margin, margin, margin, margin + sz);
+  line(margin, margin + sz, margin + sz, margin + sz);
+
+  // Identity line y = x
+  stroke(180);
+  line(
+    map(lo, lo, hi, margin, margin+sz), map(lo, lo, hi, margin+sz, margin),
+    map(hi, lo, hi, margin, margin+sz), map(hi, lo, hi, margin+sz, margin)
+  );
+
+  // Function curve y = cos(x)
+  stroke(30, 100, 220); strokeWeight(2); noFill();
+  beginShape();
+  for (let px = margin; px <= margin + sz; px++) {
+    let xv = map(px, margin, margin + sz, lo, hi);
+    let yv = cos(xv);
+    vertex(px, map(yv, lo, hi, margin + sz, margin));
+  }
+  endShape();
+
+  // Cobweb from mouse-controlled x0
+  let x = map(mouseX, 0, width, 0.1, 1.9);
+  x = constrain(x, 0.01, 1.99);
+
+  stroke(220, 60, 60); strokeWeight(1);
+  for (let i = 0; i < 20; i++) {
+    let fx = cos(x);
+    let px1 = map(x, lo, hi, margin, margin + sz);
+    let py1 = map(x, lo, hi, margin + sz, margin);
+    let py2 = map(fx, lo, hi, margin + sz, margin);
+    let px2 = map(fx, lo, hi, margin, margin + sz);
+
+    line(px1, py1, px1, py2);  // vertical to curve
+    line(px1, py2, px2, py2);  // horizontal to y=x
+    x = fx;
+  }
+
+  // Labels
+  noStroke(); fill(0); textFont('monospace'); textSize(11);
+  text('f(x) = cos(x)', 260, 30);
+  text('Move mouse to change x0', 150, margin + sz + 20);
+  fill(30, 100, 220); text('y = f(x)', margin + sz - 55, margin + 20);
+  fill(180); text('y = x', margin + sz - 35, margin + 60);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 2 -->
+      <div class="quiz" data-id="ch03-q2">
+        <div class="quiz-header">Knowledge Check</div>
+        <p class="question">A <strong>fixed point</strong> of a function $f$ is a value $x^*$ where:</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch03-q2" value="a"> $f(x^*) = 0$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q2" value="b"> $f'(x^*) = 0$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q2" value="c" data-correct> $f(x^*) = x^*$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q2" value="d"> $f(x^*) = 1$</label></li>
+        </ul>
+        <div class="explanation">
+          <p>A fixed point is where applying the function returns the same value: $f(x^*) = x^*$. At a fixed point, iteration stays put. Note that $f(x^*) = 0$ describes a <em>root</em> or <em>zero</em> of $f$, which is a different concept entirely.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.4 -- THE LOGISTIC MAP
+           =============================================================== -->
+      <h2 id="logistic-map">3.4 The Logistic Map</h2>
+
+      <p>The <strong>logistic map</strong> is the simplest mathematical model that produces genuinely chaotic behavior. It is defined by:</p>
+
+      <p>$$x_{n+1} = r \, x_n \,(1 - x_n)$$</p>
+
+      <p>where $x_n \in [0, 1]$ represents a population (as a fraction of some carrying capacity) and $r \in [0, 4]$ is a growth-rate parameter. Despite its simplicity &mdash; just one variable, one parameter, and one line of algebra &mdash; the logistic map exhibits the full spectrum of dynamical behavior: fixed points, periodic orbits, period-doubling cascades, and genuine chaos.</p>
+
+      <p>The logistic map can be understood ecologically: the term $rx_n$ represents exponential growth (reproduction), while the factor $(1 - x_n)$ represents density-dependent limitation (competition for resources). When the population is small ($x_n \approx 0$), growth is nearly exponential. When it approaches the carrying capacity ($x_n \approx 1$), growth slows and may reverse.</p>
+
+      <h3>Fixed Points of the Logistic Map</h3>
+
+      <p>To find the fixed points, we solve $rx(1-x) = x$:</p>
+
+      <p>$$rx - rx^2 = x \implies x(r - rx - 1) = 0 \implies x(r - 1 - rx) = 0$$</p>
+
+      <p>The solutions are:</p>
+      <ul>
+        <li>$x^*_1 = 0$ (trivial fixed point, always exists)</li>
+        <li>$x^*_2 = 1 - 1/r$ (nontrivial fixed point, exists for $r &gt; 1$)</li>
+      </ul>
+
+      <p>The stability of the nontrivial fixed point is determined by $f'(x^*_2) = r(1 - 2x^*_2) = r \cdot (1 - 2 + 2/r) = 2 - r$. So the fixed point is stable when $|2 - r| &lt; 1$, i.e., when $1 &lt; r &lt; 3$. At $r = 3$, the fixed point loses stability and the first period doubling occurs.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">Historical Note</div>
+        <p>Biologist <strong>Robert May</strong> popularized the logistic map in a landmark 1976 <em>Nature</em> paper. He showed that even the simplest ecological models can produce extraordinarily complex dynamics, arguing that "not only in research, but also in the everyday world of politics and economics, we would all be better off if more people realized that simple nonlinear systems do not necessarily possess simple dynamical properties."</p>
+      </div>
+
+      <h3>Behavior as $r$ Changes</h3>
+
+      <p>The logistic map shows a dramatic transition from order to chaos as $r$ increases:</p>
+
+      <ul>
+        <li><strong>$0 &lt; r &lt; 1$:</strong> The population dies out. The sequence converges to $x = 0$.</li>
+        <li><strong>$1 &lt; r &lt; 3$:</strong> The population settles to a stable equilibrium $x^* = 1 - 1/r$.</li>
+        <li><strong>$3 &lt; r &lt; 3.449\ldots$:</strong> The fixed point becomes unstable. The sequence oscillates between <strong>two values</strong> (period-2 cycle).</li>
+        <li><strong>$3.449 &lt; r &lt; 3.544\ldots$:</strong> Period doubling: the sequence oscillates between <strong>four values</strong>.</li>
+        <li><strong>$r \approx 3.5699\ldots$:</strong> After infinitely many period doublings, the system becomes <strong>chaotic</strong>. The sequence never repeats.</li>
+        <li><strong>$r &gt; 3.5699\ldots$:</strong> Mostly chaotic, but with windows of periodicity (e.g., a period-3 window near $r = 3.83$).</li>
+      </ul>
+
+      <h3>The Feigenbaum Constant</h3>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: Feigenbaum Universality</div>
+        <p>Let $r_n$ be the parameter value at which the $n$-th period doubling occurs. The ratio of successive bifurcation intervals converges to the <strong>Feigenbaum constant</strong>: $$\delta = \lim_{n \to \infty} \frac{r_n - r_{n-1}}{r_{n+1} - r_n} = 4.669201609\ldots$$ This constant is <em>universal</em>: it appears in every one-dimensional map undergoing period doubling, regardless of the specific function. It is a fundamental constant of chaos theory, analogous to $\pi$ in geometry or $e$ in analysis.</p>
+      </div>
+
+      <h3>Period Doubling: The Route to Chaos</h3>
+
+      <p>The <strong>period-doubling cascade</strong> is one of the most remarkable phenomena in nonlinear dynamics. As $r$ increases past $3$, the single stable fixed point splits into a cycle of period 2. Then the period-2 cycle splits into period 4, then 8, then 16, and so on. The bifurcation values are:</p>
+
+      <table>
+        <thead>
+          <tr><th>Bifurcation</th><th>$r_n$</th><th>Period after</th><th>Ratio $\frac{r_n - r_{n-1}}{r_{n+1} - r_n}$</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1st</td><td>3.0000</td><td>2</td><td>&mdash;</td></tr>
+          <tr><td>2nd</td><td>3.4495</td><td>4</td><td>&mdash;</td></tr>
+          <tr><td>3rd</td><td>3.5441</td><td>8</td><td>4.7514</td></tr>
+          <tr><td>4th</td><td>3.5644</td><td>16</td><td>4.6562</td></tr>
+          <tr><td>5th</td><td>3.5688</td><td>32</td><td>4.6684</td></tr>
+          <tr><td>$\infty$</td><td>3.5699...</td><td>chaos</td><td>$\delta = 4.6692...$</td></tr>
+        </tbody>
+      </table>
+
+      <p>The intervals between successive bifurcations shrink by a factor approaching $\delta \approx 4.669$. This means the cascade happens faster and faster, with infinitely many doublings packed into a finite range of $r$ values. At $r \approx 3.5699\ldots$ (the <strong>accumulation point</strong>), the system transitions to genuine chaos.</p>
+
+      <h3>Windows of Order in Chaos</h3>
+
+      <p>Even in the chaotic regime ($r &gt; 3.5699$), there are narrow "windows" where periodic behavior reappears. The most prominent is the <strong>period-3 window</strong> near $r = 3.83$. The mathematicians Li and Yorke proved a famous theorem in their 1975 paper titled simply "Period Three Implies Chaos": if a continuous map of the interval has a periodic orbit of period 3, it must also have periodic orbits of <em>every other period</em>, plus uncountably many non-periodic (chaotic) orbits. This paper gave the field its name.</p>
+
+      <p>The self-similar structure of the bifurcation diagram is itself fractal. If you zoom into any of the period-doubling cascades within the chaotic windows, you see a miniature copy of the entire diagram &mdash; the same self-similarity that characterizes the Mandelbrot set.</p>
+
+      <h3>Sensitivity to Initial Conditions in the Logistic Map</h3>
+
+      <p>At $r = 4$ (fully chaotic regime), the logistic map is equivalent to the <strong>Bernoulli shift</strong>, one of the simplest possible chaotic systems. Two orbits starting at $x_0 = 0.5000000$ and $x_0 = 0.5000001$ will diverge completely within about 50 iterations. This is sensitive dependence in action: a difference of one part in ten million grows to span the entire range $[0, 1]$.</p>
+
+      <p>This has profound practical implications: no finite-precision computer can predict the long-term behavior of the logistic map at $r = 4$. After enough iterations, rounding errors dominate and the computed orbit bears no relation to the "true" orbit. This is not a bug in the software &mdash; it is a fundamental property of the mathematics.</p>
+
+      <h3>The Logistic Map as Artistic Metaphor</h3>
+
+      <p>For artists and creative coders, the logistic map offers profound conceptual lessons:</p>
+
+      <ul>
+        <li><strong>Simple rules create complex output.</strong> The one-line formula $rx(1-x)$ produces the full spectrum from boring equilibrium to visual chaos. In generative art, the simplest algorithms often yield the richest results.</li>
+        <li><strong>Parameters are everything.</strong> The same rule with different values of $r$ produces completely different behavior. In creative coding, the "interesting" parameter ranges are often narrow and must be discovered through exploration.</li>
+        <li><strong>Order and chaos coexist.</strong> Within the chaotic regime, windows of periodicity appear. This interweaving of order and disorder is aesthetically compelling and mirrors patterns in music, visual art, and nature.</li>
+        <li><strong>Control is an illusion.</strong> Near the boundary between order and chaos, tiny parameter changes produce dramatically different outcomes. This teaches humility about prediction and control in complex systems.</li>
+      </ul>
+
+      <h3>The Bifurcation Diagram</h3>
+
+      <p>The <strong>bifurcation diagram</strong> plots the long-term values of $x$ (vertical axis) against the parameter $r$ (horizontal axis). It reveals the entire route from order to chaos in a single striking image:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Logistic Map Bifurcation Diagram</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+  pixelDensity(1);
+  noLoop();
+}
+
+function draw() {
+  background(255);
+  loadPixels();
+
+  let rMin = 2.5, rMax = 4.0;
+  let warmup = 200;
+  let plot = 200;
+
+  for (let px = 0; px < width; px++) {
+    let r = map(px, 0, width, rMin, rMax);
+    let x = 0.5;
+
+    // Discard transients
+    for (let i = 0; i < warmup; i++) {
+      x = r * x * (1 - x);
+    }
+
+    // Plot the attractor
+    for (let i = 0; i < plot; i++) {
+      x = r * x * (1 - x);
+      let py = floor(map(x, 0, 1, height - 1, 0));
+      if (py >= 0 && py < height) {
+        let idx = (py * width + px) * 4;
+        pixels[idx + 0] = max(0, pixels[idx + 0] - 15);
+        pixels[idx + 1] = max(0, pixels[idx + 1] - 15);
+        pixels[idx + 2] = max(0, pixels[idx + 2] - 8);
+        pixels[idx + 3] = 255;
+      }
+    }
+  }
+
+  updatePixels();
+
+  noStroke(); fill(0); textFont('monospace'); textSize(11);
+  text('Logistic Map Bifurcation Diagram', 10, 15);
+  textSize(9);
+  text('r = ' + rMin.toFixed(1), 5, height - 5);
+  text('r = ' + rMax.toFixed(1), width - 50, height - 5);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.5 -- CHAOS THEORY
+           =============================================================== -->
+      <h2 id="chaos-theory">3.5 Chaos Theory</h2>
+
+      <p>Chaos theory studies deterministic systems whose behavior is, for practical purposes, unpredictable. The system follows exact rules with zero randomness, yet tiny differences in starting conditions lead to completely different outcomes.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">Historical Note</div>
+        <p>Meteorologist <strong>Edward Lorenz</strong> discovered chaos accidentally in 1961. Restarting a weather simulation from rounded intermediate values (three decimal places instead of six) produced completely different weather patterns. The difference &mdash; about one part in a thousand &mdash; grew exponentially. James Gleick's 1987 bestseller <em>Chaos: Making a New Science</em> brought these ideas to a broad audience and remains the definitive popular introduction.</p>
+      </div>
+
+      <h3>The Butterfly Effect</h3>
+
+      <p>The <strong>butterfly effect</strong> &mdash; the idea that a butterfly flapping its wings in Brazil could set off a tornado in Texas &mdash; is the popular name for <strong>sensitive dependence on initial conditions</strong>:</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Sensitive Dependence on Initial Conditions</strong> &mdash; A dynamical system exhibits sensitive dependence if there exists a $\delta &gt; 0$ such that, for any point $x$ and any neighborhood of $x$ (no matter how small), there is a nearby point $y$ whose trajectory eventually diverges from that of $x$ by at least $\delta$. Formally: for all $\varepsilon &gt; 0$ there exist $y$ with $|x - y| &lt; \varepsilon$ and $n$ with $|f^n(x) - f^n(y)| &gt; \delta$.</p>
+      </div>
+
+      <p>This is why long-range weather forecasting is fundamentally limited: we can never measure initial atmospheric conditions with infinite precision, and the atmosphere amplifies these tiny measurement errors exponentially. Current weather models can predict about 10&ndash;14 days ahead with reasonable accuracy; beyond that, the butterfly effect overwhelms the forecast.</p>
+
+      <p>Lorenz articulated this memorably in a 1972 talk titled "Predictability: Does the Flap of a Butterfly's Wings in Brazil Set Off a Tornado in Texas?" The answer is both yes and no: a single butterfly cannot meaningfully be said to "cause" a specific tornado, but the extreme sensitivity means that the presence or absence of the butterfly does change the detailed evolution of the atmosphere. This is the paradox of deterministic chaos: the system is fully determined by its initial conditions, but those conditions are never fully known.</p>
+
+      <h3>Nonlinearity</h3>
+
+      <p>Chaos requires <strong>nonlinearity</strong>. A <em>linear</em> system satisfies $f(ax + by) = af(x) + bf(y)$: the output is proportional to the input, and small changes produce proportionally small effects.</p>
+
+      <p><strong>Nonlinear</strong> operations include squaring ($x^2$), multiplication of variables ($xy$), and trigonometric functions ($\sin x$, $\cos x$). These can amplify small differences, creating sensitive dependence. The Mandelbrot recurrence $z^2 + c$ is nonlinear because of the squaring &mdash; this nonlinearity creates the fractal boundary.</p>
+
+      <h3>Strange Attractors</h3>
+
+      <p>A <strong>strange attractor</strong> is the geometric shape traced by a chaotic system's trajectories in state space. Unlike a fixed point (a dot) or a limit cycle (a loop), a strange attractor has <em>fractal</em> structure with detail at every scale. The most famous is the <strong>Lorenz attractor</strong>, shaped like a butterfly, arising from Lorenz's simplified weather equations:</p>
+
+      <p>$$\frac{dx}{dt} = \sigma(y - x), \qquad \frac{dy}{dt} = x(\rho - z) - y, \qquad \frac{dz}{dt} = xy - \beta z$$</p>
+
+      <p>With the classic parameters $\sigma = 10$, $\rho = 28$, $\beta = 8/3$, the system never settles into a periodic orbit but traces out the characteristic butterfly shape forever. The trajectory switches unpredictably between the two "wings" of the attractor &mdash; the same sensitive dependence that makes weather unpredictable.</p>
+
+      <h3>Fractals: The Geometry of Chaos</h3>
+
+      <p>Fractals are the geometric fingerprints of chaotic dynamical systems. Benoit Mandelbrot coined the term in 1975, from the Latin <em>fractus</em> meaning "broken" or "fragmented." He defined a fractal loosely as a shape whose <strong>Hausdorff dimension</strong> exceeds its topological dimension &mdash; in other words, a shape that is "rougher" than any smooth curve or surface.</p>
+
+      <p>Key properties of fractals:</p>
+
+      <ul>
+        <li><strong>Self-similarity:</strong> Parts of the shape resemble the whole, at every scale. Zooming into the Mandelbrot set boundary reveals miniature copies of the entire set.</li>
+        <li><strong>Infinite detail:</strong> No matter how far you zoom in, new structure appears. There is no "smooth" level at which the complexity stops.</li>
+        <li><strong>Fractional dimension:</strong> The Mandelbrot set boundary has a Hausdorff dimension of 2 (it is a curve that is so convoluted it fills an area), while the Koch snowflake has dimension $\log 4 / \log 3 \approx 1.2619$.</li>
+        <li><strong>Simple generating rules:</strong> Despite infinite complexity, fractals are generated by simple iterative processes. The Mandelbrot set comes from $z^2 + c$ &mdash; just four characters of algebra.</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">Historical Note</div>
+        <p>The connection between chaos and fractals runs deep. When you plot the <em>boundary</em> between convergence and divergence for any nonlinear iterative system, that boundary is typically a fractal. This is true for the Mandelbrot set, for Newton fractals, for the logistic map's bifurcation diagram, and for the basins of attraction of any chaotic system. Chaos creates fractals; fractals are the geometry of chaos.</p>
+      </div>
+
+      <h3>Lyapunov Exponents</h3>
+
+      <p>The <strong>Lyapunov exponent</strong> $\lambda$ quantifies the rate of trajectory divergence. If two trajectories start a distance $\delta_0$ apart, after $n$ iterations they are approximately $\delta_0 \cdot e^{\lambda n}$ apart:</p>
+
+      <ul>
+        <li>$\lambda &lt; 0$: trajectories converge (stable, non-chaotic)</li>
+        <li>$\lambda = 0$: marginal (boundary between order and chaos)</li>
+        <li>$\lambda &gt; 0$: trajectories diverge exponentially (<strong>chaos</strong>)</li>
+      </ul>
+
+      <p>A positive Lyapunov exponent is the mathematical signature of chaos. For the logistic map at $r = 4$, the Lyapunov exponent is $\lambda = \ln 2 \approx 0.693$, meaning nearby orbits diverge at a rate of roughly $2^n$ after $n$ iterations.</p>
+
+      <h3>The Three Ingredients of Chaos</h3>
+
+      <p>A dynamical system is considered chaotic if it has all three of these properties:</p>
+
+      <ol>
+        <li><strong>Sensitive dependence on initial conditions:</strong> Nearby trajectories diverge exponentially ($\lambda &gt; 0$).</li>
+        <li><strong>Topological transitivity:</strong> The system cannot be decomposed into two invariant open sets. Informally, any region of state space eventually visits every other region.</li>
+        <li><strong>Dense periodic orbits:</strong> Periodic orbits are dense in the state space &mdash; every point is arbitrarily close to some periodic orbit.</li>
+      </ol>
+
+      <p>These three conditions, formalized by Robert Devaney, capture the essence of chaos: unpredictability (1), indecomposability (2), and an element of regularity (3) that prevents the system from being "just random."</p>
+
+      <h3>Chaos vs. Randomness</h3>
+
+      <p>A crucial distinction: chaotic systems are <strong>deterministic</strong>, not random. Given exactly the same initial conditions, a chaotic system will always produce exactly the same output. The unpredictability arises only because we can never measure or specify initial conditions with infinite precision.</p>
+
+      <p>This is different from true randomness (as in quantum mechanics), where identical preparations can produce genuinely different outcomes. Chaos is deterministic unpredictability; randomness is fundamental indeterminacy.</p>
+
+      <p>This distinction has practical consequences for art and simulation. A chaotic system can be <strong>replayed</strong> exactly by preserving the initial conditions &mdash; this is how generative art pieces can be "seeded" with a number and reproduced identically. True random processes cannot be reproduced without recording every step.</p>
+
+      <h3>Examples of Chaos in Nature and Art</h3>
+
+      <p>Chaotic dynamics appear throughout nature, science, and creative practice:</p>
+
+      <ul>
+        <li><strong>Weather and climate:</strong> The atmosphere is the canonical chaotic system. Weather prediction beyond about two weeks is fundamentally impossible due to sensitive dependence.</li>
+        <li><strong>Turbulent fluid flow:</strong> The transition from smooth (laminar) flow to turbulence is a route to chaos. Smoke rising from a candle starts smooth and becomes chaotic as it rises.</li>
+        <li><strong>Population dynamics:</strong> Ecological populations can exhibit chaotic oscillations, as modeled by the logistic map. Insect populations, in particular, have been observed to follow period-doubling routes to chaos.</li>
+        <li><strong>The double pendulum:</strong> A pendulum attached to the end of another pendulum is one of the simplest physical systems that exhibits chaos. Two double pendulums released from nearly identical positions will quickly diverge into wildly different trajectories.</li>
+        <li><strong>Heart rhythms:</strong> The healthy heart exhibits a form of chaotic variability. Paradoxically, perfectly regular heartbeats can be a sign of pathology. Some researchers argue that the loss of chaos in cardiac dynamics precedes heart failure.</li>
+        <li><strong>Dripping faucets:</strong> At certain flow rates, water drips follow a chaotic pattern that has been experimentally observed to undergo period-doubling cascades similar to the logistic map.</li>
+        <li><strong>Electronic circuits:</strong> Simple circuits containing nonlinear elements (like Chua's circuit) can produce chaotic oscillations, visualized as strange attractors on an oscilloscope.</li>
+      </ul>
+
+      <h3>Chaos and Artistic Practice</h3>
+
+      <p>For computational artists, chaos offers a paradox of control: the system is fully deterministic (repeatable), yet its behavior is complex enough to surprise the creator. This tension between authorship and emergence is central to generative art.</p>
+
+      <p>Techniques for harnessing chaos in art include:</p>
+
+      <ul>
+        <li><strong>Parameter exploration:</strong> Slowly varying a control parameter (like $r$ in the logistic map) to move between ordered and chaotic regimes, creating visual transitions from regularity to complexity.</li>
+        <li><strong>Strange attractor visualization:</strong> Plotting the trajectories of chaotic systems as particle trails, often with transparency, to reveal the fractal structure of the attractor.</li>
+        <li><strong>Sensitive dependence as texture:</strong> Using the divergence rate (Lyapunov exponent) as a coloring parameter creates textures that highlight the boundary between order and chaos.</li>
+        <li><strong>Audio-driven chaos:</strong> Using audio input to modulate the parameters of a chaotic system, creating visuals that respond to sound in complex, non-obvious ways.</li>
+      </ul>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">Key Concept</div>
+        <p>Fractals are the geometric fingerprints of chaotic systems. When you map out which initial conditions converge and which diverge, the boundary between these regions is a fractal &mdash; a shape with infinite detail and self-similarity at every scale.</p>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.6 -- COMPLEX NUMBERS
+           =============================================================== -->
+      <h2 id="complex-numbers">3.6 Complex Numbers</h2>
+
+      <p>To define the Mandelbrot set, we need numbers that live in two dimensions. Real numbers are one-dimensional (they live on a number line). <strong>Complex numbers</strong> are two-dimensional &mdash; they live on a plane.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Complex Number</strong> &mdash; A number of the form $z = a + bi$, where $a$ is the <em>real part</em> (written $\text{Re}(z)$), $b$ is the <em>imaginary part</em> ($\text{Im}(z)$), and $i$ is the <em>imaginary unit</em> defined by $i^2 = -1$.</p>
+      </div>
+
+      <h3>Why "Imaginary"?</h3>
+
+      <p>The name "imaginary" is unfortunate and historically misleading. It was coined by Descartes in 1637 as a pejorative &mdash; he considered $\sqrt{-1}$ to be a nonsensical quantity. But complex numbers are no less "real" than real numbers; they are simply a different kind of mathematical object, one that happens to be two-dimensional rather than one-dimensional.</p>
+
+      <p>Gauss preferred the term "lateral numbers" (reflecting their perpendicular direction on the number plane), and many mathematicians wish that name had stuck. In any case, $i$ is a perfectly well-defined mathematical entity: it is the number whose square is $-1$, and the algebra that follows from this definition is consistent, powerful, and beautiful.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">Historical Note</div>
+        <p>Complex numbers were first used seriously by Gerolamo Cardano in 1545 to solve cubic equations, and the full geometric interpretation (the complex plane) was developed independently by Caspar Wessel (1799), Jean-Robert Argand (1806), and Carl Friedrich Gauss (1831). Gauss used complex numbers extensively in his proof of the Fundamental Theorem of Algebra: every polynomial of degree $n$ has exactly $n$ roots in $\mathbb{C}$.</p>
+      </div>
+
+      <h3>The Complex Plane</h3>
+
+      <p>Every complex number $z = a + bi$ corresponds to a point $(a, b)$ on the <strong>complex plane</strong> (also called the <strong>Argand diagram</strong>). The horizontal axis is the real axis; the vertical axis is the imaginary axis. This geometric interpretation transforms abstract algebra into visual geometry.</p>
+
+      <p>The complex plane includes the real numbers as a special case (the horizontal axis, where $b = 0$) and the pure imaginary numbers (the vertical axis, where $a = 0$). Every other complex number has both a real and an imaginary component.</p>
+
+      <p>Important landmarks on the complex plane:</p>
+
+      <ul>
+        <li><strong>Origin</strong> $0 + 0i = 0$: the zero of the complex plane</li>
+        <li><strong>Unity</strong> $1 + 0i = 1$: one unit along the real axis</li>
+        <li><strong>Imaginary unit</strong> $0 + 1i = i$: one unit along the imaginary axis</li>
+        <li><strong>Unit circle:</strong> all points $z$ with $|z| = 1$, parameterized by $e^{i\theta}$ for $\theta \in [0, 2\pi)$</li>
+      </ul>
+
+      <p>The <strong>unit circle</strong> is especially important: complex multiplication by a point on the unit circle is a pure rotation (no scaling). This is why the angle (argument) of a complex number determines its rotational effect, while the magnitude determines its scaling effect.</p>
+
+      <h3>Polar Form and Euler's Formula</h3>
+
+      <p>A complex number can also be expressed in <strong>polar form</strong>:</p>
+
+      <p>$$z = r \cdot e^{i\theta} = r(\cos\theta + i\sin\theta)$$</p>
+
+      <p>where:</p>
+      <ul>
+        <li>$r = |z| = \sqrt{a^2 + b^2}$ is the <strong>magnitude</strong> (or <em>modulus</em>) &mdash; the distance from the origin</li>
+        <li>$\theta = \arg(z) = \text{atan2}(b, a)$ is the <strong>argument</strong> (or <em>phase</em>) &mdash; the angle from the positive real axis</li>
+      </ul>
+
+      <p>This is <strong>Euler's formula</strong>, one of the most beautiful identities in all of mathematics. It says that exponentiating an imaginary number produces a point on the unit circle at angle $\theta$.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: Euler's Identity</div>
+        <p>The special case $\theta = \pi$ gives the famous identity: $$e^{i\pi} + 1 = 0$$ This single equation connects five fundamental mathematical constants &mdash; $e$ (the base of natural logarithms), $i$ (the imaginary unit), $\pi$ (the ratio of circumference to diameter), $1$ (the multiplicative identity), and $0$ (the additive identity) &mdash; in a relationship of breathtaking economy. Richard Feynman called it "the most remarkable formula in mathematics."</p>
+      </div>
+
+      <p>The conversions between Cartesian and polar forms are:</p>
+
+      <p>$$r = \sqrt{a^2 + b^2}, \quad \theta = \text{atan2}(b,\, a), \quad a = r\cos\theta, \quad b = r\sin\theta$$</p>
+
+      <h3>Operations on Complex Numbers</h3>
+
+      <p><strong>Addition</strong> &mdash; add real and imaginary parts separately:</p>
+      <p>$$(a + bi) + (c + di) = (a + c) + (b + d)i$$</p>
+
+      <p><strong>Multiplication</strong> &mdash; expand using $i^2 = -1$:</p>
+      <p>$$(a + bi)(c + di) = (ac - bd) + (ad + bc)i$$</p>
+
+      <p>In polar form, multiplication is elegant: magnitudes multiply and angles add:</p>
+      <p>$$r_1 e^{i\theta_1} \cdot r_2 e^{i\theta_2} = r_1 r_2 \cdot e^{i(\theta_1 + \theta_2)}$$</p>
+
+      <p>This means multiplying by a complex number simultaneously <em>scales</em> (by the magnitude) and <em>rotates</em> (by the argument). This geometric interpretation is profound:</p>
+
+      <ul>
+        <li>Multiplying by $i$ rotates 90 degrees counterclockwise (and $i \cdot i = -1$ rotates 180 degrees, which is negation).</li>
+        <li>Multiplying by $e^{i\pi/4} = \frac{1+i}{\sqrt{2}}$ rotates 45 degrees.</li>
+        <li>Multiplying by $2e^{i\pi/6}$ scales by 2 and rotates 30 degrees.</li>
+      </ul>
+
+      <p>For the Mandelbrot iteration, <strong>squaring</strong> doubles the angle and squares the magnitude: $(re^{i\theta})^2 = r^2 e^{2i\theta}$. This is why points with $|z| &gt; 1$ spiral outward (magnitude grows: $r^2 &gt; r$) and points with $|z| &lt; 1$ spiral inward (magnitude shrinks: $r^2 &lt; r$) under repeated squaring. Points on the unit circle ($|z| = 1$) stay on the unit circle under squaring but rotate at double speed.</p>
+
+      <p>Adding $c$ perturbs this pure rotational/scaling behavior. The interplay between the squaring (which wants to amplify differences and rotate) and the constant $c$ (which shifts the center) creates the Mandelbrot set's boundary. Different values of $c$ tip the balance differently, which is why the set has such an intricate shape.</p>
+
+      <h3>The Complex Conjugate</h3>
+
+      <p>The <strong>conjugate</strong> of $z = a + bi$ is $\bar{z} = a - bi$ &mdash; the reflection across the real axis. Important properties:</p>
+
+      <ul>
+        <li>$z \cdot \bar{z} = a^2 + b^2 = |z|^2$ (always a non-negative real number)</li>
+        <li>$\overline{z_1 + z_2} = \bar{z_1} + \bar{z_2}$ and $\overline{z_1 z_2} = \bar{z_1}\bar{z_2}$</li>
+        <li>$z + \bar{z} = 2a$ (twice the real part), $z - \bar{z} = 2bi$ (twice the imaginary part)</li>
+      </ul>
+
+      <p>The conjugate is used in complex division: $\frac{1}{z} = \frac{\bar{z}}{|z|^2}$. It also explains the Mandelbrot set's symmetry: since the iteration preserves conjugation ($\overline{z^2 + c} = \bar{z}^2 + \bar{c}$), the set is symmetric about the real axis.</p>
+
+      <p><strong>Squaring</strong> (the key operation for the Mandelbrot set):</p>
+      <p>$$(a + bi)^2 = (a^2 - b^2) + (2ab)i$$</p>
+
+      <p>In polar form: squaring doubles the angle and squares the magnitude.</p>
+
+      <p><strong>Magnitude:</strong> $|z| = \sqrt{a^2 + b^2}$ &mdash; the distance from the origin to the point $(a, b)$.</p>
+
+      <p><strong>Argument:</strong> $\arg(z) = \text{atan2}(b, a)$ &mdash; the angle the point makes with the positive real axis.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">Common Mistake</div>
+        <p>When computing $\arg(z)$, always use <code>atan2(b, a)</code> rather than <code>atan(b/a)</code>. The two-argument form correctly handles all four quadrants, while <code>atan(b/a)</code> cannot distinguish between $(1, 1)$ and $(-1, -1)$.</p>
+      </div>
+
+      <h3>Worked Example: Squaring and the Mandelbrot Iteration</h3>
+
+      <p>Let us trace one step of the Mandelbrot iteration by hand. Suppose $c = 0.3 + 0.5i$ and the current value is $z = 0.1 + 0.7i$. We need to compute $z^2 + c$:</p>
+
+      <p><strong>Step 1: Compute $z^2$.</strong></p>
+      <p>$$z^2 = (0.1 + 0.7i)^2 = (0.1^2 - 0.7^2) + (2 \cdot 0.1 \cdot 0.7)i = (0.01 - 0.49) + 0.14i = -0.48 + 0.14i$$</p>
+
+      <p><strong>Step 2: Add $c$.</strong></p>
+      <p>$$z^2 + c = (-0.48 + 0.14i) + (0.3 + 0.5i) = -0.18 + 0.64i$$</p>
+
+      <p><strong>Step 3: Check escape.</strong></p>
+      <p>$$|z_{\text{new}}| = \sqrt{(-0.18)^2 + (0.64)^2} = \sqrt{0.0324 + 0.4096} = \sqrt{0.4420} \approx 0.665$$</p>
+
+      <p>Since $0.665 &lt; 2$, the point has not escaped. We continue iterating.</p>
+
+      <h3>Using Complex Numbers in JavaScript</h3>
+
+      <p>The library <strong>math.js</strong> provides complex number support:</p>
+
+      <pre><code>// Include in index.html:
+// &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"&gt;&lt;/script&gt;
+
+let z = math.complex(3, 4);        // 3 + 4i
+let w = math.complex(-1, 2);       // -1 + 2i
+
+let sum = math.add(z, w);          // 2 + 6i
+let product = math.multiply(z, w); // -11 + 2i
+let zSquared = math.multiply(z, z);// -7 + 24i
+let mag = math.abs(z);             // 5
+let angle = math.arg(z);           // 0.9273 radians
+
+console.log(z.re);  // 3  (real part)
+console.log(z.im);  // 4  (imaginary part)</code></pre>
+
+      <p>However, for performance-critical code like the Mandelbrot renderer, it is better to use manual arithmetic (two <code>float</code> variables for real and imaginary parts) to avoid the overhead of creating temporary objects.</p>
+
+      <h3>Complex Numbers in GLSL</h3>
+
+      <p>GLSL has no complex number type, so we represent them as <code>vec2</code>:</p>
+
+      <pre><code>// Complex number z = 2 + 3i
+vec2 z = vec2(2.0, 3.0);
+// z.x = real part (2.0)
+// z.y = imaginary part (3.0)
+
+// Addition: automatic (vec2 + vec2)
+vec2 sum = z + vec2(1.0, -1.0);  // 3 + 2i
+
+// Multiplication: custom function required
+vec2 cmul(vec2 a, vec2 b) {
+  return vec2(a.x*b.x - a.y*b.y,
+              a.x*b.y + a.y*b.x);
+}
+
+// Magnitude: length() works perfectly
+float mag = length(z);  // sqrt(4 + 9) = sqrt(13)
+
+// Argument: atan() with two arguments
+float arg = atan(z.y, z.x);</code></pre>
+
+      <p>This representation is efficient and natural for GPU computation. The key thing to remember is that while addition, subtraction, magnitude, and argument all work with built-in functions, <strong>multiplication must be implemented manually</strong> because <code>vec2 * vec2</code> does component-wise multiplication, not complex multiplication.</p>
+
+      <h3>Interactive Complex Plane Demo</h3>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Complex Number Visualizer</span>
+        </div>
+        <textarea class="cm-editor">// Move the mouse to change z1.
+// Displays z1, z2, z1+z2, z1*z2, and z1^2.
+
+let z2 = { re: -0.5, im: 0.8 };
+
+function setup() {
+  createCanvas(400, 400);
+  textFont('monospace');
+}
+
+function draw() {
+  background(250);
+  let cx = width/2, cy = height/2, sc = 60;
+
+  // Grid
+  stroke(230);
+  for (let i = -3; i <= 3; i++) {
+    line(cx + i*sc, 0, cx + i*sc, height);
+    line(0, cy + i*sc, width, cy + i*sc);
+  }
+  stroke(180); line(0, cy, width, cy); line(cx, 0, cx, height);
+
+  function drawZ(z, col, label) {
+    let px = cx + z.re*sc, py = cy - z.im*sc;
+    stroke(col); strokeWeight(1);
+    line(cx, cy, px, py);
+    noStroke(); fill(col);
+    ellipse(px, py, 10, 10);
+    textSize(10);
+    text(label + ': ' + z.re.toFixed(2) + '+' + z.im.toFixed(2) + 'i', px+8, py-5);
+  }
+
+  function cmul(a, b) {
+    return { re: a.re*b.re - a.im*b.im, im: a.re*b.im + a.im*b.re };
+  }
+
+  let z1 = { re: (mouseX - cx)/sc, im: -(mouseY - cy)/sc };
+  let sum  = { re: z1.re + z2.re, im: z1.im + z2.im };
+  let prod = cmul(z1, z2);
+  let sq   = cmul(z1, z1);
+
+  drawZ(z1,   color(30, 100, 220), 'z1');
+  drawZ(z2,   color(220, 120, 30), 'z2');
+  drawZ(sum,  color(50, 180, 80),  'z1+z2');
+  drawZ(prod, color(180, 50, 180), 'z1*z2');
+  drawZ(sq,   color(220, 50, 50),  'z1^2');
+
+  let mag = sqrt(z1.re*z1.re + z1.im*z1.im);
+  let ang = atan2(z1.im, z1.re);
+  noStroke(); fill(0); textSize(10);
+  text('|z1| = ' + mag.toFixed(3), 10, height - 25);
+  text('arg(z1) = ' + (ang*180/PI).toFixed(1) + ' deg', 10, height - 10);
+  text('Move mouse to change z1', 10, 15);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- Quiz 3 -->
+      <div class="quiz" data-id="ch03-q3">
+        <div class="quiz-header">Knowledge Check</div>
+        <p class="question">What is the result of $(1 + 2i)(3 + i)$?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch03-q3" value="a"> $3 + 2i$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q3" value="b" data-correct> $1 + 7i$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q3" value="c"> $5 + 5i$</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q3" value="d"> $4 + 3i$</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Using $(a+bi)(c+di) = (ac - bd) + (ad + bc)i$: real part $= 1 \cdot 3 - 2 \cdot 1 = 1$; imaginary part $= 1 \cdot 1 + 2 \cdot 3 = 7$. So the result is $1 + 7i$.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.7 -- THE MANDELBROT SET
+           =============================================================== -->
+      <h2 id="mandelbrot-set">3.7 The Mandelbrot Set</h2>
+
+      <p>The Mandelbrot set is the most famous object in fractal mathematics. It combines iteration, complex numbers, and the convergence/divergence classification into a single, infinitely complex shape.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>The Mandelbrot Set</strong> $\mathcal{M}$ is the set of all complex numbers $c$ for which the iteration $$z_{n+1} = z_n^2 + c, \qquad z_0 = 0$$ does not diverge to infinity. Equivalently, $c \in \mathcal{M}$ if and only if $\sup_n |z_n| &lt; \infty$.</p>
+      </div>
+
+      <h3>The Algorithm</h3>
+
+      <p>For each point $c$ in the complex plane:</p>
+      <ol>
+        <li>Start with $z_0 = 0$.</li>
+        <li>Iterate: $z_1 = c$, then $z_2 = c^2 + c$, then $z_3 = (c^2 + c)^2 + c$, and so on.</li>
+        <li>If $|z_n| &gt; 2$ for any $n$, then $c$ is <strong>not</strong> in the Mandelbrot set.</li>
+        <li>If $|z_n| \leq 2$ for all $n$ up to some maximum iteration count, then $c$ is approximately <strong>in</strong> the set.</li>
+      </ol>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: Escape Radius</div>
+        <p>If $|z_n| &gt; \max(|c|, 2)$ at any iteration, the sequence $\{z_n\}$ diverges to infinity. Therefore $2$ is a sufficient <strong>escape radius</strong>: once $|z_n| &gt; 2$, the point is guaranteed to escape. (This follows from the triangle inequality applied to $z_{n+1} = z_n^2 + c$.)</p>
+      </div>
+
+      <h3>Anatomy of the Mandelbrot Set</h3>
+
+      <p>The Mandelbrot set has rich internal structure:</p>
+
+      <ul>
+        <li><strong>Main cardioid:</strong> The large heart-shaped region centered near $(-0.25, 0)$. Points here converge to a single fixed point. Its boundary is the cardioid $r = \tfrac{1}{2} - \tfrac{1}{2}\cos\theta$.</li>
+        <li><strong>Period-2 bulb:</strong> The circular bulb to the left, centered at $(-1, 0)$ with radius $\tfrac{1}{4}$. Iterations here oscillate between two values.</li>
+        <li><strong>Period-$n$ bulbs:</strong> Smaller bulbs attached to the cardioid and to each other. Each produces orbits of period $n$.</li>
+        <li><strong>Fractal boundary:</strong> The boundary has infinite detail and self-similarity at every scale.</li>
+      </ul>
+
+      <h3>Connection to Julia Sets</h3>
+
+      <p>Every point $c$ has an associated <strong>Julia set</strong> (Section 3.9). The Mandelbrot set acts as a "map" of all Julia sets:</p>
+      <ul>
+        <li>If $c \in \mathcal{M}$ (inside), the Julia set $J_c$ is <strong>connected</strong> (one piece).</li>
+        <li>If $c \notin \mathcal{M}$ (outside), $J_c$ is <strong>totally disconnected</strong> (Cantor dust).</li>
+      </ul>
+
+      <p>In this deep sense, the Mandelbrot set is the <em>index</em> of all possible Julia sets.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">Key Concept</div>
+        <p>The nonlinearity in $z^2$ is what creates the fractal. If we used a linear rule like $z_{n+1} = 2z_n + c$, the boundary would be a simple circle. Nonlinearity transforms a simple classification problem into infinite complexity.</p>
+      </div>
+
+      <h3>What the Mandelbrot Set Looks Like</h3>
+
+      <p>The Mandelbrot set is the black region in the classic fractal images. The colored region surrounding it represents points that <strong>escaped</strong> (diverged), colored by how many iterations they took to escape. Points that escape quickly are colored differently from points that escape slowly, creating the characteristic swirling color patterns.</p>
+
+      <p>The set occupies a region of the complex plane roughly spanning $[-2.5, 1.0]$ on the real axis and $[-1.2, 1.2]$ on the imaginary axis. It is symmetric about the real axis (because if $c = a + bi$ is in the set, so is $\bar{c} = a - bi$).</p>
+
+      <h3>Self-Similarity and Infinite Detail</h3>
+
+      <p>The boundary of the Mandelbrot set has infinite detail. Zooming into any point on the boundary reveals:</p>
+
+      <ul>
+        <li><strong>Miniature copies</strong> of the entire Mandelbrot set (called "baby Mandelbrots" or "satellites"), connected by delicate filaments.</li>
+        <li><strong>Spiral structures</strong> that rotate and scale as you zoom deeper.</li>
+        <li><strong>Seahorse tails, elephant valleys, and other named regions</strong> with characteristic visual patterns.</li>
+      </ul>
+
+      <p>The deep zoom limit is set only by floating-point precision. With standard 64-bit <code>double</code> precision, you can zoom in by a factor of about $10^{14}$ before numerical artifacts appear. With GLSL's 32-bit <code>float</code>, the limit is much lower &mdash; about $10^{6}$ to $10^{7}$. Beyond these limits, arbitrary-precision (or perturbation theory) techniques are needed &mdash; and the detail continues forever, without end.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: The Mandelbrot Set Has Hausdorff Dimension 2</div>
+        <p>The boundary of the Mandelbrot set has <strong>Hausdorff dimension 2</strong>, proven by Mitsuhiro Shishikura in 1998. This means the boundary is so convoluted that it effectively fills a two-dimensional area, despite being a one-dimensional curve. No smooth (differentiable) curve can have dimension greater than 1, so this confirms that the boundary is genuinely fractal.</p>
+      </div>
+
+      <h3>The Mandelbrot Set in Art and Culture</h3>
+
+      <p>The Mandelbrot set has become an icon of mathematical beauty and a bridge between science and art. It appears in:</p>
+
+      <ul>
+        <li>Album covers, posters, and T-shirts as a symbol of complexity from simplicity.</li>
+        <li>Generative art installations and real-time VJ performances.</li>
+        <li>Deep zoom videos on YouTube that explore the set's infinite detail, set to music.</li>
+        <li>Discussions of emergence, complexity science, and the nature of infinity.</li>
+      </ul>
+
+      <p>For artists, the Mandelbrot set demonstrates that profound beauty can emerge from pure mathematics &mdash; no aesthetic judgment or human design is needed. The beauty is intrinsic to the mathematical structure itself. Arthur C. Clarke, the science fiction author, described the Mandelbrot set as "the most astonishing discovery in the entire history of mathematics."</p>
+
+      <p>In the context of computing arts, fractal rendering is a gateway to creative GPU programming. The techniques you learn here &mdash; mapping coordinates, iterating functions, choosing color palettes, writing GLSL shaders &mdash; transfer directly to other real-time visual effects: ray marching, signed distance fields, procedural textures, and audio-reactive visuals.</p>
+
+      <h3>Testing Specific Points</h3>
+
+      <p>Let us verify membership for several specific values of $c$:</p>
+
+      <p><strong>$c = 0$:</strong> $z_0 = 0, z_1 = 0, z_2 = 0, \ldots$ &mdash; stays bounded. <strong>In the set.</strong></p>
+
+      <p><strong>$c = 1$:</strong> $z_0 = 0, z_1 = 1, z_2 = 2, z_3 = 5, z_4 = 26, \ldots$ &mdash; escapes quickly. <strong>Not in the set.</strong></p>
+
+      <p><strong>$c = -1$:</strong> $z_0 = 0, z_1 = -1, z_2 = 0, z_3 = -1, z_4 = 0, \ldots$ &mdash; oscillates between $0$ and $-1$ forever. <strong>In the set</strong> (period-2 orbit).</p>
+
+      <p><strong>$c = i$:</strong> $z_0 = 0, z_1 = i, z_2 = -1+i, z_3 = -i, z_4 = -1+i, \ldots$ &mdash; enters a period-2 cycle. <strong>In the set.</strong></p>
+
+      <p><strong>$c = -2$:</strong> $z_0 = 0, z_1 = -2, z_2 = 2, z_3 = 2, \ldots$ &mdash; reaches $|z| = 2$ but does not exceed it. This is a boundary case and is technically <strong>in the set</strong> (it sits at the leftmost tip of the Mandelbrot set, called the "antenna tip").</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">Historical Note</div>
+        <p><strong>Benoit Mandelbrot</strong> (1924&ndash;2010) coined the term "fractal" in 1975 and first computed images of this set in 1978&ndash;1980 at IBM Research. He showed that these shapes, far from being mathematical curiosities, describe the geometry of natural phenomena: coastlines, clouds, mountains, blood vessels, and river networks. His 1982 book <em>The Fractal Geometry of Nature</em> transformed our understanding of irregular forms in nature.</p>
+      </div>
+
+      <!-- Quiz 4 -->
+      <div class="quiz" data-id="ch03-q4">
+        <div class="quiz-header">Knowledge Check</div>
+        <p class="question">For $c = 0$, iterating $z_{n+1} = z_n^2 + c$ from $z_0 = 0$ gives $0, 0, 0, \ldots$. Is $c = 0$ in the Mandelbrot set?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch03-q4" value="a" data-correct> Yes &mdash; the sequence stays bounded (it stays at 0 forever)</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q4" value="b"> No &mdash; the sequence diverges</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q4" value="c"> It cannot be determined with finite iterations</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q4" value="d"> Only if maxIter is greater than 1000</label></li>
+        </ul>
+        <div class="explanation">
+          <p>When $c = 0$, every iteration gives $z^2 + 0 = z^2$, and starting from $z_0 = 0$ we get $0, 0, 0, \ldots$ forever. The sequence is trivially bounded, so $c = 0$ is in the Mandelbrot set &mdash; it sits at the center of the main cardioid.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <h3>Anatomy of the Mandelbrot Set</h3>
+
+      <p>The Mandelbrot set has a rich and well-studied geometry. Understanding its parts helps you navigate when zooming and exploring:</p>
+
+      <ul>
+        <li><strong>Main cardioid:</strong> The large, heart-shaped central region. Points here produce sequences that converge to a single fixed point. The equation for its boundary is $c = \frac{e^{i\theta}}{2} - \frac{e^{2i\theta}}{4}$ for $\theta \in [0, 2\pi)$.</li>
+        <li><strong>Period-2 bulb:</strong> The large circular bulb to the left of the main cardioid, centered at $c = -1$. Points here produce sequences that oscillate between two values (period-2 orbit).</li>
+        <li><strong>Period-$n$ bulbs:</strong> Smaller circular bulbs attached to the main cardioid. The period-$n$ bulb sits at the angle $\theta = 2\pi/n$ around the cardioid boundary. Inside, orbits settle into $n$-cycles.</li>
+        <li><strong>Antenna (spike):</strong> The thin filament extending to the left, along the real axis from $c = -2$ to the period-2 bulb. This is also called the "real axis spike."</li>
+        <li><strong>Seahorse valley:</strong> The narrow region between the main cardioid and the period-2 bulb (near $c = -0.75$). Zooming here reveals seahorse-shaped spiral structures.</li>
+        <li><strong>Elephant valley:</strong> The region along the positive imaginary boundary of the main cardioid. Zooming reveals elephant-trunk-like spiral structures.</li>
+        <li><strong>Mini-Mandelbrots:</strong> Tiny copies of the entire Mandelbrot set appear throughout the boundary, each slightly distorted and surrounded by unique filaments. These are not approximate copies &mdash; they are exact topological replicas.</li>
+      </ul>
+
+      <p>The most visually spectacular zooming locations are near the boundary, especially at <strong>Misiurewicz points</strong> (pre-periodic points) where the local geometry mimics a Julia set, and at the "cusps" between bulbs where spiral structures of extraordinary intricacy emerge.</p>
+
+      <p>The Mandelbrot set is <strong>connected</strong> (proven by Douady and Hubbard in 1982), meaning all of its parts are joined together, even though some connections are vanishingly thin filaments. It is also <strong>simply connected</strong>, meaning it has no holes. These topological properties were not obvious from early computer images and required sophisticated mathematical proof.</p>
+
+      <p>One of the deepest unsolved problems about the Mandelbrot set is the <strong>MLC conjecture</strong> (Mandelbrot set is Locally Connected), which if true would imply a complete combinatorial classification of all the dynamics within the set. This conjecture remains one of the central open problems in complex dynamics.</p>
+
+      <!-- ===============================================================
+           SECTION 3.8 -- MANDELBROT ON CPU
+           =============================================================== -->
+      <h2 id="mandelbrot-cpu">3.8 Implementing Mandelbrot on CPU</h2>
+
+      <p>The strategy for a CPU implementation:</p>
+      <ol>
+        <li>For each pixel, determine the corresponding complex number $c$.</li>
+        <li>Iterate $z = z^2 + c$ starting from $z = 0$.</li>
+        <li>Count iterations until $|z| &gt; 2$ (or reach a maximum).</li>
+        <li>Color the pixel based on the iteration count.</li>
+      </ol>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">Common Mistake</div>
+        <p>Complex squaring is $(a+bi)^2 = (a^2 - b^2) + 2abi$, <strong>not</strong> $(a^2, b^2)$. Component-wise squaring gives a completely wrong result. Always use the correct formula.</p>
+      </div>
+
+      <p>For performance, we use manual arithmetic instead of a library, and compare $|z|^2 &gt; 4$ instead of $|z| &gt; 2$ to avoid the costly square root:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>CPU Mandelbrot Set</span>
+        </div>
+        <textarea class="cm-editor">// CPU Mandelbrot -- each pixel computed serially
+let maxIter = 80;
+let realMin = -2.5, realMax = 1.0;
+let imagMin = -1.2, imagMax = 1.2;
+
+function setup() {
+  createCanvas(300, 300);
+  pixelDensity(1);
+  noLoop();
+}
+
+function draw() {
+  loadPixels();
+
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      // Map pixel to complex plane
+      let cRe = map(px, 0, width, realMin, realMax);
+      let cIm = map(py, 0, height, imagMax, imagMin);
+
+      // Iterate z = z^2 + c
+      let zRe = 0, zIm = 0;
+      let iteration = 0;
+
+      for (let i = 0; i < maxIter; i++) {
+        let newRe = zRe * zRe - zIm * zIm + cRe;
+        let newIm = 2 * zRe * zIm + cIm;
+        zRe = newRe;
+        zIm = newIm;
+
+        if (zRe * zRe + zIm * zIm > 4) break;
+        iteration++;
+      }
+
+      // Color the pixel
+      let idx = (py * width + px) * 4;
+      if (iteration === maxIter) {
+        pixels[idx] = 0; pixels[idx+1] = 0; pixels[idx+2] = 0;
+      } else {
+        let t = iteration / maxIter;
+        pixels[idx]   = floor(9*(1-t)*t*t*t * 255);
+        pixels[idx+1] = floor(15*(1-t)*(1-t)*t*t * 255);
+        pixels[idx+2] = floor(8.5*(1-t)*(1-t)*(1-t)*t * 255);
+      }
+      pixels[idx+3] = 255;
+    }
+  }
+  updatePixels();
+  console.log('Rendering complete.');
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+
+      <h3>Line-by-Line Explanation</h3>
+
+      <p><strong>Line 4: <code>pixelDensity(1)</code></strong> &mdash; Ensures one pixel in our code corresponds to one screen pixel. Without this, Retina/HiDPI displays would create a mismatch between the pixel array size and the canvas size.</p>
+
+      <p><strong>Line 5: <code>noLoop()</code></strong> &mdash; Tells p5.js to call <code>draw()</code> only once. Since we compute the entire image in a single pass, we do not need the continuous animation loop.</p>
+
+      <p><strong>Lines 12-13: Coordinate mapping</strong> &mdash; <code>map(px, 0, width, realMin, realMax)</code> linearly maps the pixel's x-coordinate to the real axis. Note that <code>imagMax</code> and <code>imagMin</code> are reversed for the y-axis because the canvas y-axis points downward while we want positive imaginary values at the top.</p>
+
+      <p><strong>Lines 19-22: Complex squaring</strong> &mdash; This is the core computation: $(a+bi)^2 + c = (a^2-b^2+c_{re}) + (2ab+c_{im})i$. We compute <code>newRe</code> and <code>newIm</code> before updating <code>zRe</code> and <code>zIm</code> to avoid using a partially updated value.</p>
+
+      <p><strong>Line 24: Escape test</strong> &mdash; We compare $|z|^2 &gt; 4$ instead of $|z| &gt; 2$ to avoid computing a square root, which is a significant optimization when performed 300 x 300 x 80 = 7.2 million times.</p>
+
+      <p><strong>Lines 29-33: Bernstein polynomial coloring</strong> &mdash; The formula <code>9*(1-t)*t*t*t</code> etc. uses Bernstein basis polynomials to create a smooth blue-gold-brown palette. This is a classic technique for Mandelbrot coloring.</p>
+
+      <h3>Performance Considerations</h3>
+
+      <h3>Understanding the Color Mapping</h3>
+
+      <p>The coloring function used in the code above deserves explanation. Points <strong>in</strong> the set (iteration count equals <code>maxIter</code>) are colored black. Points <strong>outside</strong> the set are colored based on how quickly they escaped, using Bernstein polynomial basis functions:</p>
+
+      <pre><code>let t = iteration / maxIter;  // normalize to [0, 1]
+R = floor(9 * (1-t) * t*t*t * 255);     // peaks late
+G = floor(15 * (1-t)*(1-t) * t*t * 255); // peaks in middle
+B = floor(8.5 * (1-t)*(1-t)*(1-t) * t * 255); // peaks early</code></pre>
+
+      <p>These are cubic Bernstein polynomials $B_{i,3}(t) = \binom{3}{i} (1-t)^{3-i} t^i$ with scaling factors. The red channel peaks for large $t$ (slow escape), green peaks in the middle, and blue peaks for small $t$ (fast escape). The result is a palette that transitions from deep blue (fast escape, far from set) through green and yellow to dark red (slow escape, near the boundary).</p>
+
+      <p>You can create your own palettes by changing these polynomial coefficients, or by using entirely different coloring schemes (HSB mode, cosine palettes, histogram equalization, etc.).</p>
+
+      <p>For a 300x300 canvas with <code>maxIter = 80</code>, we perform up to $300 \times 300 \times 80 = 7{,}200{,}000$ complex multiplications. Each multiplication involves 4 real multiplications, 1 addition, and 1 subtraction. The bottleneck is <strong>serial processing</strong>: all 90,000 pixels are computed one at a time by a single CPU thread.</p>
+
+      <p>Optimizations that help on CPU:</p>
+      <ul>
+        <li>Avoid <code>math.js</code> &mdash; manual arithmetic eliminates object allocation overhead.</li>
+        <li>Use $|z|^2 &gt; 4$ instead of $|z| &gt; 2$ to avoid <code>sqrt()</code>.</li>
+        <li>Use <code>pixelDensity(1)</code> to avoid computing extra pixels on high-DPI screens.</li>
+        <li>Reduce canvas size (the GPU version eliminates this constraint).</li>
+      </ul>
+
+      <p>Even with these optimizations, CPU rendering remains impractical for interactive exploration. This is the fundamental motivation for porting the algorithm to the GPU in Section 3.12.</p>
+
+      <h3>Coordinate Mapping: From Pixels to Complex Numbers</h3>
+
+      <p>One of the most important concepts in fractal rendering is the <strong>coordinate mapping</strong> from pixel space to the complex plane. The canvas has pixel coordinates $(px, py)$ with $px \in [0, \text{width})$ and $py \in [0, \text{height})$. The complex plane has coordinates $(re, im)$ in some viewing rectangle.</p>
+
+      <p>The mapping is a linear transformation:</p>
+
+      <p>$$re = \text{realMin} + \frac{px}{\text{width}} \cdot (\text{realMax} - \text{realMin})$$</p>
+
+      <p>$$im = \text{imagMax} - \frac{py}{\text{height}} \cdot (\text{imagMax} - \text{imagMin})$$</p>
+
+      <p>Note the <strong>y-axis flip</strong>: pixel $y$ increases downward, but we want the imaginary axis to increase upward. This is handled by mapping from <code>imagMax</code> down to <code>imagMin</code> as <code>py</code> increases. In p5.js, the <code>map()</code> function handles this. In GLSL, the <code>mix()</code> function does the equivalent: <code>mix(a, b, t) = a*(1-t) + b*t</code>.</p>
+
+      <p>To implement zooming, you simply change the viewing rectangle. To zoom in by a factor of $k$ centered on a point $(x_c, y_c)$:</p>
+
+      <pre><code>let halfW = (realMax - realMin) / (2 * k);
+let halfH = (imagMax - imagMin) / (2 * k);
+realMin = xc - halfW;  realMax = xc + halfW;
+imagMin = yc - halfH;  imagMax = yc + halfH;</code></pre>
+
+
+      <!-- ===============================================================
+           SECTION 3.9 -- JULIA SETS
+           =============================================================== -->
+      <h2 id="julia-sets">3.9 Julia Sets</h2>
+
+      <p>While the Mandelbrot set varies $c$ and fixes $z_0 = 0$, <strong>Julia sets</strong> do the opposite: they fix $c$ and vary the starting point $z_0$ across the complex plane.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">Definition</div>
+        <p><strong>Filled Julia Set</strong> &mdash; For a fixed complex number $c$, the filled Julia set $K_c$ is the set of all starting points $z_0$ for which $z_{n+1} = z_n^2 + c$ does not diverge. The <strong>Julia set</strong> $J_c$ is the boundary of $K_c$.</p>
+      </div>
+
+      <h3>Connected vs. Disconnected</h3>
+
+      <ul>
+        <li>If $c \in \mathcal{M}$ (inside the Mandelbrot set), the Julia set is <strong>connected</strong> &mdash; one continuous curve.</li>
+        <li>If $c \notin \mathcal{M}$ (outside), the Julia set is <strong>totally disconnected</strong> &mdash; a Cantor dust of infinitely many isolated points.</li>
+      </ul>
+
+      <p>This is the Mandelbrot-Julia correspondence: the Mandelbrot set classifies all Julia sets by their topological type.</p>
+
+      <h3>Interactive Julia Set Explorer</h3>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Julia Set Explorer (move mouse to change c)</span>
+        </div>
+        <textarea class="cm-editor">// Julia Set -- mouse position controls c
+let maxIter = 80;
+
+function setup() {
+  createCanvas(300, 300);
+  pixelDensity(1);
+}
+
+function draw() {
+  let cRe = map(mouseX, 0, width, -2, 2);
+  let cIm = map(mouseY, 0, height, -2, 2);
+
+  loadPixels();
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      // Julia: z0 varies per pixel, c is fixed
+      let zRe = map(px, 0, width, -2, 2);
+      let zIm = map(py, 0, height, -2, 2);
+      let iteration = 0;
+
+      for (let i = 0; i < maxIter; i++) {
+        let newRe = zRe*zRe - zIm*zIm + cRe;
+        let newIm = 2*zRe*zIm + cIm;
+        zRe = newRe; zIm = newIm;
+        if (zRe*zRe + zIm*zIm > 4) break;
+        iteration++;
+      }
+
+      let idx = (py * width + px) * 4;
+      if (iteration === maxIter) {
+        pixels[idx]=0; pixels[idx+1]=0; pixels[idx+2]=0;
+      } else {
+        let t = iteration / maxIter;
+        pixels[idx]   = floor(255*(0.5+0.5*cos(6.28*(t+0.0))));
+        pixels[idx+1] = floor(255*(0.5+0.5*cos(6.28*(t+0.33))));
+        pixels[idx+2] = floor(255*(0.5+0.5*cos(6.28*(t+0.67))));
+      }
+      pixels[idx+3] = 255;
+    }
+  }
+  updatePixels();
+
+  fill(255); noStroke(); rect(0, 0, 220, 18);
+  fill(0); textSize(11); textFont('monospace');
+  text('c = '+cRe.toFixed(3)+' + '+cIm.toFixed(3)+'i', 5, 14);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Some famous Julia set values to try:</p>
+      <ul>
+        <li>$c = -0.7 + 0.27i$ &mdash; a "dendrite" Julia set with tree-like branching</li>
+        <li>$c = 0.355 + 0.355i$ &mdash; intricate spirals and swirls</li>
+        <li>$c = -0.123 + 0.745i$ &mdash; Douady's rabbit, with three ears</li>
+        <li>$c = -1.0$ &mdash; the basilica, a period-2 Julia set</li>
+        <li>$c = 0.285 + 0.01i$ &mdash; Siegel disk, with irrational rotation</li>
+        <li>$c = -0.8 + 0.156i$ &mdash; intricate spiraling tendrils</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">Historical Note</div>
+        <p><strong>Gaston Julia</strong> (1893&ndash;1978) and <strong>Pierre Fatou</strong> (1878&ndash;1929) independently studied the iteration of complex functions in the 1910s&ndash;1920s, decades before computers could visualize the results. Julia was severely wounded in World War I and lost his nose, wearing a leather strap across his face for the rest of his life. Despite these challenges, he produced foundational work on complex dynamics. It was not until Mandelbrot used computers in the late 1970s that the full beauty of Julia sets was revealed.</p>
+      </div>
+
+      <h3>The Mandelbrot-Julia Connection Visualized</h3>
+
+      <p>Imagine the Mandelbrot set as a "control panel" for Julia sets. As you move a point $c$ around the complex plane:</p>
+
+      <ul>
+        <li><strong>Inside the main cardioid:</strong> The Julia set is a smooth, slightly deformed circle (a "Jordan curve").</li>
+        <li><strong>Inside a period-$n$ bulb:</strong> The Julia set has $n$-fold symmetry with "pinch points."</li>
+        <li><strong>On the boundary:</strong> The Julia set is a dendrite (tree-like structure with no interior).</li>
+        <li><strong>Outside the set:</strong> The Julia set shatters into a Cantor dust &mdash; infinitely many disconnected points.</li>
+        <li><strong>Near a Misiurewicz point</strong> (a pre-periodic point on the boundary): The Julia set is fractal and the local structure around the corresponding point in the Mandelbrot set looks like a small copy of the Julia set.</li>
+      </ul>
+
+      <p>This last observation is particularly deep: the Mandelbrot set is "decorated" by the Julia sets of its boundary points. Every detail you see in the Mandelbrot set's boundary is a reflection of the Julia sets associated with nearby $c$ values.</p>
+
+      <h3>Julia Sets and Artistic Applications</h3>
+
+      <p>Julia sets are among the most visually striking objects in mathematics. Their applications in computational art include:</p>
+
+      <ul>
+        <li><strong>Generative wallpapers and prints:</strong> Each value of $c$ produces a unique, infinitely detailed image.</li>
+        <li><strong>Animation:</strong> Smoothly varying $c$ along a path in the complex plane creates mesmerizing morphing animations.</li>
+        <li><strong>Audio-reactive visuals:</strong> Map audio features (amplitude, frequency) to the real and imaginary parts of $c$ for live performance visuals.</li>
+        <li><strong>Texture generation:</strong> Julia set iteration counts can serve as procedural textures in 3D rendering.</li>
+      </ul>
+
+
+      <!-- ===============================================================
+           SECTION 3.10 -- NEWTON'S METHOD
+           =============================================================== -->
+      <h2 id="newtons-method">3.10 Newton's Method and Root Finding</h2>
+
+      <p><strong>Newton's method</strong> is an iterative algorithm for finding <strong>zeros</strong> (roots) of a function &mdash; values where $f(x) = 0$. It connects deeply to our theme of iteration and, when applied to complex-valued functions, produces beautiful fractals.</p>
+
+      <h3>The Iteration Formula</h3>
+
+      <p>Given a differentiable function $f$ whose root we seek (a value $x^*$ where $f(x^*) = 0$), Newton's method generates successive approximations:</p>
+
+      <p>$$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$</p>
+
+      <p>where $f'(x_n)$ is the derivative of $f$ evaluated at the current guess. The idea is that near a root, the tangent line is a good approximation to the function, so following the tangent to the x-axis gives a much better approximation.</p>
+
+      <h3>Geometric Intuition</h3>
+
+      <p>At each step, Newton's method:</p>
+      <ol>
+        <li>Evaluates the function at the current guess $x_n$.</li>
+        <li>Draws the <strong>tangent line</strong> to the curve at that point.</li>
+        <li>Finds where the tangent crosses the x-axis.</li>
+        <li>Uses that crossing as the next guess $x_{n+1}$.</li>
+      </ol>
+
+      <p>If the function is smooth and the initial guess is reasonable, convergence is remarkably fast. Newton's method has <strong>quadratic convergence</strong>: the number of correct digits roughly <em>doubles</em> with each iteration. Starting from 1 correct digit, after just 10 iterations you may have $2^{10} \approx 1000$ correct digits.</p>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">Theorem: Quadratic Convergence of Newton's Method</div>
+        <p>If $f$ is twice continuously differentiable, $f(x^*) = 0$, and $f'(x^*) \neq 0$, then for starting points sufficiently close to $x^*$, Newton's method converges quadratically: $$|x_{n+1} - x^*| \leq C |x_n - x^*|^2$$ for some constant $C = \frac{|f''(x^*)|}{2|f'(x^*)|}$. The error is <em>squared</em> at each step.</p>
+      </div>
+
+      <h3>Example: Finding $\sqrt{2}$</h3>
+
+      <p>To compute $\sqrt{2}$, we find a root of $f(x) = x^2 - 2$. The derivative is $f'(x) = 2x$, so the iteration is:</p>
+
+      <p>$$x_{n+1} = x_n - \frac{x_n^2 - 2}{2x_n} = \frac{x_n + 2/x_n}{2}$$</p>
+
+      <p>Starting from $x_0 = 1$:</p>
+
+      <ul>
+        <li>$x_1 = \frac{1 + 2}{2} = 1.5$</li>
+        <li>$x_2 = \frac{1.5 + 1.333...}{2} = 1.41\overline{6}$</li>
+        <li>$x_3 = 1.414215686...$</li>
+        <li>$x_4 = 1.414213562373...$</li>
+      </ul>
+
+      <p>After just 4 iterations, we have 12 correct digits. This is quadratic convergence in action &mdash; the Babylonians used this exact algorithm 4000 years ago to compute square roots, though they did not have the formal framework of calculus to explain why it works.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">Historical Note</div>
+        <p>Newton himself described the method in <em>De analysi</em> (1669), but did not write it as a general iteration formula. The modern formulation as $x_{n+1} = x_n - f(x_n)/f'(x_n)$ is due to Joseph Raphson (1690), which is why the method is sometimes called the <strong>Newton-Raphson method</strong>. The graphical interpretation using tangent lines came even later, from Thomas Simpson in the 1740s.</p>
+      </div>
+
+      <h3>Newton's Method for Other Functions</h3>
+
+      <p>Newton's method works for any differentiable function. Here are some useful examples:</p>
+
+      <ul>
+        <li><strong>Cube root of $a$:</strong> Solve $f(x) = x^3 - a$. The iteration is $x_{n+1} = \frac{2x_n^3 + a}{3x_n^2}$.</li>
+        <li><strong>Reciprocal of $a$</strong> (division without dividing): Solve $f(x) = 1/x - a$. The iteration is $x_{n+1} = x_n(2 - ax_n)$. This is used in hardware floating-point division circuits.</li>
+        <li><strong>Inverse square root:</strong> Solve $f(x) = 1/x^2 - a$. The iteration is $x_{n+1} = \frac{x_n}{2}(3 - ax_n^2)$. This is related to the famous "fast inverse square root" algorithm from the Quake III Arena source code.</li>
+        <li><strong>Solving $\cos(x) = x$:</strong> Solve $f(x) = \cos(x) - x$. The iteration is $x_{n+1} = x_n + \frac{\cos(x_n) - x_n}{\sin(x_n) + 1}$, which converges to the Dottie number $\approx 0.739085$.</li>
+      </ul>
+
+      <h3>Newton Fractals</h3>
+
+      <p>When applied to functions of <strong>complex numbers</strong>, Newton's method reveals fractal structure. Consider $f(z) = z^3 - 1$, which has three cube roots of unity:</p>
+
+      <p>$$z_1 = 1, \qquad z_2 = -\tfrac{1}{2} + \tfrac{\sqrt{3}}{2}i, \qquad z_3 = -\tfrac{1}{2} - \tfrac{\sqrt{3}}{2}i$$</p>
+
+      <p>The Newton iteration becomes:</p>
+
+      <p>$$z_{n+1} = z_n - \frac{z_n^3 - 1}{3z_n^2} = \frac{2z_n^3 + 1}{3z_n^2}$$</p>
+
+      <p>Color each starting point by which root it converges to, and you get a fractal. The boundaries between the three colored regions are infinitely complex &mdash; every boundary point is a point of sensitive dependence where a tiny change in the starting position can change which root Newton's method finds.</p>
+
+      <p>The Newton fractal for $z^3 - 1$ has <strong>threefold rotational symmetry</strong>, reflecting the equal angular spacing of the three cube roots (120 degrees apart). The fractal boundary consists of infinitely many "tentacles" where the three basins of attraction interweave at every scale.</p>
+
+      <h3>Why Newton's Method Can Fail</h3>
+
+      <p>Newton's method is not guaranteed to converge. It can:</p>
+
+      <ul>
+        <li><strong>Diverge:</strong> If $f'(x_n) = 0$ at some iterate, the formula divides by zero.</li>
+        <li><strong>Cycle:</strong> The iteration can enter a periodic orbit, never reaching any root.</li>
+        <li><strong>Converge to the "wrong" root:</strong> Starting near one root does not guarantee convergence to that root. This is precisely what creates the fractal structure.</li>
+      </ul>
+
+      <p>The <strong>basins of attraction</strong> (the sets of starting points converging to each root) have fractal boundaries, meaning that near any boundary point, all three basins are interleaved at arbitrarily fine scales. This has practical consequences: in numerical software, Newton&rsquo;s method may behave unpredictably near these boundaries.</p>
+
+      <h3>Implementing a Newton Fractal</h3>
+
+      <p>A Newton fractal can be rendered with the same GPU approach as the Mandelbrot set. The key differences:</p>
+
+      <ul>
+        <li>The starting point $z_0$ varies per pixel (not $c$).</li>
+        <li>The iteration formula is $z_{n+1} = z_n - f(z_n)/f'(z_n)$ instead of $z^2 + c$.</li>
+        <li>Coloring is based on <em>which root</em> the iteration converges to, not on escape count.</li>
+        <li>Complex <strong>division</strong> is needed: $\frac{a+bi}{c+di} = \frac{(ac+bd) + (bc-ad)i}{c^2+d^2}$.</li>
+      </ul>
+
+      <p>Newton fractals produce striking three-colored (or more) images that complement the Mandelbrot set&rsquo;s two-state classification. They are particularly beautiful when the iteration count is also used to modulate brightness, creating a 3D-like shading effect on the basins.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">Key Concept</div>
+        <p>Newton fractals reveal that even well-behaved numerical algorithms can have fractal basins of attraction. The "simple" question "which root will Newton's method find?" has an answer of infinite complexity.</p>
+      </div>
+
+      <h3>Newton's Method for Real Functions: A Code Example</h3>
+
+      <p>Here is Newton's method applied to $f(x) = x^3 + 2x^2 + 1$, with derivative $f'(x) = 3x^2 + 4x$:</p>
+
+      <pre><code>function setup() {
+  createCanvas(400, 400);
+  let x = 1.2;  // initial guess
+  for (let i = 0; i < 20; i++) {
+    console.log('x_' + i + ' = ' + x.toFixed(12));
+    x = x - (x*x*x + 2*x*x + 1) / (3*x*x + 4*x);
+  }
+}</code></pre>
+
+      <p>Running this produces rapid convergence. Within about 6 iterations, the value stabilizes to 12+ decimal places &mdash; a dramatic demonstration of quadratic convergence.</p>
+
+      <h3>Convergence Rate Comparison</h3>
+
+      <p>Compare the convergence rates of different root-finding methods:</p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Convergence</th><th>Iterations for 10 digits</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Bisection</td><td>Linear ($\rho = 0.5$)</td><td>~34</td></tr>
+          <tr><td>Fixed-point iteration</td><td>Linear ($\rho &lt; 1$)</td><td>Varies widely</td></tr>
+          <tr><td>Newton's method</td><td>Quadratic</td><td>~5&ndash;7</td></tr>
+          <tr><td>Halley's method</td><td>Cubic</td><td>~3&ndash;4</td></tr>
+        </tbody>
+      </table>
+
+      <p>Newton's method's quadratic convergence means it is one of the most powerful tools in numerical computation. The trade-off is that it requires computing the derivative, and convergence is not guaranteed for all starting points &mdash; which is precisely what creates the fractal basins.</p>
+
+
+      <!-- ===============================================================
+           SECTION 3.11 -- INTRODUCTION TO GLSL
+           =============================================================== -->
+      <h2 id="intro-glsl">3.11 Introduction to GLSL</h2>
+
+      <p>The CPU Mandelbrot takes many seconds. But the algorithm is <em>embarrassingly parallel</em> &mdash; every pixel's computation is independent. The GPU, with its thousands of cores, can compute all pixels simultaneously.</p>
+
+      <h3>The Shader Pipeline</h3>
+
+      <p><strong>GLSL</strong> (OpenGL Shading Language) is a C-like programming language for GPU shaders. A program has two stages:</p>
+
+      <ol>
+        <li><strong>Vertex shader:</strong> Runs once per vertex. Positions geometry on screen.</li>
+        <li><strong>Fragment shader:</strong> Runs once per pixel (fragment). Determines each pixel's color.</li>
+      </ol>
+
+      <p>For fractals, the vertex shader is trivial &mdash; it just passes geometry positions through. All the interesting work happens in the fragment shader, which determines the color of each pixel independently.</p>
+
+      <h3>How GPU Parallelism Works</h3>
+
+      <p>A modern GPU contains hundreds to thousands of small processing cores organized into groups called <strong>warps</strong> (NVIDIA) or <strong>wavefronts</strong> (AMD). When you draw a full-screen quad, the GPU dispatches one thread per pixel. For a 400x400 canvas, that is 160,000 threads running simultaneously (or in very rapid succession on the available cores).</p>
+
+      <p>Each thread executes the same fragment shader code but with different inputs (different pixel positions). This is called <strong>SIMD</strong> (Single Instruction, Multiple Data) or <strong>SIMT</strong> (Single Instruction, Multiple Threads) architecture. The GPU excels when all threads do similar work &mdash; which is exactly what happens in fractal rendering, where every pixel runs the same iteration loop.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">Key Concept</div>
+        <p>The Mandelbrot algorithm is <strong>embarrassingly parallel</strong>: each pixel's computation is completely independent of every other pixel. There are no data dependencies, no shared state, no synchronization needed. This is the ideal case for GPU computing and explains why the speedup is so dramatic.</p>
+      </div>
+
+      <h3>Key Concepts</h3>
+
+      <ul>
+        <li><strong>Uniforms:</strong> Values sent from JavaScript to the shader, constant across all pixels. Example: <code>u_time</code>, <code>u_mouse</code>, <code>u_resolution</code>.</li>
+        <li><strong>Varyings:</strong> Values interpolated from vertex shader to fragment shader across the surface.</li>
+        <li><strong>Attributes:</strong> Per-vertex data (position, normals, etc.).</li>
+      </ul>
+
+      <h3>GLSL Data Types</h3>
+
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>float</code></td><td>Single floating-point number</td><td><code>float x = 3.14;</code></td></tr>
+          <tr><td><code>int</code></td><td>Integer</td><td><code>int n = 42;</code></td></tr>
+          <tr><td><code>bool</code></td><td>Boolean</td><td><code>bool b = true;</code></td></tr>
+          <tr><td><code>vec2</code></td><td>2D vector (also used for complex numbers)</td><td><code>vec2 p = vec2(1.0, 2.0);</code></td></tr>
+          <tr><td><code>vec3</code></td><td>3D vector / RGB color</td><td><code>vec3 c = vec3(1.0, 0.0, 0.5);</code></td></tr>
+          <tr><td><code>vec4</code></td><td>4D vector / RGBA color</td><td><code>vec4 v = vec4(1.0, 0.0, 0.5, 1.0);</code></td></tr>
+          <tr><td><code>mat2</code></td><td>2x2 matrix</td><td><code>mat2 m = mat2(1.0, 0.0, 0.0, 1.0);</code></td></tr>
+          <tr><td><code>sampler2D</code></td><td>Texture reference</td><td><code>uniform sampler2D tex;</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Setting Up Shaders in p5.js</h3>
+
+      <p>To use GLSL shaders in p5.js, you need three things: a canvas in <code>WEBGL</code> mode, a vertex shader source string, and a fragment shader source string:</p>
+
+      <pre><code>let s; // shader variable
+
+function setup() {
+  createCanvas(400, 400, WEBGL); // must use WEBGL mode
+  s = createShader(vertexSource, fragmentSource);
+  noStroke();
+}
+
+function draw() {
+  shader(s); // activate the shader
+
+  // Send data from JavaScript to the shader
+  s.setUniform("u_time", millis() / 1000.0);
+  s.setUniform("u_resolution", [width, height]);
+  s.setUniform("u_mouse", [mouseX/width, mouseY/height]);
+
+  // Draw a quad covering the entire canvas
+  quad(-1, -1, 1, -1, 1, 1, -1, 1);
+}</code></pre>
+
+      <p>Key points:</p>
+      <ul>
+        <li><code>WEBGL</code> mode is required for shader support.</li>
+        <li><code>createShader()</code> compiles the vertex and fragment shader source and returns a shader object.</li>
+        <li><code>shader(s)</code> activates the shader for all subsequent drawing.</li>
+        <li><code>setUniform()</code> sends values from JavaScript (CPU) to the shader (GPU). This is the communication bridge.</li>
+        <li>The <code>quad(-1,-1,1,-1,1,1,-1,1)</code> draws a full-screen rectangle in clip space coordinates, ensuring every pixel is processed.</li>
+      </ul>
+
+      <h3>The Vertex Shader</h3>
+
+      <p>For fractal rendering, the vertex shader is minimal &mdash; it passes positions through without transformation:</p>
+
+      <pre><code>precision highp float;
+attribute vec3 aPosition;
+varying vec2 vPosition;
+
+void main() {
+  gl_Position = vec4(aPosition, 1.0);
+  vPosition = gl_Position.xy;
+}</code></pre>
+
+      <p>The <code>varying</code> keyword means <code>vPosition</code> is automatically interpolated across the surface of the quad, so each fragment (pixel) receives a smoothly varying position value. At the four corners of the quad, <code>vPosition</code> has the exact vertex positions: $(-1,-1)$, $(1,-1)$, $(1,1)$, $(-1,1)$. Between the corners, the GPU interpolates linearly, creating a smooth gradient of positions.</p>
+
+      <p>The three types of shader variables form a communication chain:</p>
+
+      <ul>
+        <li><strong>Attributes</strong> (<code>attribute</code>) carry data <em>into</em> the vertex shader from JavaScript (per-vertex data like positions)</li>
+        <li><strong>Varyings</strong> (<code>varying</code>) carry data <em>from</em> the vertex shader <em>to</em> the fragment shader (automatically interpolated)</li>
+        <li><strong>Uniforms</strong> (<code>uniform</code>) carry data from JavaScript to <em>either</em> shader (constant across all vertices/pixels in a frame)</li>
+      </ul>
+
+      <h3>The Fragment Shader: A Different Way of Thinking</h3>
+
+      <p>The fragment shader runs once per pixel and determines its color. This is <strong>fundamentally different</strong> from p5.js drawing:</p>
+
+      <table>
+        <thead>
+          <tr><th>p5.js (Imperative)</th><th>GLSL (Declarative/Per-Pixel)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>You tell the computer <em>what to draw</em></td><td>Each pixel asks <em>"what color am I?"</em></td></tr>
+          <tr><td><code>ellipse(200, 200, 50)</code></td><td><code>if (distance(pos, center) &lt; 25.0) color = red;</code></td></tr>
+          <tr><td>Sequential: one shape after another</td><td>Parallel: all pixels computed simultaneously</td></tr>
+          <tr><td>State is shared (global variables)</td><td>Each pixel is independent (no shared state)</td></tr>
+          <tr><td>Easy to draw shapes</td><td>Easy to compute per-pixel math</td></tr>
+        </tbody>
+      </table>
+
+      <p>This paradigm shift &mdash; from "draw shapes" to "define rules" &mdash; is one of the most important conceptual leaps in this course. It requires thinking about images as mathematical functions from position to color, rather than as sequences of drawing commands.</p>
+
+      <h3>GLSL Built-in Functions</h3>
+
+      <p>GLSL provides many useful mathematical functions that are hardware-accelerated:</p>
+
+      <table>
+        <thead>
+          <tr><th>Function</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>length(v)</code></td><td>Magnitude of a vector: $\sqrt{v.x^2 + v.y^2}$</td></tr>
+          <tr><td><code>distance(a, b)</code></td><td>Euclidean distance between two points</td></tr>
+          <tr><td><code>dot(a, b)</code></td><td>Dot product: $a.x \cdot b.x + a.y \cdot b.y$</td></tr>
+          <tr><td><code>normalize(v)</code></td><td>Unit vector in the direction of $v$</td></tr>
+          <tr><td><code>mix(a, b, t)</code></td><td>Linear interpolation: $a(1-t) + bt$</td></tr>
+          <tr><td><code>clamp(x, lo, hi)</code></td><td>Clamp $x$ to range $[\text{lo}, \text{hi}]$</td></tr>
+          <tr><td><code>smoothstep(lo, hi, x)</code></td><td>Hermite interpolation, useful for soft edges</td></tr>
+          <tr><td><code>step(edge, x)</code></td><td>Returns 0 if $x &lt; \text{edge}$, else 1</td></tr>
+          <tr><td><code>fract(x)</code></td><td>Fractional part: $x - \lfloor x \rfloor$</td></tr>
+          <tr><td><code>mod(x, y)</code></td><td>Modulo: $x - y \cdot \lfloor x/y \rfloor$</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Vector Swizzling</h3>
+
+      <p>One of GLSL's most distinctive features is <strong>swizzling</strong>: accessing and rearranging vector components using combinations of <code>.x</code>, <code>.y</code>, <code>.z</code>, <code>.w</code> (or equivalently <code>.r</code>, <code>.g</code>, <code>.b</code>, <code>.a</code>):</p>
+
+      <pre><code>vec4 color = vec4(1.0, 0.5, 0.3, 1.0);
+
+// Access individual components
+float red = color.r;     // 1.0
+float green = color.g;   // 0.5
+
+// Rearrange components (swizzle)
+vec3 rgb = color.rgb;           // vec3(1.0, 0.5, 0.3)
+vec3 bgr = color.bgr;           // vec3(0.3, 0.5, 1.0)
+vec2 rg = color.rg;             // vec2(1.0, 0.5)
+vec3 rrr = color.rrr;           // vec3(1.0, 1.0, 1.0)
+
+// Useful pattern: convert grayscale to color
+float brightness = 0.7;
+gl_FragColor = vec4(vec3(brightness), 1.0);</code></pre>
+
+      <p>Swizzling is extremely common in shader code and contributes to its compact, expressive style. The last pattern &mdash; <code>vec4(vec3(x), 1.0)</code> &mdash; is used in almost every fragment shader to convert a color value to an RGBA output.</p>
+
+      <h3>Precision Qualifiers</h3>
+
+      <p>GLSL requires you to declare the precision of floating-point operations. Three levels are available:</p>
+
+      <table>
+        <thead>
+          <tr><th>Qualifier</th><th>Minimum Range</th><th>Typical Use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>lowp</code></td><td>$[-2, 2]$ with $2^{-8}$ precision</td><td>Colors, texture coordinates</td></tr>
+          <tr><td><code>mediump</code></td><td>$[-2^{14}, 2^{14}]$ with $2^{-10}$ precision</td><td>General computation (default for most)</td></tr>
+          <tr><td><code>highp</code></td><td>$[-2^{62}, 2^{62}]$ with $2^{-16}$ precision</td><td>Positions, time, fractal math</td></tr>
+        </tbody>
+      </table>
+
+      <p>For fractal rendering, <code>precision highp float;</code> at the top of the shader is essential. Without it, the limited precision of <code>mediump</code> creates visible artifacts &mdash; blocky, pixelated regions where the math loses accuracy. This is especially apparent when zooming into the Mandelbrot set: at medium precision, the image degrades much sooner.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">Common Mistake</div>
+        <p><strong>Not all mobile GPUs support <code>highp</code></strong> in fragment shaders. If your fractal looks blocky on a phone or tablet, the device may be silently falling back to <code>mediump</code>. You can check for high precision support by testing <code>GL_FRAGMENT_PRECISION_HIGH</code> in the shader.</p>
+      </div>
+
+      <h3>GLSL Gotchas</h3>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">Common Mistake</div>
+        <p><strong>Integer/float strictness:</strong> GLSL does not automatically convert between <code>int</code> and <code>float</code>. You must write <code>1.0</code> instead of <code>1</code>, <code>vec2(1.0, 1.0)</code> not <code>vec2(1, 1)</code>, and <code>7.0 / 10.0</code> not <code>7 / 10</code>. This causes more errors than anything else when learning GLSL.</p>
+      </div>
+
+      <p>Other important gotchas:</p>
+      <ul>
+        <li><strong>No print/debug:</strong> The only output is the pixel color. Debug by outputting values as colors: <code>gl_FragColor = vec4(value, 0.0, 0.0, 1.0);</code></li>
+        <li><strong>Constant loop bounds:</strong> Some GPUs require <code>for</code> loop bounds to be compile-time constants. Use a fixed maximum and <code>break</code> early.</li>
+        <li><strong>No recursion:</strong> GLSL does not support recursive function calls.</li>
+        <li><strong>No dynamic arrays:</strong> All array sizes must be known at compile time.</li>
+        <li><strong>No strings:</strong> GLSL has no string type. All text rendering must be done on the CPU side.</li>
+        <li><strong>Limited branching:</strong> <code>if/else</code> statements work but can reduce performance because all threads in a warp must execute both branches (this is called <em>divergent branching</em>). Use <code>step()</code>, <code>mix()</code>, and <code>smoothstep()</code> for branchless alternatives when possible.</li>
+      </ul>
+
+      <h3>Debugging Shaders by Visualizing Values</h3>
+
+      <p>Since there is no <code>console.log()</code> in GLSL, the standard debugging technique is to output the value you want to inspect as a pixel color:</p>
+
+      <pre><code>// Debug: visualize the UV coordinates
+gl_FragColor = vec4(uv, 0.0, 1.0);
+// Red channel = x position, Green channel = y position
+
+// Debug: visualize a float value (mapped to grayscale)
+float val = length(z);
+gl_FragColor = vec4(vec3(val / 4.0), 1.0);
+
+// Debug: visualize iteration count
+float t = float(iter) / float(maxIter);
+gl_FragColor = vec4(t, 0.0, 0.0, 1.0);  // red = more iterations</code></pre>
+
+      <p>This technique is surprisingly powerful once you develop an intuition for reading color as data. A gradient from black to red tells you how a value changes across the screen; sudden color boundaries reveal discontinuities; uniform color means a constant value.</p>
+
+      <h3>GLSL Gradient Demo</h3>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Fragment Shader: Animated Gradient</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+
+  // Cosine palette with time animation
+  vec3 col = 0.5 + 0.5 * cos(
+    u_time + uv.xyx * 3.0 + vec3(0.0, 2.0, 4.0)
+  );
+
+  // Radial vignette
+  float d = length(uv - 0.5);
+  col *= 1.0 - d * 0.8;
+
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <!-- Quiz 5 -->
+      <div class="quiz" data-id="ch03-q5">
+        <div class="quiz-header">Knowledge Check</div>
+        <p class="question">In GLSL, what data type represents a 2D vector (useful for storing complex numbers)?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch03-q5" value="a"> <code>float2</code></label></li>
+          <li class="option"><label><input type="radio" name="ch03-q5" value="b" data-correct> <code>vec2</code></label></li>
+          <li class="option"><label><input type="radio" name="ch03-q5" value="c"> <code>complex</code></label></li>
+          <li class="option"><label><input type="radio" name="ch03-q5" value="d"> <code>double[2]</code></label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>vec2</code> is the GLSL type for a 2D vector. It stores two <code>float</code> components accessed via <code>.x</code> and <code>.y</code>. GLSL has no built-in complex type, so we use <code>vec2</code> and implement complex multiplication manually. (<code>float2</code> is HLSL syntax, not GLSL.)</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.12 -- MANDELBROT ON GPU
+           =============================================================== -->
+      <h2 id="mandelbrot-gpu">3.12 Mandelbrot on GPU</h2>
+
+      <p>The fragment shader runs once per pixel and knows its position. The Mandelbrot algorithm computes one pixel given its position. These are a perfect match &mdash; the GPU handles the outer pixel loop by running the fragment shader on all pixels simultaneously.</p>
+
+      <h3>Complex Numbers as vec2</h3>
+
+      <p>We represent complex numbers as <code>vec2</code>: <code>vec2(real, imag)</code>. Addition works automatically (component-wise <code>vec2 + vec2</code> matches complex addition). Multiplication requires a custom function:</p>
+
+      <pre><code>vec2 cmul(vec2 a, vec2 b) {
+  return vec2(a.x*b.x - a.y*b.y,
+              a.x*b.y + a.y*b.x);
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">Common Mistake</div>
+        <p>Do <strong>not</strong> use <code>z * z</code> for complex squaring! In GLSL, <code>*</code> on <code>vec2</code> is component-wise: <code>vec2(a*a, b*b)</code>. Complex squaring should give <code>vec2(a*a - b*b, 2.0*a*b)</code>. For example, <code>vec2(2,3) * vec2(2,3)</code> gives <code>vec2(4,9)</code>, but the correct answer for $(2+3i)^2$ is $-5+12i$.</p>
+      </div>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>GPU Mandelbrot Set</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision highp float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+vec2 cmul(vec2 a, vec2 b) {
+  return vec2(a.x*b.x - a.y*b.y,
+              a.x*b.y + a.y*b.x);
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+
+  // Map to complex plane [-2.5, 1.0] x [-1.2, 1.2]
+  vec2 c = vec2(
+    mix(-2.5, 1.0, uv.x),
+    mix(-1.2, 1.2, uv.y)
+  );
+
+  vec2 z = vec2(0.0);
+  int maxIter = 200;
+  int iter = 0;
+
+  for (int i = 0; i < 200; i++) {
+    z = cmul(z, z) + c;
+    if (length(z) > 2.0) break;
+    iter++;
+  }
+
+  if (iter >= maxIter) {
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  } else {
+    float t = float(iter) / float(maxIter);
+    vec3 col = vec3(
+      0.5 + 0.5*cos(6.2832*(t*3.0 + 0.0)),
+      0.5 + 0.5*cos(6.2832*(t*3.0 + 0.33)),
+      0.5 + 0.5*cos(6.2832*(t*3.0 + 0.67))
+    );
+    gl_FragColor = vec4(col, 1.0);
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <h3>Understanding the GPU Mandelbrot Shader</h3>
+
+      <p>Let us walk through the key lines of the fragment shader:</p>
+
+      <p><strong>Line 6-8: <code>cmul</code> function</strong> &mdash; Implements complex multiplication. The real part is $a_r b_r - a_i b_i$ and the imaginary part is $a_r b_i + a_i b_r$. This function replaces the <code>math.multiply()</code> calls from the CPU version.</p>
+
+      <p><strong>Line 12: UV coordinates</strong> &mdash; <code>gl_FragCoord.xy</code> gives the pixel position in screen coordinates (0 to width, 0 to height). Dividing by <code>u_resolution</code> normalizes to $[0, 1]$.</p>
+
+      <p><strong>Lines 15-18: <code>mix()</code> for coordinate mapping</strong> &mdash; The <code>mix(a, b, t)</code> function computes $a(1-t) + bt$, which linearly interpolates from $a$ to $b$. When <code>uv.x = 0</code>, <code>c.x = -2.5</code>; when <code>uv.x = 1</code>, <code>c.x = 1.0</code>. This replaces the <code>map()</code> function from p5.js.</p>
+
+      <p><strong>Line 24: Fixed loop bound</strong> &mdash; GLSL on some GPUs requires loop bounds to be compile-time constants. We use <code>200</code> as a fixed upper limit. On more advanced GPUs, you can use a uniform integer, but the constant approach is the most portable.</p>
+
+      <p><strong>Line 25: The iteration</strong> &mdash; <code>cmul(z, z) + c</code> computes $z^2 + c$. Note that <code>+ c</code> uses automatic <code>vec2</code> addition, which correctly adds the real and imaginary parts.</p>
+
+      <p><strong>Lines 32-38: Cosine color palette</strong> &mdash; The formula <code>0.5 + 0.5*cos(6.2832*(t*3.0 + offset))</code> creates a smooth, cyclic color palette. The three different offsets ($0.0$, $0.33$, $0.67$) produce different phase shifts for R, G, and B, creating a rainbow-like effect. The factor of $3.0$ on $t$ makes the colors cycle three times across the iteration range.</p>
+
+      <h3>The Speedup</h3>
+
+      <p>The GPU version renders in roughly $1/60$ second &mdash; fast enough for real-time 60 fps animation. The CPU version takes many seconds. That is a speedup of roughly <strong>3,600x</strong>. This comes entirely from <strong>parallelism</strong>: each GPU core is actually <em>slower</em> than a CPU core, but thousands run simultaneously.</p>
+
+      <p>This speedup makes possible things that are impossible on CPU: real-time zooming, panning, and animation of fractal parameters. It also enables rendering at high resolution (1080p or 4K) without waiting minutes per frame.</p>
+
+      <h3>Extending the Shader</h3>
+
+      <p>To create different fractals, change the iteration rule in the fragment shader:</p>
+
+      <pre><code>// z^3 + c (Multibrot)
+z = cmul(cmul(z, z), z) + c;
+
+// Burning Ship fractal
+z = vec2(abs(z.x), abs(z.y));
+z = cmul(z, z) + c;
+
+// Tricorn (Mandelbar)
+z = vec2(z.x, -z.y);  // conjugate
+z = cmul(z, z) + c;</code></pre>
+
+      <p>Each produces a dramatically different fractal with its own aesthetic character. You will also need to adjust the bounds (<code>mix</code> parameters) to frame the interesting region.</p>
+
+      <h3>Adding Zoom and Pan</h3>
+
+      <p>To create an interactive zooming Mandelbrot, send the view bounds as uniforms from JavaScript:</p>
+
+      <pre><code>// In JavaScript draw():
+s.setUniform("bounds_min", [centerX - zoom, centerY - zoom]);
+s.setUniform("bounds_max", [centerX + zoom, centerY + zoom]);
+
+// On mouse click, zoom in:
+function mousePressed() {
+  centerX = map(mouseX, 0, width, centerX - zoom, centerX + zoom);
+  centerY = map(mouseY, 0, height, centerY + zoom, centerY - zoom);
+  zoom *= 0.5;  // zoom in by factor of 2
+}</code></pre>
+
+      <p>With each click, the view zooms by a factor of 2, revealing more detail. Because the GPU renders in real-time, you can explore the Mandelbrot set interactively &mdash; something impossible with the CPU version.</p>
+
+      <h3>Smooth Coloring (Normalized Iteration Count)</h3>
+
+      <p>The standard iteration-count coloring produces visible "bands" where the iteration count jumps by 1. A smoother coloring technique uses the <strong>normalized iteration count</strong>:</p>
+
+      <pre><code>// In the fragment shader, after the loop:
+float smoothIter = float(iter) + 1.0
+    - log(log(length(z))) / log(2.0);
+float t = smoothIter / float(maxIter);</code></pre>
+
+      <p>This formula interpolates fractionally between iteration bands based on how far past the escape radius the point traveled, producing silky-smooth gradients instead of hard color boundaries. The mathematical basis is the <strong>potential function</strong> (Green's function) of the Mandelbrot set, which measures the asymptotic growth rate of the orbit.</p>
+
+      <h3>Distance Estimation</h3>
+
+      <p>An even more advanced technique is <strong>distance estimation</strong>, which approximates the distance from each exterior point to the Mandelbrot set boundary. The distance estimate uses the derivative of the iteration with respect to $c$:</p>
+
+      <p>$$d(c) \approx \frac{|z_n| \cdot \ln|z_n|}{|z'_n|}$$</p>
+
+      <p>where $z'_n$ is computed alongside $z_n$ using the chain rule: $z'_{n+1} = 2z_n z'_n + 1$, with $z'_0 = 0$. Distance estimation enables anti-aliased rendering, boundary glow effects, and 3D-like visualizations. We explore this in Chapter 4.</p>
+
+      <h3>Color Palettes for Fractal Art</h3>
+
+      <p>The cosine palette used in the GPU version is one of many possible color mapping techniques:</p>
+
+      <ul>
+        <li><strong>Linear gradient:</strong> Map iteration count directly to a color ramp. Simple but produces visible banding.</li>
+        <li><strong>Cosine palette:</strong> <code>col = 0.5 + 0.5*cos(2*PI*(t*freq + offset))</code>. Smooth and cyclic, with easy parameter control.</li>
+        <li><strong>HSB mapping:</strong> Map iteration to hue, with saturation and brightness fixed or modulated. Produces rainbow effects.</li>
+        <li><strong>Histogram equalization:</strong> Distribute colors so that each color appears equally often, maximizing visual contrast.</li>
+        <li><strong>Orbit traps:</strong> Color based on how close the orbit passes to some geometric shape (a point, line, or circle). Creates unexpected patterns.</li>
+      </ul>
+
+      <p>The choice of palette is where mathematics meets art. The same fractal data can look dramatically different &mdash; serene or psychedelic, subtle or bold &mdash; depending on the color mapping.</p>
+
+      <h3>Performance Comparison: CPU vs. GPU</h3>
+
+      <p>The following table summarizes the key differences between CPU and GPU fractal rendering:</p>
+
+      <table>
+        <thead>
+          <tr><th>Aspect</th><th>CPU (p5.js)</th><th>GPU (GLSL)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Processing model</td><td>Serial (one pixel at a time)</td><td>Parallel (all pixels simultaneously)</td></tr>
+          <tr><td>Complex arithmetic</td><td>math.js objects or manual floats</td><td>vec2 with custom cmul()</td></tr>
+          <tr><td>Render time (400x400)</td><td>~30&ndash;60 seconds</td><td>~16 milliseconds (1/60 sec)</td></tr>
+          <tr><td>Interactive?</td><td>No (too slow)</td><td>Yes (real-time 60 fps)</td></tr>
+          <tr><td>Debugging</td><td>console.log()</td><td>Output as pixel color</td></tr>
+          <tr><td>Precision</td><td>64-bit double</td><td>32-bit float (mediump/highp)</td></tr>
+          <tr><td>Max zoom</td><td>~$10^{14}$x</td><td>~$10^{6}$&ndash;$10^{7}$x</td></tr>
+          <tr><td>Language</td><td>JavaScript</td><td>GLSL (C-like)</td></tr>
+          <tr><td>Code complexity</td><td>Simple</td><td>Moderate (shader pipeline)</td></tr>
+        </tbody>
+      </table>
+
+      <p>The GPU's lower precision (32-bit vs. 64-bit) means that deep zooms eventually become "fuzzy" at lower magnification. For production deep-zoom videos, techniques like <strong>perturbation theory</strong> and <strong>series approximation</strong> are used to achieve extreme magnification without full arbitrary-precision arithmetic.</p>
+
+      <!-- Quiz 6 -->
+      <div class="quiz" data-id="ch03-q6">
+        <div class="quiz-header">Knowledge Check</div>
+        <p class="question">Why is the GPU so much faster than the CPU for the Mandelbrot set?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch03-q6" value="a"> GPU cores are individually faster than CPU cores</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q6" value="b" data-correct> The GPU computes all pixels simultaneously in parallel</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q6" value="c"> The GPU uses a more efficient algorithm</label></li>
+          <li class="option"><label><input type="radio" name="ch03-q6" value="d"> GLSL has built-in fractal functions</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The speedup comes from <strong>massive parallelism</strong>. Each GPU core is actually slower than a CPU core, but the GPU has thousands of them running simultaneously. The Mandelbrot algorithm is "embarrassingly parallel" &mdash; each pixel's computation is completely independent &mdash; so it maps perfectly onto GPU architecture.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================================
+           SECTION 3.13 -- SUMMARY
+           =============================================================== -->
+      <h2 id="summary">3.13 Summary</h2>
+
+      <p>This chapter traced a path from basic mathematical concepts to GPU-accelerated fractal rendering:</p>
+
+      <ol>
+        <li><strong>Sequences and series</strong> gave us the language of convergence and divergence.</li>
+        <li><strong>Iteration and feedback</strong> showed how simple rules, repeated, produce complex behavior via recurrence relations, fixed points, and cobweb plots.</li>
+        <li><strong>The logistic map</strong> demonstrated the route from order to chaos through period doubling and the universal Feigenbaum constant $\delta \approx 4.669$.</li>
+        <li><strong>Chaos theory</strong> formalized sensitive dependence on initial conditions (the butterfly effect), nonlinearity, strange attractors, and Lyapunov exponents.</li>
+        <li><strong>Complex numbers</strong> provided the 2D number system: addition, multiplication, polar form, Euler's formula, magnitude, and argument.</li>
+        <li><strong>The Mandelbrot set</strong> combined iteration ($z^2 + c$) with complex numbers to classify points by the convergence/divergence of an iterated sequence.</li>
+        <li><strong>Julia sets</strong> revealed the dual perspective: fixing $c$ and varying $z_0$, with the Mandelbrot set as the topological index.</li>
+        <li><strong>Newton's method</strong> connected iteration to root finding and revealed another family of fractals.</li>
+        <li><strong>GLSL</strong> introduced the vertex/fragment shader pipeline, uniforms, varyings, and GPU data types.</li>
+        <li><strong>GPU Mandelbrot</strong> ported the algorithm to GLSL, achieving a 3,600x speedup through massive parallelism.</li>
+      </ol>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">Key Concept</div>
+        <p>The central theme: <strong>simple rules, iterated with feedback, produce infinite complexity</strong>. A single line of math ($z^2 + c$) generates a shape with more detail than any finite description can capture. This is the deep connection between chaos theory, fractal geometry, and computational art.</p>
+      </div>
+
+      <h3>Connections to Art and Design</h3>
+
+      <p>The ideas in this chapter are not merely mathematical curiosities &mdash; they are foundational tools for computational art. Consider how each concept translates to creative practice:</p>
+
+      <ul>
+        <li><strong>Iteration as process:</strong> Many artistic practices involve repetition with variation &mdash; weaving, printmaking, musical composition. The mathematical framework of iteration formalizes this, revealing that even tiny variations in the "rule" can lead to dramatically different outcomes. This mirrors the artistic experience of discovering unexpected results through systematic exploration.</li>
+        <li><strong>Chaos as creative tool:</strong> The tension between determinism and unpredictability is exactly what makes generative art compelling. The artist designs the system (the rules), but the system surprises the artist (the outcomes). Chaos theory gives us a precise vocabulary for this experience.</li>
+        <li><strong>Fractals as aesthetic objects:</strong> The self-similarity and infinite detail of fractals resonate with deep human aesthetic preferences. Research in neuroaesthetics suggests that humans have a preferred "fractal dimension" (around $D \approx 1.3$) for landscapes and abstract art, matching the fractal dimension of natural scenes like coastlines and tree canopies.</li>
+        <li><strong>GPU as creative medium:</strong> Learning GLSL is not just about performance &mdash; the per-pixel, functional thinking it requires leads to a fundamentally different approach to image-making. Instead of constructing images from shapes, you define fields, gradients, and transformation rules. This opens up entirely new aesthetic territories.</li>
+      </ul>
+
+      <h3>What Comes Next</h3>
+
+      <p>In the following chapters, we will build on these foundations:</p>
+
+      <ul>
+        <li><strong>Chapter 4</strong> explores creative fractal coloring techniques &mdash; histogram equalization, distance estimation, orbit traps, and smooth coloring &mdash; to transform mathematical renderings into works of art.</li>
+        <li>Later chapters apply the GPU shader skills to other domains: reaction-diffusion systems, cellular automata, ray marching, and real-time video effects.</li>
+        <li>The concept of iteration with feedback will recur throughout the course: agent-based systems, L-systems, and generative algorithms all rely on the same fundamental principle.</li>
+        <li>The complex plane itself becomes a tool for transformations: conformal mapping, M&ouml;bius transformations, and domain coloring all build on the complex arithmetic introduced here.</li>
+      </ul>
+
+      <hr>
+
+      <h3>Key Equations Reference</h3>
+
+      <table>
+        <thead>
+          <tr><th>Concept</th><th>Equation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Geometric series sum</td><td>$S = \dfrac{a}{1-r}$ for $|r| &lt; 1$</td></tr>
+          <tr><td>Recurrence relation</td><td>$x_{n+1} = f(x_n)$</td></tr>
+          <tr><td>Logistic map</td><td>$x_{n+1} = rx_n(1-x_n)$</td></tr>
+          <tr><td>Complex multiplication</td><td>$(a+bi)(c+di) = (ac-bd)+(ad+bc)i$</td></tr>
+          <tr><td>Complex squaring</td><td>$(a+bi)^2 = (a^2-b^2)+2abi$</td></tr>
+          <tr><td>Complex magnitude</td><td>$|a+bi| = \sqrt{a^2+b^2}$</td></tr>
+          <tr><td>Euler's formula</td><td>$e^{i\theta} = \cos\theta + i\sin\theta$</td></tr>
+          <tr><td>Mandelbrot iteration</td><td>$z_{n+1} = z_n^2 + c, \quad z_0 = 0$</td></tr>
+          <tr><td>Newton's method</td><td>$x_{n+1} = x_n - f(x_n)/f'(x_n)$</td></tr>
+          <tr><td>Feigenbaum constant</td><td>$\delta = 4.669201609\ldots$</td></tr>
+        </tbody>
+      </table>
+
+
+      <!-- ===============================================================
+           CODE CHALLENGES
+           =============================================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <p>These auto-graded challenges test your ability to implement the core mathematical operations covered in this chapter. Each challenge provides test cases &mdash; write the function body and click Submit to check your solution against all tests. Focus on getting the math right; efficiency is not graded.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">Key Concept</div>
+        <p>The code challenges below cover the four core computational skills of this chapter: complex multiplication (the foundation of fractal arithmetic), the Mandelbrot escape algorithm (the core fractal computation), Newton's method (iterative root finding), and the logistic map (the simplest route to chaos). Mastering these functions means you can implement any of the fractals discussed in this chapter.</p>
+      </div>
+
+      <!-- Challenge 1: complexMultiply -->
+      <div class="code-challenge" data-id="ch03-c1">
+        <div class="code-challenge-header">Code Challenge: complexMultiply</div>
+        <p class="prompt">Write a function <code>complexMultiply(a, b)</code> that multiplies two complex numbers represented as <code>{re, im}</code> objects and returns a new <code>{re, im}</code> object. Formula: $(a_{re}+a_{im}i)(b_{re}+b_{im}i) = (a_{re}b_{re}-a_{im}b_{im}) + (a_{re}b_{im}+a_{im}b_{re})i$.</p>
+        <textarea class="cm-editor">function complexMultiply(a, b) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "complexMultiply({re:1, im:2}, {re:3, im:4})", "expected": {"re":-5, "im":10}},
+          {"call": "complexMultiply({re:0, im:1}, {re:0, im:1})", "expected": {"re":-1, "im":0}},
+          {"call": "complexMultiply({re:2, im:0}, {re:3, im:0})", "expected": {"re":6, "im":0}},
+          {"call": "complexMultiply({re:1, im:1}, {re:1, im:-1})", "expected": {"re":2, "im":0}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 2: mandelbrotEscape -->
+      <div class="code-challenge" data-id="ch03-c2">
+        <div class="code-challenge-header">Code Challenge: mandelbrotEscape</div>
+        <p class="prompt">Write <code>mandelbrotEscape(cRe, cIm, maxIter)</code> that returns the number of iterations before the Mandelbrot sequence escapes ($|z| &gt; 2$). If it does not escape within <code>maxIter</code> iterations, return <code>maxIter</code>. Start with $z_0 = 0$.</p>
+        <textarea class="cm-editor">function mandelbrotEscape(cRe, cIm, maxIter) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "mandelbrotEscape(0, 0, 100)", "expected": 100},
+          {"call": "mandelbrotEscape(1, 0, 100)", "expected": 2},
+          {"call": "mandelbrotEscape(-1, 0, 100)", "expected": 100},
+          {"call": "mandelbrotEscape(0.5, 0.5, 100)", "expected": 5},
+          {"call": "mandelbrotEscape(10, 0, 100)", "expected": 0}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 3: newtonStep -->
+      <div class="code-challenge" data-id="ch03-c3">
+        <div class="code-challenge-header">Code Challenge: newtonStep</div>
+        <p class="prompt">Write <code>newtonStep(x)</code> that performs one step of Newton's method for $f(x) = x^3 - 1$ (derivative $f'(x) = 3x^2$). Return $x_{n+1} = x_n - f(x_n)/f'(x_n)$. Round to 4 decimal places.</p>
+        <textarea class="cm-editor">function newtonStep(x) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "newtonStep(2)", "expected": 1.4167},
+          {"call": "newtonStep(1)", "expected": 1},
+          {"call": "newtonStep(0.5)", "expected": 3.1667},
+          {"call": "newtonStep(1.5)", "expected": 1.1481}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- Challenge 4: logisticMap -->
+      <div class="code-challenge" data-id="ch03-c4">
+        <div class="code-challenge-header">Code Challenge: logisticMap</div>
+        <p class="prompt">Write <code>logisticMap(x, r, n)</code> that iterates the logistic map $x_{k+1} = r \cdot x_k(1 - x_k)$ starting from <code>x</code> for <code>n</code> iterations, returning the final value rounded to 4 decimal places.</p>
+        <textarea class="cm-editor">function logisticMap(x, r, n) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "logisticMap(0.5, 2.0, 1)", "expected": 0.5},
+          {"call": "logisticMap(0.5, 2.0, 10)", "expected": 0.5},
+          {"call": "logisticMap(0.1, 3.0, 1)", "expected": 0.27},
+          {"call": "logisticMap(0.5, 2.5, 20)", "expected": 0.6}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===============================================================
+           EXERCISES
+           =============================================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <p>These open-ended exercises give you the opportunity to apply the concepts from this chapter in creative ways. Each includes a starter template and a complete solution you can reveal when you are ready. Try to solve them on your own first &mdash; the struggle is where the learning happens.</p>
+
+      <!-- Exercise 3.1 -->
+      <div class="exercise">
+        <div class="exercise-header">Exercise 3.1: Color-Mapped Mandelbrot with HSB</div>
+        <p class="prompt">Modify the CPU Mandelbrot code to use HSB color mode. Map the iteration count to a hue value (0-360) using <code>colorMode(HSB, 360, 100, 100)</code>. Points in the set should remain black. Use <code>set(px, py, color(h, s, b))</code> instead of direct pixel manipulation.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(300, 300);
+  pixelDensity(1);
+  colorMode(HSB, 360, 100, 100);
+  noLoop();
+}
+
+function draw() {
+  background(0);
+  let maxIter = 80;
+
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      let cRe = map(px, 0, width, -2.5, 1.0);
+      let cIm = map(py, 0, height, 1.2, -1.2);
+      let zRe = 0, zIm = 0, iter = 0;
+
+      for (let i = 0; i < maxIter; i++) {
+        let nr = zRe*zRe - zIm*zIm + cRe;
+        let ni = 2*zRe*zIm + cIm;
+        zRe = nr; zIm = ni;
+        if (zRe*zRe + zIm*zIm > 4) break;
+        iter++;
+      }
+
+      // TODO: Use HSB coloring
+      // Hint: set(px, py, color(hue, saturation, brightness))
+      if (iter < maxIter) {
+        set(px, py, color(0, 0, 50));
+      } else {
+        set(px, py, color(0, 0, 0));
+      }
+    }
+  }
+  updatePixels();
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(300, 300);
+  pixelDensity(1);
+  colorMode(HSB, 360, 100, 100);
+  noLoop();
+}
+
+function draw() {
+  background(0);
+  let maxIter = 80;
+
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      let cRe = map(px, 0, width, -2.5, 1.0);
+      let cIm = map(py, 0, height, 1.2, -1.2);
+      let zRe = 0, zIm = 0, iter = 0;
+
+      for (let i = 0; i < maxIter; i++) {
+        let nr = zRe*zRe - zIm*zIm + cRe;
+        let ni = 2*zRe*zIm + cIm;
+        zRe = nr; zIm = ni;
+        if (zRe*zRe + zIm*zIm > 4) break;
+        iter++;
+      }
+
+      if (iter < maxIter) {
+        let hue = map(iter, 0, maxIter, 0, 360);
+        let sat = 90;
+        let bri = map(iter, 0, maxIter, 100, 50);
+        set(px, py, color(hue, sat, bri));
+      } else {
+        set(px, py, color(0, 0, 0));
+      }
+    }
+  }
+  updatePixels();
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3.2 -->
+      <div class="exercise">
+        <div class="exercise-header">Exercise 3.2: Interactive Julia Set with Mouse</div>
+        <p class="prompt">Create a Julia set renderer where the complex parameter $c$ is controlled by the mouse. Map <code>mouseX</code> to $\text{Re}(c)$ in $[-2, 2]$ and <code>mouseY</code> to $\text{Im}(c)$ in $[-2, 2]$. The starting value $z_0$ varies per pixel; $c$ is fixed per frame.</p>
+        <textarea class="cm-editor">let maxIter = 60;
+
+function setup() {
+  createCanvas(250, 250);
+  pixelDensity(1);
+}
+
+function draw() {
+  // TODO: implement Julia set
+  background(0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let maxIter = 60;
+
+function setup() {
+  createCanvas(250, 250);
+  pixelDensity(1);
+}
+
+function draw() {
+  let cRe = map(mouseX, 0, width, -2, 2);
+  let cIm = map(mouseY, 0, height, -2, 2);
+
+  loadPixels();
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      let zRe = map(px, 0, width, -2, 2);
+      let zIm = map(py, 0, height, -2, 2);
+      let iter = 0;
+
+      for (let i = 0; i < maxIter; i++) {
+        let nr = zRe*zRe - zIm*zIm + cRe;
+        let ni = 2*zRe*zIm + cIm;
+        zRe = nr; zIm = ni;
+        if (zRe*zRe + zIm*zIm > 4) break;
+        iter++;
+      }
+
+      let idx = (py*width + px) * 4;
+      if (iter === maxIter) {
+        pixels[idx]=0; pixels[idx+1]=0; pixels[idx+2]=0;
+      } else {
+        let t = iter / maxIter;
+        pixels[idx]   = floor(255 * t);
+        pixels[idx+1] = floor(255 * sqrt(t));
+        pixels[idx+2] = floor(200 * (1 - t));
+      }
+      pixels[idx+3] = 255;
+    }
+  }
+  updatePixels();
+
+  fill(255); noStroke(); textSize(10); textFont('monospace');
+  text('c = '+cRe.toFixed(2)+' + '+cIm.toFixed(2)+'i', 5, 12);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- Exercise 3.3 -->
+      <div class="exercise">
+        <div class="exercise-header">Exercise 3.3: Bifurcation Diagram</div>
+        <p class="prompt">Create the bifurcation diagram for the logistic map $x_{n+1} = rx_n(1-x_n)$. For each value of $r$ (x-axis, range 2.5 to 4.0), iterate many times to discard transients, then plot the long-term $x$ values (y-axis, range 0 to 1) using <code>point()</code>.</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 300);
+  background(255);
+  // TODO: draw bifurcation diagram
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(400, 300);
+  background(255);
+
+  let rMin = 2.5, rMax = 4.0;
+  stroke(0, 0, 80, 30); strokeWeight(1);
+
+  for (let px = 0; px < width; px++) {
+    let r = map(px, 0, width, rMin, rMax);
+    let x = 0.5;
+
+    // Discard transients
+    for (let i = 0; i < 300; i++) x = r*x*(1-x);
+
+    // Plot attractor
+    for (let i = 0; i < 150; i++) {
+      x = r * x * (1 - x);
+      point(px, map(x, 0, 1, height, 0));
+    }
+  }
+
+  noStroke(); fill(0); textFont('monospace'); textSize(10);
+  text('r = 2.5', 5, height - 5);
+  text('r = 4.0', width - 50, height - 5);
+  text('Logistic Map Bifurcation', 5, 12);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===============================================================
+           GLOSSARY
+           =============================================================== -->
+      <h2 id="glossary">Glossary of Key Terms</h2>
+
+      <p>This glossary collects the essential definitions introduced in this chapter for quick reference.</p>
+
+      <table>
+        <thead>
+          <tr><th>Term</th><th>Definition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Argument</strong></td><td>The angle $\theta$ of a complex number in polar form: $\arg(a+bi) = \arctan(b/a)$.</td></tr>
+          <tr><td><strong>Attractor</strong></td><td>A set of states toward which a dynamical system tends to evolve. Can be a fixed point, limit cycle, or strange attractor.</td></tr>
+          <tr><td><strong>Basin of attraction</strong></td><td>The set of all initial conditions that converge to a particular attractor under iteration.</td></tr>
+          <tr><td><strong>Bifurcation</strong></td><td>A qualitative change in system behavior as a parameter is varied (e.g., a fixed point splitting into a 2-cycle).</td></tr>
+          <tr><td><strong>Butterfly effect</strong></td><td>Popular name for sensitive dependence on initial conditions: small changes in input lead to large, unpredictable changes in output.</td></tr>
+          <tr><td><strong>Chaos</strong></td><td>Deterministic behavior that is aperiodic and exhibits sensitive dependence on initial conditions. Requires nonlinearity.</td></tr>
+          <tr><td><strong>Cobweb plot</strong></td><td>A graphical method for visualizing iteration of a map $f(x)$ by alternately drawing horizontal and vertical lines between $y = x$ and $y = f(x)$.</td></tr>
+          <tr><td><strong>Complex conjugate</strong></td><td>For $z = a + bi$, the conjugate is $\bar{z} = a - bi$. Reflects the point across the real axis.</td></tr>
+          <tr><td><strong>Complex number</strong></td><td>A number of the form $a + bi$ where $i^2 = -1$. Represents a point in the 2D complex plane.</td></tr>
+          <tr><td><strong>Convergence</strong></td><td>A sequence converges if its terms approach a finite limit. A series converges if its partial sums approach a finite limit.</td></tr>
+          <tr><td><strong>Divergence</strong></td><td>A sequence or series that grows without bound or fails to approach any finite value.</td></tr>
+          <tr><td><strong>Embarrassingly parallel</strong></td><td>A computation where every sub-task is completely independent, requiring no communication between threads. Ideal for GPU processing.</td></tr>
+          <tr><td><strong>Escape radius</strong></td><td>The threshold (typically 2 for Mandelbrot) beyond which a sequence is guaranteed to diverge.</td></tr>
+          <tr><td><strong>Feigenbaum constant</strong></td><td>$\delta \approx 4.669$, the universal ratio of successive bifurcation intervals in period-doubling cascades.</td></tr>
+          <tr><td><strong>Fixed point</strong></td><td>A value $x^*$ where $f(x^*) = x^*$. The iteration "stays put" at this value.</td></tr>
+          <tr><td><strong>Fragment shader</strong></td><td>A GPU program that runs once per pixel, determining its color. The core of GPU fractal rendering.</td></tr>
+          <tr><td><strong>Fractal</strong></td><td>A geometric shape that exhibits self-similarity at multiple scales and typically has a fractional Hausdorff dimension.</td></tr>
+          <tr><td><strong>Hausdorff dimension</strong></td><td>A generalization of dimension that can take non-integer values, measuring the "roughness" or space-filling capacity of a set.</td></tr>
+          <tr><td><strong>Iteration</strong></td><td>The process of repeatedly applying a function: $x_0, f(x_0), f(f(x_0)), \ldots$</td></tr>
+          <tr><td><strong>Julia set</strong></td><td>For a fixed $c$, the boundary of the set of starting points $z_0$ for which $z^2 + c$ remains bounded.</td></tr>
+          <tr><td><strong>Logistic map</strong></td><td>The iteration $x_{n+1} = rx_n(1-x_n)$, a canonical example of the route from order to chaos.</td></tr>
+          <tr><td><strong>Lyapunov exponent</strong></td><td>A quantity $\lambda$ measuring the exponential rate of trajectory divergence. Positive $\lambda$ indicates chaos.</td></tr>
+          <tr><td><strong>Magnitude</strong></td><td>The distance of a complex number from the origin: $|a+bi| = \sqrt{a^2 + b^2}$.</td></tr>
+          <tr><td><strong>Mandelbrot set</strong></td><td>The set of complex numbers $c$ for which $z_{n+1} = z_n^2 + c$ (starting from $z_0 = 0$) remains bounded.</td></tr>
+          <tr><td><strong>Newton fractal</strong></td><td>The fractal boundary between basins of attraction when Newton's method is applied to a polynomial over the complex plane.</td></tr>
+          <tr><td><strong>Period doubling</strong></td><td>A bifurcation in which a stable period-$n$ orbit becomes a stable period-$2n$ orbit as a parameter changes.</td></tr>
+          <tr><td><strong>Recurrence relation</strong></td><td>An equation defining each term of a sequence in terms of previous terms: $x_{n+1} = f(x_n, x_{n-1}, \ldots)$.</td></tr>
+          <tr><td><strong>Self-similarity</strong></td><td>The property of a shape where parts resemble the whole at different scales.</td></tr>
+          <tr><td><strong>Sequence</strong></td><td>An ordered list of numbers: $a_1, a_2, a_3, \ldots$</td></tr>
+          <tr><td><strong>Series</strong></td><td>The sum of the terms of a sequence: $S = \sum_{n=1}^{\infty} a_n$.</td></tr>
+          <tr><td><strong>Strange attractor</strong></td><td>An attractor with fractal structure, characteristic of chaotic systems.</td></tr>
+          <tr><td><strong>Swizzling</strong></td><td>GLSL feature allowing rearrangement of vector components: <code>v.xyx</code>, <code>color.rgb</code>, etc.</td></tr>
+          <tr><td><strong>Uniform</strong></td><td>A GLSL variable sent from JavaScript to the shader, constant across all pixels in a frame.</td></tr>
+          <tr><td><strong>Varying</strong></td><td>A GLSL variable interpolated from vertex shader to fragment shader across the rendered surface.</td></tr>
+          <tr><td><strong>Vertex shader</strong></td><td>A GPU program that runs once per vertex, positioning geometry on screen.</td></tr>
+        </tbody>
+      </table>
+
+
+      <!-- ===============================================================
+           SECTION 3.14 -- REFERENCES
+           =============================================================== -->
+      <h2 id="references">3.14 References</h2>
+
+      <h3>Books</h3>
+      <ul>
+        <li>James Gleick, <em>Chaos: Making a New Science</em> (1987)</li>
+        <li>Benoit Mandelbrot, <em>The Fractal Geometry of Nature</em> (1982)</li>
+        <li>Heinz-Otto Peitgen &amp; Peter Richter, <em>The Beauty of Fractals</em> (1986)</li>
+        <li>Robert L. Devaney, <em>An Introduction to Chaotic Dynamical Systems</em> (2003)</li>
+        <li>James Gleick, <em>The Information: A History, a Theory, a Flood</em> (2011)</li>
+      </ul>
+
+      <h3>Videos</h3>
+      <ul>
+        <li><a href="https://www.youtube.com/watch?v=y9BK--OxZpY" target="_blank">3Blue1Brown: The meaning within the Mandelbrot set</a></li>
+        <li><a href="https://www.youtube.com/watch?v=LqbZpur38nw" target="_blank">3Blue1Brown: Beyond the Mandelbrot set</a></li>
+        <li><a href="https://www.youtube.com/watch?v=-RdOwhmqP5s" target="_blank">3Blue1Brown: Newton's fractal</a></li>
+        <li><a href="https://www.youtube.com/watch?v=Ed1gsyxxwM0" target="_blank">twoswap: Mandelbrot's Evil Twin</a></li>
+      </ul>
+
+      <h3>Online Resources</h3>
+      <ul>
+        <li><a href="https://thebookofshaders.com/" target="_blank">The Book of Shaders</a> &mdash; interactive GLSL tutorial</li>
+        <li><a href="https://www.shadertoy.com/" target="_blank">ShaderToy</a> &mdash; community shader gallery</li>
+        <li><a href="https://mathjs.org/docs/datatypes/complex_numbers.html" target="_blank">math.js: Complex Numbers documentation</a></li>
+        <li><a href="https://www.desmos.com/calculator/ipl6nklkzc" target="_blank">Desmos: Cobweb Plot</a></li>
+        <li><a href="https://www.desmos.com/calculator/xdvmthmdql" target="_blank">Desmos: Newton's Method</a></li>
+        <li><a href="https://fractaldex.org" target="_blank">FractalDex</a> &mdash; fractal explorer and catalog</li>
+        <li><a href="https://www.khronos.org/files/webgl20-reference-guide.pdf" target="_blank">WebGL 2.0 Reference Guide</a></li>
+      </ul>
+
+      <h3>Academic Papers</h3>
+      <ul>
+        <li>Robert May, "Simple mathematical models with very complicated dynamics," <em>Nature</em> 261, 459&ndash;467 (1976)</li>
+        <li>T.-Y. Li and James Yorke, "Period Three Implies Chaos," <em>American Mathematical Monthly</em> 82(10), 985&ndash;992 (1975)</li>
+        <li>Mitchell Feigenbaum, "Quantitative universality for a class of nonlinear transformations," <em>Journal of Statistical Physics</em> 19(1), 25&ndash;52 (1978)</li>
+        <li>Adrien Douady and John H. Hubbard, "&Eacute;tude dynamique des polyn&ocirc;mes complexes" (Parts I and II), <em>Publications math&eacute;matiques d'Orsay</em> (1984&ndash;85)</li>
+      </ul>
+
+      <h3>In-Class Sketches</h3>
+      <ul>
+        <li><a href="https://editor.p5js.org/kybr/sketches/S1arxSxq8" target="_blank">Iteration demo</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/Rtfit_-jP" target="_blank">Newton's method</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/E9yDmPa4o" target="_blank">Complex plane orbit visualization</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/ZPu-iKF82" target="_blank">CPU Mandelbrot starter</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/XIrePE6pC" target="_blank">GLSL introduction</a></li>
+        <li><a href="https://editor.p5js.org/kybr/sketches/faBZETS5F" target="_blank">GLSL Mandelbrot solution</a></li>
+      </ul>
+
+
+      <!-- ===============================================================
+           CHAPTER END QUIZ
+           =============================================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 3 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of iteration, chaos, complex numbers, and fractals.</p>
+
+        <div class="quiz" data-id="ch03-final-q1">
+          <div class="quiz-header">Question 1</div>
+          <p class="question">The harmonic series $1 + \tfrac{1}{2} + \tfrac{1}{3} + \tfrac{1}{4} + \cdots$:</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch03-fq1" value="a"> Converges to 1</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq1" value="b"> Converges to 2</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq1" value="c" data-correct> Diverges, even though its terms approach 0</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq1" value="d"> Oscillates</label></li>
+          </ul>
+          <div class="explanation"><p>The harmonic series is the classic example of a divergent series whose terms approach zero. The partial sums grow without bound (albeit very slowly). This demonstrates that the divergence test's converse is false.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch03-final-q2">
+          <div class="quiz-header">Question 2</div>
+          <p class="question">The Feigenbaum constant is approximately:</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch03-fq2" value="a"> 3.14159 ($\pi$)</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq2" value="b"> 2.71828 ($e$)</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq2" value="c" data-correct> 4.66920</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq2" value="d"> 1.61803 ($\varphi$)</label></li>
+          </ul>
+          <div class="explanation"><p>The Feigenbaum constant $\delta \approx 4.669201\ldots$ is the limiting ratio of successive bifurcation intervals in the period-doubling route to chaos. It is universal across all one-dimensional maps that undergo period doubling.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch03-final-q3">
+          <div class="quiz-header">Question 3</div>
+          <p class="question">A point $c$ is in the Mandelbrot set if:</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch03-fq3" value="a"> $|z_n|$ reaches exactly 2</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq3" value="b" data-correct> The iteration $z_{n+1} = z_n^2 + c$ (with $z_0 = 0$) remains bounded for all $n$</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq3" value="c"> $c$ has a positive imaginary part</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq3" value="d"> The iteration converges to $c$ itself</label></li>
+          </ul>
+          <div class="explanation"><p>By definition, $c \in \mathcal{M}$ if and only if the iteration $z_{n+1} = z_n^2 + c$, starting from $z_0 = 0$, produces a bounded sequence. "Bounded" means $|z_n|$ never exceeds some finite value.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch03-final-q4">
+          <div class="quiz-header">Question 4</div>
+          <p class="question">If $c$ is <em>outside</em> the Mandelbrot set, its Julia set is:</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch03-fq4" value="a"> A perfect circle</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq4" value="b"> Connected (one piece)</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq4" value="c" data-correct> Totally disconnected (fractal dust)</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq4" value="d"> Identical to the Mandelbrot set</label></li>
+          </ul>
+          <div class="explanation"><p>The Mandelbrot-Julia correspondence states: $c$ inside $\mathcal{M}$ gives a connected Julia set; $c$ outside $\mathcal{M}$ gives a totally disconnected Julia set (Cantor dust). The Mandelbrot set is the "index" classifying Julia sets by their topology.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch03-final-q5">
+          <div class="quiz-header">Question 5</div>
+          <p class="question">Why must we use a custom function for complex multiplication in GLSL?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch03-fq5" value="a"> GLSL does not support the * operator on vectors</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq5" value="b"> The * operator is too slow</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq5" value="c" data-correct> The * operator does component-wise multiplication, not complex multiplication</label></li>
+            <li class="option"><label><input type="radio" name="ch03-fq5" value="d"> GLSL automatically treats vec2 as complex numbers</label></li>
+          </ul>
+          <div class="explanation"><p>In GLSL, <code>vec2 * vec2</code> is component-wise: <code>vec2(a*c, b*d)</code>. Complex multiplication requires cross-terms: <code>vec2(a*c - b*d, a*d + b*c)</code>. These are completely different! For example, $(2+3i)^2 = -5+12i$, but component-wise gives $(4, 9)$.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===============================================================
+           CHAPTER NAVIGATION
+           =============================================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch02/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 2</span>
+        </a>
+        <a href="../ch04/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 4: Creative Fractals &amp; Coloring</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

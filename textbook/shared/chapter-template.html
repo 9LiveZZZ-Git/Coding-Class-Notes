@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter N: Title — Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror (shader chapters) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<!-- Set data-chapter to a unique ID for progress tracking -->
+<body data-chapter="ch00">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar: Table of Contents (auto-populated by engine.js) -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter N: Title</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar: progress + theme toggle -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter N: Title</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts — Brief description of this chapter</p>
+
+      <!-- ═══════════════════════════════════════
+           SECTION EXAMPLE
+           ═══════════════════════════════════════ -->
+      <h2 id="section-1">N.1 Section Title</h2>
+
+      <p>Body text goes here. Use standard HTML. Inline code looks like <code>createCanvas(400, 400)</code>. Math uses KaTeX: $f(x) = x^2 + 1$ for inline and display math:</p>
+
+      <p>$$\sum_{i=0}^{n} i = \frac{n(n+1)}{2}$$</p>
+
+      <!-- Callout boxes -->
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Term</strong> — A definition goes here.</p>
+      </div>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p>Important idea that students should remember.</p>
+      </div>
+
+      <div class="callout callout-theorem">
+        <div class="callout-title">&#128208; Theorem</div>
+        <p>A mathematical theorem or important result.</p>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Something students often get wrong.</p>
+      </div>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>Background on who invented this or where it came from.</p>
+      </div>
+
+      <h3>N.1.1 Subsection</h3>
+
+      <p>More content with a static code block (not interactive):</p>
+
+      <pre><code>// This is a static code block — read-only, no run button
+let x = 10;
+let y = 20;
+console.log(x + y);</code></pre>
+
+      <!-- ═══════════════════════════════════════
+           INTERACTIVE CODE RUNNER (p5.js)
+           ═══════════════════════════════════════ -->
+      <h2 id="section-2">N.2 Interactive Examples</h2>
+
+      <p>Below is a runnable p5.js sketch. Students can edit the code and click Run:</p>
+
+      <div class="code-runner" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Editable</span>
+        </div>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(220);
+  fill(255, 0, 0);
+  ellipse(mouseX, mouseY, 50, 50);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           GLSL SHADER RUNNER
+           ═══════════════════════════════════════ -->
+      <h2 id="section-3">N.3 GLSL Shader Example</h2>
+
+      <p>For shader chapters, use <code>data-mode="glsl"</code>:</p>
+
+      <div class="code-runner" data-mode="glsl" data-width="400" data-height="400">
+        <div class="code-runner-header">
+          <span class="lang-label">GLSL</span>
+          <span>Fragment Shader</span>
+        </div>
+        <textarea class="cm-editor" data-mode="glsl">precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec3 col = 0.5 + 0.5 * cos(u_time + uv.xyx + vec3(0, 2, 4));
+  gl_FragColor = vec4(col, 1.0);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           MULTIPLE CHOICE QUIZ
+           ═══════════════════════════════════════ -->
+      <h2 id="section-4">N.4 Knowledge Check</h2>
+
+      <div class="quiz" data-id="ch00-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does the <code>draw()</code> function do in p5.js?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch00-q1" value="a"> It runs once when the sketch starts</label></li>
+          <li class="option"><label><input type="radio" name="ch00-q1" value="b" data-correct> It runs repeatedly, about 60 times per second</label></li>
+          <li class="option"><label><input type="radio" name="ch00-q1" value="c"> It draws a single shape to the canvas</label></li>
+          <li class="option"><label><input type="radio" name="ch00-q1" value="d"> It saves the canvas as an image file</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The <code>draw()</code> function is p5.js's animation loop. It executes continuously at the frame rate (default 60 fps), allowing you to create animations and respond to user input in real time.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           CODE CHALLENGE (auto-graded)
+           ═══════════════════════════════════════ -->
+      <h2 id="section-5">N.5 Code Challenges</h2>
+
+      <div class="code-challenge" data-id="ch00-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge</div>
+        <p class="prompt">Write a function called <code>distance</code> that takes four parameters (x1, y1, x2, y2) and returns the Euclidean distance between the two points. Use the formula: $d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}$</p>
+        <textarea class="cm-editor">function distance(x1, y1, x2, y2) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "distance(0, 0, 3, 4)", "expected": 5},
+          {"call": "distance(0, 0, 0, 0)", "expected": 0},
+          {"call": "distance(1, 1, 4, 5)", "expected": 5},
+          {"call": "distance(-1, -1, 2, 3)", "expected": 5}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           OPEN-ENDED EXERCISE with solution
+           ═══════════════════════════════════════ -->
+      <h2 id="section-6">N.6 Exercises</h2>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise N.1</div>
+        <p class="prompt">Create a p5.js sketch that draws a circle that follows the mouse. When the mouse is pressed, the circle should change color. Add a trail effect by not clearing the background completely (use <code>background(220, 20)</code> with alpha).</p>
+        <textarea class="cm-editor">function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  // Your code here
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>function setup() {
+  createCanvas(400, 400);
+  background(220);
+}
+
+function draw() {
+  background(220, 20); // Semi-transparent background for trail
+
+  if (mouseIsPressed) {
+    fill(255, 0, 100);
+  } else {
+    fill(0, 100, 255);
+  }
+
+  noStroke();
+  ellipse(mouseX, mouseY, 40, 40);
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           CHAPTER END QUIZ
+           ═══════════════════════════════════════ -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter N Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of the concepts covered in this chapter.</p>
+
+        <div class="quiz" data-id="ch00-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">Sample final quiz question?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch00-fq1" value="a"> Option A</label></li>
+            <li class="option"><label><input type="radio" name="ch00-fq1" value="b" data-correct> Option B (correct)</label></li>
+            <li class="option"><label><input type="radio" name="ch00-fq1" value="c"> Option C</label></li>
+          </ul>
+          <div class="explanation"><p>Explanation of the correct answer.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <!-- More quiz questions... -->
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           CHAPTER NAVIGATION
+           ═══════════════════════════════════════ -->
+      <nav class="chapter-nav">
+        <a href="../chNN/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter N-1: Previous Title</span>
+        </a>
+        <a href="../chNN/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter N+1: Next Title</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>

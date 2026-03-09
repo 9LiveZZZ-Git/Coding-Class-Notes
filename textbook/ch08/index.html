@@ -1,0 +1,2246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 8: Particle Systems &amp; Simulation &mdash; Computing Arts Textbook</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- KaTeX (math rendering) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
+
+  <!-- GLSL mode for CodeMirror (shader chapters) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/glsl/glsl.min.js"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+  <!-- Textbook shared assets -->
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body data-chapter="ch08">
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <a href="../index.html" class="book-title">Computing Arts Textbook</a>
+      <div class="chapter-title">Chapter 8: Particle Systems &amp; Simulation</div>
+    </div>
+    <ul class="toc-list">
+      <!-- Auto-generated from h2/h3 headings -->
+    </ul>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="hamburger" aria-label="Toggle sidebar">&#9776;</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill"></div>
+    </div>
+    <span class="progress-text">0% complete</span>
+    <button class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <article class="chapter-content">
+
+      <h1>Chapter 8: Particle Systems &amp; Simulation</h1>
+      <p class="chapter-subtitle">MAT 200C: Computing Arts &mdash; From falling leaves to flocking birds: building living systems with code</p>
+
+
+      <!-- ===============================================
+           SECTION 8.1 — INTRODUCTION: WHAT IS SIMULATION?
+           =============================================== -->
+      <h2 id="introduction">8.1 Introduction: What Is Simulation?</h2>
+
+      <p>Imagine you are standing on a bridge, watching leaves fall from a tree into a river below. Each leaf follows a slightly different path. Some tumble end-over-end. Others glide smoothly before catching a gust of wind. A few land in the water and are carried downstream, spinning in tiny eddies.</p>
+
+      <p>You could paint this scene&mdash;freezing one moment in time. Or you could build a <strong>simulation</strong>&mdash;a set of rules that, when run, produces an infinite number of such moments, each one unique, each one plausible.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Simulation</strong> &mdash; A computational model that evolves over time. You define the rules that govern behavior, set initial conditions, press play, and watch the system unfold. The result is not a single image but a living, breathing system that can surprise even its creator.</p>
+      </div>
+
+      <p>A simulation requires three ingredients:</p>
+
+      <ol>
+        <li><strong>Rules</strong> &mdash; the laws that govern how things behave (gravity pulls objects downward, birds avoid collisions).</li>
+        <li><strong>Time</strong> &mdash; the simulation steps forward frame by frame, applying the rules repeatedly.</li>
+        <li><strong>Initial conditions</strong> &mdash; the starting state (where are the objects? how fast are they moving?).</li>
+      </ol>
+
+      <p>Change any of these three and you get a different outcome. This is what makes simulation so compelling for art: the same set of rules can produce endlessly varied results.</p>
+
+      <p>In this chapter, we will build two kinds of simulations:</p>
+
+      <ol>
+        <li><strong>Particle systems</strong> &mdash; collections of simple objects subject to physical forces, used for effects like fire, smoke, sparks, and fountains.</li>
+        <li><strong>Agent systems</strong> &mdash; collections of autonomous objects that perceive their neighbors and make decisions, used for flocking, swarming, and artificial life.</li>
+      </ol>
+
+      <p>Both systems share a common foundation in physics, so we will start there.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>William Reeves</strong> introduced particle systems in his landmark 1983 paper <em>&ldquo;Particle Systems&mdash;A Technique for Modeling a Class of Fuzzy Objects.&rdquo;</em> Working at Lucasfilm (which would become Pixar), Reeves used particles to create the &ldquo;Genesis Effect&rdquo; explosion sequence in <em>Star Trek II: The Wrath of Khan</em> (1982). His insight was that some phenomena&mdash;fire, clouds, water spray&mdash;are better modeled as collections of many tiny, short-lived elements rather than as solid surfaces. This idea has since become one of the foundational techniques in computer graphics and creative coding.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.2 — VECTORS: THE LANGUAGE OF MOTION
+           =============================================== -->
+      <h2 id="vectors">8.2 Vectors: The Language of Motion</h2>
+
+      <p>Before we can simulate anything that moves, we need a way to describe motion. In the physical world, motion involves both a <em>speed</em> (how fast) and a <em>direction</em> (which way). A quantity that has both magnitude and direction is called a <strong>vector</strong>.</p>
+
+      <p>In a 2D simulation, every moving object has three key vectors:</p>
+
+      <ul>
+        <li><strong>Position</strong> &mdash; &ldquo;the object is at (200, 150)&rdquo;</li>
+        <li><strong>Velocity</strong> &mdash; &ldquo;the object is moving 3 pixels right and 2 pixels down per frame&rdquo;</li>
+        <li><strong>Acceleration</strong> &mdash; &ldquo;the object&rsquo;s velocity is increasing by 0.1 pixels per frame downward&rdquo;</li>
+      </ul>
+
+      <p>In p5.js, we create vectors with the <code>createVector(x, y)</code> function:</p>
+
+      <pre><code>let position     = createVector(200, 150);
+let velocity     = createVector(3, -2);
+let acceleration = createVector(0, 0.1);</code></pre>
+
+      <p>Vectors support arithmetic operations that let us combine and transform them:</p>
+
+      <pre><code>// Adding vectors: move the object by its velocity
+position.add(velocity);
+
+// Scaling vectors: halve the force
+let force = createVector(1, 0);
+force.mult(0.5);
+
+// Getting magnitude (length): how fast are we going?
+let speed = velocity.mag();
+
+// Normalizing (making length 1, keeping direction)
+let direction = velocity.copy().normalize();</code></pre>
+
+      <p>These operations form the building blocks of every simulation we will write. The relationship between position, velocity, and acceleration is the heartbeat of motion:</p>
+
+      <p>$$\text{velocity} \mathrel{+}= \text{acceleration}$$</p>
+      <p>$$\text{position} \mathrel{+}= \text{velocity}$$</p>
+
+      <p>Each frame, acceleration changes velocity, and velocity changes position. This two-step update is called <strong>Euler integration</strong>&mdash;the simplest numerical method for simulating motion. It is not the most accurate method, but it is easy to understand and works well for creative coding purposes.</p>
+
+      <p>Let&rsquo;s see this in action. The sketch below creates a ball that drifts across the canvas, accelerating slowly to the right:</p>
+
+      <div class="code-runner" data-height="320">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Vector Motion Demo</span>
+        </div>
+        <textarea class="cm-editor">let position, velocity, acceleration;
+
+function setup() {
+  createCanvas(400, 300);
+  position     = createVector(50, 150);
+  velocity     = createVector(0, 0);
+  acceleration = createVector(0.02, 0);
+}
+
+function draw() {
+  background(30);
+
+  // Euler integration
+  velocity.add(acceleration);
+  position.add(velocity);
+
+  // Wrap around edges
+  if (position.x > width)  position.x = 0;
+  if (position.x < 0)      position.x = width;
+
+  // Draw the ball
+  noStroke();
+  fill(100, 200, 255);
+  circle(position.x, position.y, 24);
+
+  // Draw velocity vector as a line
+  stroke(255, 200, 80);
+  strokeWeight(2);
+  let tip = p5.Vector.add(position, p5.Vector.mult(velocity, 10));
+  line(position.x, position.y, tip.x, tip.y);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Try changing the acceleration vector. What happens if you set it to <code>createVector(0, 0.05)</code>? The ball will fall downward&mdash;that is gravity. What about <code>createVector(-0.01, -0.01)</code>? Now it accelerates up and to the left. Every force in our simulations will work through this same mechanism: changing the acceleration vector.</p>
+
+      <div class="quiz" data-id="ch08-q1">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In a simulation, what is the correct order of operations each frame?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch08-q1" value="a"> Update position, then update velocity, then apply forces</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q1" value="b"> Apply forces, then update position, then update velocity</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q1" value="c" data-correct> Apply forces (accumulate acceleration), update velocity, update position, reset acceleration</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q1" value="d"> Reset acceleration, update velocity, update position, apply forces</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The correct sequence is: (1) apply all forces to compute acceleration, (2) add acceleration to velocity, (3) add velocity to position, (4) reset acceleration to zero so forces can be freshly accumulated next frame. This is the standard Euler integration loop used throughout physics simulation.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.3 — NEWTON'S SECOND LAW: F = ma
+           =============================================== -->
+      <h2 id="newtons-second-law">8.3 Newton&rsquo;s Second Law: $F = ma$</h2>
+
+      <p>Isaac Newton&rsquo;s second law of motion tells us how forces relate to motion:</p>
+
+      <p>$$F = m \cdot a$$</p>
+
+      <p>Rearranged for our purposes:</p>
+
+      <p>$$a = \frac{F}{m}$$</p>
+
+      <p>In plain language: acceleration equals force divided by mass. A heavy object (large $m$) accelerates less than a light object (small $m$) under the same force. Push a bowling ball and a tennis ball with the same force&mdash;the tennis ball shoots away while the bowling ball barely moves.</p>
+
+      <p>In a simulation, this means:</p>
+
+      <ol>
+        <li>We know the forces acting on an object (gravity, wind, springs, etc.).</li>
+        <li>We divide the total force by the object&rsquo;s mass to get its acceleration.</li>
+        <li>We use the acceleration to update the velocity.</li>
+        <li>We use the velocity to update the position.</li>
+      </ol>
+
+      <p>For simplicity, we often assume mass = 1, which means $a = F$. Here is the basic pattern in code&mdash;a class called <code>Mover</code> that encapsulates an object with physics:</p>
+
+      <pre><code>class Mover {
+  constructor(x, y) {
+    this.position     = createVector(x, y);
+    this.velocity     = createVector(0, 0);
+    this.acceleration = createVector(0, 0);
+    this.mass         = 1;
+  }
+
+  applyForce(force) {
+    // a = F / m
+    let f = p5.Vector.div(force, this.mass);
+    this.acceleration.add(f);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0); // Reset each frame
+  }
+
+  display() {
+    circle(this.position.x, this.position.y, this.mass * 16);
+  }
+}</code></pre>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Newton&rsquo;s Second Law</strong> &mdash; The net force acting on an object equals its mass times its acceleration: $F = ma$. In simulation code, we rearrange this to $a = F/m$ so we can compute the resulting acceleration from any applied force.</p>
+      </div>
+
+      <p>Let&rsquo;s walk through the two key methods:</p>
+
+      <p><strong><code>applyForce(force)</code></strong>:</p>
+      <ul>
+        <li><code>let f = p5.Vector.div(force, this.mass);</code> &mdash; We divide the force by mass to get this force&rsquo;s contribution to acceleration. We use the static <code>p5.Vector.div()</code> to create a <em>new</em> vector rather than modifying the original force. This is important because the same force vector might be applied to multiple objects.</li>
+        <li><code>this.acceleration.add(f);</code> &mdash; We add the contribution to the accumulated acceleration. Multiple forces can be applied per frame, and they all add up (this is called <strong>superposition</strong>).</li>
+      </ul>
+
+      <p><strong><code>update()</code></strong>:</p>
+      <ul>
+        <li><code>this.velocity.add(this.acceleration);</code> &mdash; Acceleration changes velocity.</li>
+        <li><code>this.position.add(this.velocity);</code> &mdash; Velocity changes position.</li>
+        <li><code>this.acceleration.mult(0);</code> &mdash; We <em>must</em> reset acceleration to zero. Forces in our model are re-applied every frame. If we did not reset, the acceleration from previous frames would persist and grow without bound.</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p>Forgetting to reset acceleration at the end of <code>update()</code> is the most common physics simulation bug. Without the line <code>this.acceleration.mult(0)</code>, forces accumulate across frames, causing objects to accelerate wildly out of control. Every frame, you must start with a clean slate and re-apply all active forces.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.4 — GRAVITY
+           =============================================== -->
+      <h2 id="gravity">8.4 Gravity</h2>
+
+      <p>Gravity is the simplest force to simulate: a constant downward pull.</p>
+
+      <pre><code>let gravity = createVector(0, 0.1);
+mover.applyForce(gravity);</code></pre>
+
+      <p>This creates a force vector pointing straight down (positive y is down in p5.js) with a magnitude of 0.1 pixels per frame squared. Every frame, the object&rsquo;s downward velocity increases by 0.1&mdash;it falls faster and faster, just like a real falling object.</p>
+
+      <p>In the real world, gravitational force depends on mass: $F_g = mg$, where $g$ is the gravitational acceleration constant (about $9.8 \, \text{m/s}^2$ on Earth). If we want heavier objects to fall at the same rate as lighter ones (as they do in reality, ignoring air resistance), we should scale the gravitational force by mass:</p>
+
+      <pre><code>let gravity = createVector(0, 0.1 * mover.mass);
+mover.applyForce(gravity);
+// Inside applyForce, we divide by mass, so the mass cancels out</code></pre>
+
+      <p>This ensures that inside <code>applyForce</code>, the division by mass cancels the multiplication, and all objects accelerate at the same rate regardless of their mass. This is the principle Galileo demonstrated centuries ago by (allegedly) dropping balls of different weights from the Leaning Tower of Pisa.</p>
+
+      <p>Let&rsquo;s see gravity in action with a bouncing ball:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Bouncing Ball with Gravity</span>
+        </div>
+        <textarea class="cm-editor">let ball;
+
+function setup() {
+  createCanvas(400, 400);
+  ball = {
+    position:     createVector(200, 50),
+    velocity:     createVector(2, 0),
+    acceleration: createVector(0, 0),
+    mass:         1,
+
+    applyForce(force) {
+      let f = p5.Vector.div(force, this.mass);
+      this.acceleration.add(f);
+    },
+
+    update() {
+      this.velocity.add(this.acceleration);
+      this.position.add(this.velocity);
+      this.acceleration.mult(0);
+
+      // Bounce off floor
+      if (this.position.y > height - 12) {
+        this.position.y = height - 12;
+        this.velocity.y *= -0.8; // Lose energy on bounce
+      }
+
+      // Bounce off walls
+      if (this.position.x > width - 12 || this.position.x < 12) {
+        this.velocity.x *= -1;
+      }
+    },
+
+    display() {
+      noStroke();
+      fill(255, 120, 80);
+      circle(this.position.x, this.position.y, 24);
+    }
+  };
+}
+
+function draw() {
+  background(30);
+
+  // Apply gravity each frame
+  let gravity = createVector(0, 0.3);
+  ball.applyForce(gravity);
+
+  ball.update();
+  ball.display();
+
+  // Draw the floor
+  stroke(100);
+  strokeWeight(1);
+  line(0, height - 1, width, height - 1);
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Notice how the ball loses a little energy on each bounce (<code>this.velocity.y *= -0.8</code>). The <code>-1</code> reverses the direction, and the <code>0.8</code> reduces the speed by 20%. This simulates an inelastic collision&mdash;some kinetic energy is lost to heat and deformation, just like a real ball bouncing on a floor. Try changing <code>-0.8</code> to <code>-1.0</code> for a perfectly elastic bounce, or <code>-0.5</code> for a very &ldquo;dead&rdquo; ball.</p>
+
+      <div class="quiz" data-id="ch08-q2">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Why do we multiply the gravitational force by an object&rsquo;s mass before applying it?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch08-q2" value="a"> To make heavier objects fall faster</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q2" value="b" data-correct> So that when <code>applyForce</code> divides by mass, the mass cancels out and all objects fall at the same rate</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q2" value="c"> Because Newton&rsquo;s second law requires it for conservation of energy</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q2" value="d"> To prevent numerical overflow in the simulation</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Gravitational force is $F = mg$. When <code>applyForce</code> computes $a = F/m$, the mass cancels: $a = mg/m = g$. This means all objects experience the same gravitational <em>acceleration</em> regardless of mass&mdash;matching real-world physics (when air resistance is negligible).</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.5 — BUILDING A PARTICLE SYSTEM
+           =============================================== -->
+      <h2 id="particle-system">8.5 Building a Particle System</h2>
+
+      <p>Now that we understand the physics of a single moving object, we can scale up to <em>many</em> objects. A particle system manages a collection of short-lived physics objects called <strong>particles</strong>. Each particle is born, lives briefly, and dies. This cycle of birth and death is what gives particle systems their dynamic, ever-changing quality.</p>
+
+      <h3>8.5.1 What Is a Particle?</h3>
+
+      <p>A particle is a simplified physics object with a limited lifespan. Unlike permanent objects in a simulation, particles are ephemeral&mdash;they appear, do their thing, and vanish. This is perfect for modeling phenomena like fire (each spark lasts only a moment), smoke (each puff dissipates), and water spray (each droplet splashes and disappears).</p>
+
+      <p>A particle needs:</p>
+      <ul>
+        <li><strong>Position, velocity, acceleration</strong> &mdash; for physics (same as our Mover).</li>
+        <li><strong>Lifespan</strong> &mdash; a timer that counts down from some maximum to zero.</li>
+        <li><strong>Visual properties</strong> &mdash; color, size, transparency (often tied to lifespan so the particle fades as it dies).</li>
+      </ul>
+
+      <h3>8.5.2 The Particle Class</h3>
+
+      <pre><code>class Particle {
+  constructor(x, y) {
+    this.position     = createVector(x, y);
+    this.velocity     = createVector(random(-1, 1), random(-3, 0));
+    this.acceleration = createVector(0, 0);
+    this.lifespan     = 255.0;
+    this.size         = random(4, 12);
+    this.col          = color(
+      random(200, 255), random(80, 180), random(0, 60)
+    );
+  }
+
+  applyForce(force) {
+    this.acceleration.add(force);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+    this.lifespan -= 2.0;
+  }
+
+  display() {
+    noStroke();
+    let alpha = this.lifespan;
+    let currentSize = map(this.lifespan, 255, 0, this.size, 0);
+    fill(red(this.col), green(this.col), blue(this.col), alpha);
+    circle(this.position.x, this.position.y, currentSize);
+  }
+
+  isDead() {
+    return this.lifespan <= 0;
+  }
+}</code></pre>
+
+      <p>Let&rsquo;s walk through the important details:</p>
+
+      <ul>
+        <li><code>this.velocity = createVector(random(-1, 1), random(-3, 0));</code> &mdash; Each particle starts with a random velocity: slight horizontal spread and upward motion. The randomness ensures particles don&rsquo;t all go in exactly the same direction, creating a natural-looking spray.</li>
+        <li><code>this.lifespan = 255.0;</code> &mdash; We use 255 because it conveniently maps to p5.js&rsquo;s alpha channel (0&ndash;255). When lifespan is 255, the particle is fully opaque. When it reaches 0, the particle is fully transparent and ready to be removed.</li>
+        <li><code>this.lifespan -= 2.0;</code> &mdash; Each frame, the particle ages. At 2.0 per frame and 60 fps, each particle lives about 2 seconds (255 / 2 / 60 &asymp; 2.1 seconds).</li>
+        <li><code>map(this.lifespan, 255, 0, this.size, 0)</code> &mdash; The particle shrinks as it ages. When lifespan is 255, size is at its maximum. When lifespan is 0, size is 0. Combined with the fading alpha, this creates a natural dissipation effect.</li>
+        <li><code>isDead()</code> &mdash; Returns <code>true</code> when the particle&rsquo;s lifespan has expired. The system uses this to know when to remove the particle.</li>
+      </ul>
+
+      <h3>8.5.3 The Emitter Class</h3>
+
+      <p>An <strong>emitter</strong> is the manager of a particle system. It has a position (the &ldquo;source&rdquo; from which particles appear) and an array of particles. Its job is to create new particles, apply forces to all of them, update their physics, remove dead ones, and draw the survivors.</p>
+
+      <pre><code>class Emitter {
+  constructor(x, y) {
+    this.origin    = createVector(x, y);
+    this.particles = [];
+  }
+
+  emit(count) {
+    for (let i = 0; i < count; i++) {
+      this.particles.push(
+        new Particle(this.origin.x, this.origin.y)
+      );
+    }
+  }
+
+  applyForce(force) {
+    for (let p of this.particles) {
+      p.applyForce(force);
+    }
+  }
+
+  update() {
+    // Iterate BACKWARD so we can safely remove elements
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      this.particles[i].update();
+      if (this.particles[i].isDead()) {
+        this.particles.splice(i, 1);
+      }
+    }
+  }
+
+  display() {
+    for (let p of this.particles) {
+      p.display();
+    }
+  }
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">&#9888; Common Mistake</div>
+        <p><strong>Why iterate backward?</strong> When we call <code>this.particles.splice(i, 1)</code> to remove a dead particle, all elements after index <code>i</code> shift down by one. If we iterated <em>forward</em>, the next element would be skipped because it moved into the slot we just processed. Iterating <em>backward</em> avoids this: removing element <code>i</code> only affects indices greater than <code>i</code>, which we have already processed.</p>
+      </div>
+
+      <h3>8.5.4 The Complete Particle System</h3>
+
+      <p>Here is a complete particle system with an emitter, gravity, and warm-colored particles that rise, fade, and shrink:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Particle System with Emitter</span>
+        </div>
+        <textarea class="cm-editor">let emitter;
+
+function setup() {
+  createCanvas(400, 400);
+  emitter = new Emitter(width / 2, height - 40);
+}
+
+function draw() {
+  background(20);
+
+  // Apply gravity to all particles
+  let gravity = createVector(0, 0.05);
+  emitter.applyForce(gravity);
+
+  // Emit 3 new particles per frame
+  emitter.emit(3);
+
+  // Update physics and remove dead particles
+  emitter.update();
+
+  // Draw all particles
+  emitter.display();
+
+  // Show particle count
+  fill(255);
+  noStroke();
+  textSize(12);
+  text("Particles: " + emitter.particles.length, 10, 20);
+}
+
+class Particle {
+  constructor(x, y) {
+    this.position     = createVector(x, y);
+    this.velocity     = createVector(random(-1, 1), random(-3, 0));
+    this.acceleration = createVector(0, 0);
+    this.lifespan     = 255.0;
+    this.size         = random(4, 12);
+    this.col          = color(
+      random(200, 255), random(80, 180), random(0, 60)
+    );
+  }
+
+  applyForce(force) {
+    this.acceleration.add(force);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+    this.lifespan -= 2.0;
+  }
+
+  display() {
+    noStroke();
+    let alpha = this.lifespan;
+    let sz = map(this.lifespan, 255, 0, this.size, 0);
+    fill(red(this.col), green(this.col), blue(this.col), alpha);
+    circle(this.position.x, this.position.y, sz);
+  }
+
+  isDead() {
+    return this.lifespan <= 0;
+  }
+}
+
+class Emitter {
+  constructor(x, y) {
+    this.origin    = createVector(x, y);
+    this.particles = [];
+  }
+
+  emit(count) {
+    for (let i = 0; i < count; i++) {
+      this.particles.push(
+        new Particle(this.origin.x, this.origin.y)
+      );
+    }
+  }
+
+  applyForce(force) {
+    for (let p of this.particles) {
+      p.applyForce(force);
+    }
+  }
+
+  update() {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      this.particles[i].update();
+      if (this.particles[i].isDead()) {
+        this.particles.splice(i, 1);
+      }
+    }
+  }
+
+  display() {
+    for (let p of this.particles) {
+      p.display();
+    }
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Experiment with this sketch. Try changing the gravity direction (<code>createVector(0, -0.05)</code> makes particles float upward), the emission rate (emit 1 or 10 per frame), or the initial velocity range in the Particle constructor. Each change creates a dramatically different effect.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>The power of particle systems</strong> lies in quantity and randomness. No single particle is interesting on its own&mdash;it is just a fading dot. But hundreds of them, each with slightly different initial conditions, create the visual impression of fire, smoke, sparks, or rain. The individual is simple; the collective is rich.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.6 — FROM PARTICLES TO AGENTS
+           =============================================== -->
+      <h2 id="particles-to-agents">8.6 From Particles to Agents</h2>
+
+      <p>So far, our particles have been entirely <strong>passive</strong>. They have no awareness of their surroundings. They simply respond to external forces&mdash;gravity pulls them down, wind pushes them sideways. A particle is a leaf in the wind: it goes wherever physics takes it.</p>
+
+      <p>An <strong>agent</strong> is fundamentally different. An agent is <strong>active</strong>: it perceives its local environment and makes decisions about how to move. It is a bird in a flock, not a leaf in the wind.</p>
+
+      <p>Here is the key insight: both particles and agents use the <em>same underlying physics</em>. They both have position, velocity, and acceleration. They both obey the same update loop (accumulate forces, update velocity, update position, reset acceleration). The difference lies in <strong>where the forces come from</strong>:</p>
+
+      <ul>
+        <li><strong>Particle system</strong> &mdash; Forces are <em>externally applied</em>: gravity, wind, drag. The particle has no say in the matter.</li>
+        <li><strong>Agent system</strong> &mdash; Forces are <em>self-generated</em> from perception. The agent looks at its neighbors, decides where it wants to go, and computes a force to steer itself in that direction.</li>
+      </ul>
+
+      <p>Think of it this way: a leaf and a bird are both subject to gravity and air resistance. But the bird also has muscles and a brain. It can <em>choose</em> to fly toward a neighbor, away from a predator, or toward a food source. These choices become forces that it applies to itself.</p>
+
+      <p>This shift&mdash;from passive to active, from externally driven to self-directed&mdash;is what turns a particle system into an agent system. And it is what makes agent systems produce the stunning emergent behaviors that we see in nature: flocking, schooling, swarming, and herding.</p>
+
+
+      <!-- ===============================================
+           SECTION 8.7 — AUTONOMOUS AGENTS
+           =============================================== -->
+      <h2 id="autonomous-agents">8.7 Autonomous Agents</h2>
+
+      <p>Craig Reynolds, the computer scientist who created the famous &ldquo;Boids&rdquo; algorithm, described four defining characteristics of an autonomous agent:</p>
+
+      <ol>
+        <li><strong>It exists in an environment</strong> &mdash; it has a position in space and can move through it.</li>
+        <li><strong>It has limited perception</strong> &mdash; it can detect nearby neighbors and environmental features, but it does <em>not</em> have a god&rsquo;s-eye view of the entire world. A bird in a flock can see the birds around it, but not the entire flock.</li>
+        <li><strong>It has no leader</strong> &mdash; there is no central controller telling each agent what to do. Each agent acts independently based on its own local perception.</li>
+        <li><strong>It has desires (goals)</strong> &mdash; encoded as behavioral rules like &ldquo;stay near the group,&rdquo; &ldquo;avoid collisions,&rdquo; or &ldquo;move in the same direction as my neighbors.&rdquo;</li>
+      </ol>
+
+      <p>The combination of autonomy and local perception is what makes agent systems produce <strong>emergent behavior</strong>. No one designs the flocking pattern. No one tells the flock to split around an obstacle and rejoin on the other side. These complex global behaviors <em>emerge</em> from simple local rules.</p>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p><strong>Craig Reynolds</strong> presented his Boids algorithm at SIGGRAPH 1987 in the paper <em>&ldquo;Flocks, Herds, and Schools: A Distributed Behavioral Model.&rdquo;</em> Reynolds showed that realistic flocking behavior could be produced by three simple rules applied to each individual &ldquo;boid&rdquo; (a blend of &ldquo;bird&rdquo; and &ldquo;droid&rdquo;). The paper was revolutionary because it demonstrated that complex collective behavior does not require complex individual intelligence&mdash;it emerges from the interaction of simple agents following simple rules. The Boids algorithm has since been used in countless films, games, and art installations.</p>
+      </div>
+
+      <div class="quiz" data-id="ch08-q3">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which of the following is <strong>NOT</strong> a characteristic of an autonomous agent according to Reynolds?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch08-q3" value="a"> It exists in an environment</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q3" value="b"> It has limited perception of its surroundings</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q3" value="c" data-correct> It receives instructions from a central leader</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q3" value="d"> It has desires or goals encoded as behavioral rules</label></li>
+        </ul>
+        <div class="explanation">
+          <p>A defining feature of autonomous agents is that they have <em>no leader</em>. There is no central controller issuing commands. Each agent acts independently based on its own local perception and built-in behavioral rules. The absence of centralized control is precisely what makes emergent behavior possible and surprising.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.8 — REYNOLDS' STEERING MODEL
+           =============================================== -->
+      <h2 id="steering-model">8.8 Reynolds&rsquo; Steering Model</h2>
+
+      <p>How does an agent translate its &ldquo;desires&rdquo; into motion? Reynolds proposed an elegantly simple formula:</p>
+
+      <p>$$\vec{f}_{\text{steering}} = \vec{v}_{\text{desired}} - \vec{v}_{\text{current}}$$</p>
+
+      <p>In words: the <strong>steering force</strong> is the difference between where you <em>want</em> to go and where you <em>are</em> going.</p>
+
+      <p>Think of it like driving a car. Your <strong>desired velocity</strong> is the direction you want to travel (say, toward a gas station). Your <strong>current velocity</strong> is the direction you are actually traveling (straight down the highway). The <strong>steering force</strong> is how much you need to turn the wheel to get from your current heading to your desired heading. If you&rsquo;re already heading toward the gas station, the steering force is zero&mdash;no correction needed.</p>
+
+      <p>In code, this looks like:</p>
+
+      <pre><code>// General pattern for computing a steering force
+let desired = /* some target direction at maxSpeed */;
+let steering = p5.Vector.sub(desired, this.velocity);
+steering.limit(this.maxForce);</code></pre>
+
+      <p>Two important constraints keep the agent behaving realistically:</p>
+
+      <ul>
+        <li><strong><code>maxSpeed</code></strong> &mdash; The maximum speed an agent can travel. The desired velocity is always set to this magnitude. Without this limit, agents would accelerate to infinite speeds.</li>
+        <li><strong><code>maxForce</code></strong> &mdash; The maximum steering force. This limits how quickly an agent can turn. Lower values produce smoother, more graceful turns (like a large bird or a car at speed). Higher values produce sharper, more responsive turns (like a housefly or a sports car).</li>
+      </ul>
+
+      <p>The beauty of this model is that every agent behavior&mdash;seek, flee, separate, align, cohere&mdash;can be expressed as a different way of computing the desired velocity. The steering formula stays the same. Only the goal changes.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>Steering = Desired &minus; Current.</strong> This single formula is the engine behind all Reynolds-style agent behaviors. To make an agent seek a target, compute a desired velocity <em>toward</em> the target. To make it flee, compute a desired velocity <em>away</em> from a threat. To make it align with neighbors, compute a desired velocity matching their average heading. The steering formula converts any goal into a force.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.9 — IMPLEMENTING BOIDS
+           =============================================== -->
+      <h2 id="implementing-boids">8.9 Implementing Boids</h2>
+
+      <p>Reynolds&rsquo; Boids algorithm produces realistic flocking from just three rules, each applied locally to every boid:</p>
+
+      <ol>
+        <li><strong>Separation</strong> &mdash; steer away from nearby neighbors to avoid crowding.</li>
+        <li><strong>Alignment</strong> &mdash; steer toward the average heading of nearby neighbors.</li>
+        <li><strong>Cohesion</strong> &mdash; steer toward the average position of nearby neighbors.</li>
+      </ol>
+
+      <p>Let&rsquo;s implement each rule step by step.</p>
+
+      <h3>8.9.1 The Boid Class Foundation</h3>
+
+      <p>A boid is an agent with position, velocity, acceleration, and two constraint values:</p>
+
+      <pre><code>class Boid {
+  constructor(x, y) {
+    this.position     = createVector(x, y);
+    this.velocity     = p5.Vector.random2D();
+    this.velocity.setMag(random(2, 4));
+    this.acceleration = createVector(0, 0);
+    this.maxForce     = 0.2;
+    this.maxSpeed     = 4;
+  }
+
+  applyForce(force) {
+    this.acceleration.add(force);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(this.maxSpeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+  }
+}</code></pre>
+
+      <ul>
+        <li><code>p5.Vector.random2D()</code> creates a unit vector pointing in a random direction, so each boid starts flying a random way.</li>
+        <li><code>setMag(random(2, 4))</code> sets the initial speed to a random value between 2 and 4 pixels per frame.</li>
+        <li><code>this.maxForce = 0.2</code> limits how sharply the boid can turn.</li>
+        <li><code>this.maxSpeed = 4</code> limits how fast it can go.</li>
+      </ul>
+
+      <h3>8.9.2 Rule 1: Separation</h3>
+
+      <p>Separation prevents boids from crowding each other. Each boid looks at all neighbors within a perception radius and computes a force pointing <em>away</em> from them. The closer a neighbor is, the stronger the repulsion.</p>
+
+      <pre><code>separation(boids) {
+  let perceptionRadius = 50;
+  let steering = createVector(0, 0);
+  let total = 0;
+
+  for (let other of boids) {
+    let d = dist(
+      this.position.x, this.position.y,
+      other.position.x, other.position.y
+    );
+
+    if (other !== this && d < perceptionRadius) {
+      let diff = p5.Vector.sub(this.position, other.position);
+      diff.div(d * d);  // Closer = stronger push
+      steering.add(diff);
+      total++;
+    }
+  }
+
+  if (total > 0) {
+    steering.div(total);            // Average
+    steering.setMag(this.maxSpeed); // Desired velocity
+    steering.sub(this.velocity);    // Steering = desired - current
+    steering.limit(this.maxForce);  // Limit the force
+  }
+
+  return steering;
+}</code></pre>
+
+      <p>The key line is <code>diff.div(d * d)</code>. By dividing by the <em>square</em> of the distance, we make the repulsion much stronger for very close boids. A boid 5 pixels away pushes 100 times harder than a boid 50 pixels away (because $50^2 / 5^2 = 100$). This inverse-square relationship is common in physics&mdash;gravity and electrostatic forces follow the same pattern.</p>
+
+      <h3>8.9.3 Rule 2: Alignment</h3>
+
+      <p>Alignment makes boids fly in the same direction as their neighbors. We average the velocity vectors of all nearby boids and steer toward that average heading:</p>
+
+      <pre><code>alignment(boids) {
+  let perceptionRadius = 50;
+  let steering = createVector(0, 0);
+  let total = 0;
+
+  for (let other of boids) {
+    let d = dist(
+      this.position.x, this.position.y,
+      other.position.x, other.position.y
+    );
+
+    if (other !== this && d < perceptionRadius) {
+      steering.add(other.velocity);
+      total++;
+    }
+  }
+
+  if (total > 0) {
+    steering.div(total);            // Average velocity of neighbors
+    steering.setMag(this.maxSpeed); // Desired velocity in that direction
+    steering.sub(this.velocity);    // Steering = desired - current
+    steering.limit(this.maxForce);
+  }
+
+  return steering;
+}</code></pre>
+
+      <p>This is simpler than separation&mdash;no distance weighting needed. We just average the velocities and apply the steering formula.</p>
+
+      <h3>8.9.4 Rule 3: Cohesion</h3>
+
+      <p>Cohesion steers boids toward the center of their local group. We average the <em>positions</em> of all nearby boids to find the group center, then steer toward it:</p>
+
+      <pre><code>cohesion(boids) {
+  let perceptionRadius = 50;
+  let steering = createVector(0, 0);
+  let total = 0;
+
+  for (let other of boids) {
+    let d = dist(
+      this.position.x, this.position.y,
+      other.position.x, other.position.y
+    );
+
+    if (other !== this && d < perceptionRadius) {
+      steering.add(other.position);
+      total++;
+    }
+  }
+
+  if (total > 0) {
+    steering.div(total);            // Average position of neighbors
+    steering.sub(this.position);    // Vector from me to group center
+    steering.setMag(this.maxSpeed); // Desired velocity toward center
+    steering.sub(this.velocity);    // Steering = desired - current
+    steering.limit(this.maxForce);
+  }
+
+  return steering;
+}</code></pre>
+
+      <p>Notice the extra step: <code>steering.sub(this.position)</code>. After computing the average position (the group center), we need a vector pointing <em>from our position toward that center</em>. This becomes the desired direction of travel.</p>
+
+      <h3>8.9.5 Combining the Three Rules</h3>
+
+      <p>Each rule produces a steering force. We combine them with weights that control the relative importance of each behavior:</p>
+
+      <pre><code>flock(boids) {
+  let sep = this.separation(boids);
+  let ali = this.alignment(boids);
+  let coh = this.cohesion(boids);
+
+  // Weight the forces
+  sep.mult(1.5);  // Separation slightly stronger
+  ali.mult(1.0);
+  coh.mult(1.0);
+
+  // Apply all forces
+  this.applyForce(sep);
+  this.applyForce(ali);
+  this.applyForce(coh);
+}</code></pre>
+
+      <p>Changing these weights dramatically changes the flock&rsquo;s behavior:</p>
+
+      <ul>
+        <li><strong>High separation, low cohesion</strong> &mdash; Boids spread out and avoid each other, like pigeons on a sidewalk.</li>
+        <li><strong>Low separation, high cohesion</strong> &mdash; Boids collapse into a tight, dense cluster.</li>
+        <li><strong>High alignment</strong> &mdash; Boids move in long parallel streams, like a school of fish in a current.</li>
+        <li><strong>Balanced weights</strong> &mdash; The classic flocking behavior: dynamic, organic, constantly shifting.</li>
+      </ul>
+
+      <p>Let&rsquo;s see the three rules in action together. This sketch starts with 80 boids. Watch how coherent groups form spontaneously:</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Boids: Three Rules of Flocking</span>
+        </div>
+        <textarea class="cm-editor">let flock = [];
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 80; i++) {
+    flock.push(new Boid(random(width), random(height)));
+  }
+}
+
+function draw() {
+  background(30);
+  for (let boid of flock) {
+    boid.flock(flock);
+    boid.update();
+    boid.edges();
+    boid.display();
+  }
+  fill(255); noStroke(); textSize(12);
+  text("Boids: " + flock.length + "  (click to add)", 10, 20);
+}
+
+function mousePressed() {
+  flock.push(new Boid(mouseX, mouseY));
+}
+
+class Boid {
+  constructor(x, y) {
+    this.position     = createVector(x, y);
+    this.velocity     = p5.Vector.random2D();
+    this.velocity.setMag(random(2, 4));
+    this.acceleration = createVector(0, 0);
+    this.maxForce     = 0.2;
+    this.maxSpeed     = 4;
+  }
+
+  flock(boids) {
+    let sep = this.separation(boids);
+    let ali = this.alignment(boids);
+    let coh = this.cohesion(boids);
+    sep.mult(1.5);
+    ali.mult(1.0);
+    coh.mult(1.0);
+    this.applyForce(sep);
+    this.applyForce(ali);
+    this.applyForce(coh);
+  }
+
+  separation(boids) {
+    let perceptionRadius = 50;
+    let steering = createVector(0, 0);
+    let total = 0;
+    for (let other of boids) {
+      let d = dist(this.position.x, this.position.y,
+                   other.position.x, other.position.y);
+      if (other !== this && d < perceptionRadius) {
+        let diff = p5.Vector.sub(this.position, other.position);
+        diff.div(d * d);
+        steering.add(diff);
+        total++;
+      }
+    }
+    if (total > 0) {
+      steering.div(total);
+      steering.setMag(this.maxSpeed);
+      steering.sub(this.velocity);
+      steering.limit(this.maxForce);
+    }
+    return steering;
+  }
+
+  alignment(boids) {
+    let perceptionRadius = 50;
+    let steering = createVector(0, 0);
+    let total = 0;
+    for (let other of boids) {
+      let d = dist(this.position.x, this.position.y,
+                   other.position.x, other.position.y);
+      if (other !== this && d < perceptionRadius) {
+        steering.add(other.velocity);
+        total++;
+      }
+    }
+    if (total > 0) {
+      steering.div(total);
+      steering.setMag(this.maxSpeed);
+      steering.sub(this.velocity);
+      steering.limit(this.maxForce);
+    }
+    return steering;
+  }
+
+  cohesion(boids) {
+    let perceptionRadius = 50;
+    let steering = createVector(0, 0);
+    let total = 0;
+    for (let other of boids) {
+      let d = dist(this.position.x, this.position.y,
+                   other.position.x, other.position.y);
+      if (other !== this && d < perceptionRadius) {
+        steering.add(other.position);
+        total++;
+      }
+    }
+    if (total > 0) {
+      steering.div(total);
+      steering.sub(this.position);
+      steering.setMag(this.maxSpeed);
+      steering.sub(this.velocity);
+      steering.limit(this.maxForce);
+    }
+    return steering;
+  }
+
+  applyForce(force) {
+    this.acceleration.add(force);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(this.maxSpeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+  }
+
+  edges() {
+    if (this.position.x > width)  this.position.x = 0;
+    if (this.position.x < 0)     this.position.x = width;
+    if (this.position.y > height) this.position.y = 0;
+    if (this.position.y < 0)     this.position.y = height;
+  }
+
+  display() {
+    let angle = this.velocity.heading();
+    push();
+    translate(this.position.x, this.position.y);
+    rotate(angle);
+    fill(200, 220, 255);
+    noStroke();
+    triangle(10, 0, -5, 5, -5, -5);
+    pop();
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Click anywhere on the canvas to add more boids. Watch how new boids are quickly absorbed into the nearest group. Try modifying the weights in the <code>flock()</code> method: set separation to 0 and see what happens, or crank alignment up to 3.0. Each change reveals a different aspect of collective behavior.</p>
+
+
+      <!-- ===============================================
+           SECTION 8.10 — COMPLETE BOIDS PROGRAM
+           =============================================== -->
+      <h2 id="complete-boids">8.10 Complete Boids Program</h2>
+
+      <p>The sketch above demonstrates the core algorithm, but let&rsquo;s build a more polished version with 150 boids, toroidal wrapping (boids that fly off one edge reappear on the opposite side), triangle rendering that points in the direction of travel, and mouse interaction to add new boids. This is the canonical Boids demo:</p>
+
+      <div class="code-runner" data-height="460">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Complete Boids Simulation (150 boids)</span>
+        </div>
+        <textarea class="cm-editor">let flock = [];
+let sepSlider, aliSlider, cohSlider;
+
+function setup() {
+  createCanvas(400, 400);
+
+  // Create sliders for rule weights
+  sepSlider = createSlider(0, 5, 1.5, 0.1);
+  sepSlider.position(10, height + 10);
+  sepSlider.style('width', '110px');
+
+  aliSlider = createSlider(0, 5, 1.0, 0.1);
+  aliSlider.position(140, height + 10);
+  aliSlider.style('width', '110px');
+
+  cohSlider = createSlider(0, 5, 1.0, 0.1);
+  cohSlider.position(270, height + 10);
+  cohSlider.style('width', '110px');
+
+  for (let i = 0; i < 150; i++) {
+    flock.push(new Boid(random(width), random(height)));
+  }
+}
+
+function draw() {
+  background(20, 22, 30);
+
+  let sepW = sepSlider.value();
+  let aliW = aliSlider.value();
+  let cohW = cohSlider.value();
+
+  for (let boid of flock) {
+    boid.flock(flock, sepW, aliW, cohW);
+    boid.update();
+    boid.edges();
+    boid.display();
+  }
+
+  // Labels
+  fill(200); noStroke(); textSize(10);
+  text("Sep: " + sepW, 14, height + 42);
+  text("Ali: " + aliW, 144, height + 42);
+  text("Coh: " + cohW, 274, height + 42);
+  fill(255); textSize(12);
+  text("Boids: " + flock.length + "  |  Click to add", 10, 16);
+}
+
+function mousePressed() {
+  if (mouseY < height) {
+    flock.push(new Boid(mouseX, mouseY));
+  }
+}
+
+class Boid {
+  constructor(x, y) {
+    this.position     = createVector(x, y);
+    this.velocity     = p5.Vector.random2D().setMag(random(2, 4));
+    this.acceleration = createVector(0, 0);
+    this.maxForce     = 0.2;
+    this.maxSpeed     = 4;
+    this.hue          = random(180, 240);
+  }
+
+  flock(boids, sepW, aliW, cohW) {
+    let sep = this.separation(boids);
+    let ali = this.alignment(boids);
+    let coh = this.cohesion(boids);
+    sep.mult(sepW);
+    ali.mult(aliW);
+    coh.mult(cohW);
+    this.applyForce(sep);
+    this.applyForce(ali);
+    this.applyForce(coh);
+  }
+
+  separation(boids) {
+    let r = 50, steer = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x, this.position.y,
+                   o.position.x, o.position.y);
+      if (o !== this && d < r) {
+        let diff = p5.Vector.sub(this.position, o.position);
+        diff.div(d * d);
+        steer.add(diff); n++;
+      }
+    }
+    if (n > 0) {
+      steer.div(n).setMag(this.maxSpeed);
+      steer.sub(this.velocity).limit(this.maxForce);
+    }
+    return steer;
+  }
+
+  alignment(boids) {
+    let r = 50, steer = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x, this.position.y,
+                   o.position.x, o.position.y);
+      if (o !== this && d < r) {
+        steer.add(o.velocity); n++;
+      }
+    }
+    if (n > 0) {
+      steer.div(n).setMag(this.maxSpeed);
+      steer.sub(this.velocity).limit(this.maxForce);
+    }
+    return steer;
+  }
+
+  cohesion(boids) {
+    let r = 50, steer = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x, this.position.y,
+                   o.position.x, o.position.y);
+      if (o !== this && d < r) {
+        steer.add(o.position); n++;
+      }
+    }
+    if (n > 0) {
+      steer.div(n).sub(this.position).setMag(this.maxSpeed);
+      steer.sub(this.velocity).limit(this.maxForce);
+    }
+    return steer;
+  }
+
+  applyForce(f) { this.acceleration.add(f); }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(this.maxSpeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+  }
+
+  edges() {
+    if (this.position.x > width)  this.position.x = 0;
+    if (this.position.x < 0)     this.position.x = width;
+    if (this.position.y > height) this.position.y = 0;
+    if (this.position.y < 0)     this.position.y = height;
+  }
+
+  display() {
+    let a = this.velocity.heading();
+    push();
+    translate(this.position.x, this.position.y);
+    rotate(a);
+    fill(this.hue, 200, 255, 200);
+    noStroke();
+    triangle(10, 0, -6, 5, -6, -5);
+    pop();
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Use the three sliders to experiment with the rule weights in real time. Push separation to 5 and watch the boids scatter. Set cohesion to 5 and separation to 0 and watch them collapse into a dense swarm. The sliders reveal how sensitive collective behavior is to the balance between attraction and repulsion.</p>
+
+
+      <!-- ===============================================
+           SECTION 8.11 — COMPARING PARTICLE AND AGENT SYSTEMS
+           =============================================== -->
+      <h2 id="comparing-systems">8.11 Comparing Particle Systems and Agent Systems</h2>
+
+      <p>Now that we have built both a particle system and an agent system, let&rsquo;s compare them side by side:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th>Particle System</th>
+            <th>Agent System (Boids)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Update loop</strong></td>
+            <td>Apply forces, integrate, die</td>
+            <td>Perceive neighbors, compute steering, integrate</td>
+          </tr>
+          <tr>
+            <td><strong>Awareness</strong></td>
+            <td>None&mdash;particles are blind</td>
+            <td>Local (perception radius)</td>
+          </tr>
+          <tr>
+            <td><strong>Lifespan</strong></td>
+            <td>Finite (particles die)</td>
+            <td>Infinite (agents persist)</td>
+          </tr>
+          <tr>
+            <td><strong>Interaction</strong></td>
+            <td>Independent (no particle-to-particle awareness)</td>
+            <td>Mutual influence (each agent responds to neighbors)</td>
+          </tr>
+          <tr>
+            <td><strong>Emergence</strong></td>
+            <td>Visual (fire, smoke from many dots)</td>
+            <td>Behavioral (flocking from three rules)</td>
+          </tr>
+          <tr>
+            <td><strong>Typical count</strong></td>
+            <td>Hundreds to thousands</td>
+            <td>Tens to hundreds</td>
+          </tr>
+          <tr>
+            <td><strong>Interesting because</strong></td>
+            <td>Collective visual impression</td>
+            <td>Collective behavioral patterns</td>
+          </tr>
+          <tr>
+            <td><strong>Source of forces</strong></td>
+            <td>External (gravity, wind, drag)</td>
+            <td>Self-generated from perception</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Both systems share the same core physics loop: accumulate forces, update velocity, update position, reset acceleration. The fundamental difference lies in <em>where the forces come from</em>: externally applied (particle system) vs. self-generated from perception (agent system).</p>
+
+      <div class="quiz" data-id="ch08-q4">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is the fundamental difference between a particle and an agent?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch08-q4" value="a"> Particles use vectors, agents use scalars</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q4" value="b"> Particles are 2D, agents are 3D</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q4" value="c" data-correct> Particles are passive (externally driven), agents are active (self-directed via perception)</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q4" value="d"> Particles are rendered as circles, agents as triangles</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Both particles and agents use the same physics (vectors, forces, Euler integration). The key difference is that particles are passive&mdash;they respond only to external forces like gravity&mdash;while agents are active: they perceive their neighbors and generate their own steering forces. This self-direction is what allows agent systems to produce emergent behaviors like flocking.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.12 — BEYOND BOIDS
+           =============================================== -->
+      <h2 id="beyond-boids">8.12 Beyond Boids: Other Agent Behaviors</h2>
+
+      <h3>8.12.1 Braitenberg Vehicles</h3>
+
+      <p>Before Reynolds and Boids, the Italian-Austrian neuroscientist <strong>Valentino Braitenberg</strong> proposed a thought experiment in his 1984 book <em>Vehicles: Experiments in Synthetic Psychology</em>. Braitenberg imagined the simplest possible agents: tiny vehicles with sensors and motors, connected by wires. Despite having no brain, no memory, and no explicit &ldquo;intelligence,&rdquo; these vehicles exhibit behaviors that <em>look</em> intelligent to an observer.</p>
+
+      <p>A Braitenberg vehicle has:</p>
+      <ul>
+        <li>Two <strong>sensors</strong> (one on the left, one on the right) that detect a stimulus (like light).</li>
+        <li>Two <strong>motors</strong> (one on the left, one on the right) that drive the wheels.</li>
+        <li><strong>Wiring</strong> that connects sensors to motors.</li>
+      </ul>
+
+      <p>The wiring determines the behavior:</p>
+      <ul>
+        <li><strong>Direct wiring</strong> (left sensor &rarr; left motor, right sensor &rarr; right motor): The vehicle turns <em>away</em> from the stimulus. Braitenberg called this &ldquo;fear&rdquo;&mdash;the vehicle avoids light.</li>
+        <li><strong>Crossed wiring</strong> (left sensor &rarr; right motor, right sensor &rarr; left motor): The vehicle turns <em>toward</em> the stimulus. Braitenberg called this &ldquo;aggression&rdquo;&mdash;the vehicle charges at the light.</li>
+      </ul>
+
+      <p>Here is a simulation of Braitenberg vehicles. The yellow circle is a light source that follows your mouse. Green vehicles use crossed wiring (they are &ldquo;aggressive&rdquo; and seek the light), while blue vehicles use direct wiring (they are &ldquo;fearful&rdquo; and flee):</p>
+
+      <div class="code-runner" data-height="420">
+        <div class="code-runner-header">
+          <span class="lang-label">p5.js</span>
+          <span>Braitenberg Vehicles</span>
+        </div>
+        <textarea class="cm-editor">let vehicles = [];
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 6; i++) {
+    vehicles.push(new Vehicle(
+      random(width), random(height),
+      i < 3 // first 3 are aggressive (crossed), rest fearful
+    ));
+  }
+}
+
+function draw() {
+  background(20);
+
+  // Light follows the mouse
+  let lx = mouseX, ly = mouseY;
+  fill(255, 240, 80, 120);
+  noStroke();
+  circle(lx, ly, 40);
+  fill(255, 240, 80);
+  circle(lx, ly, 16);
+
+  for (let v of vehicles) {
+    v.update(lx, ly);
+    v.display();
+  }
+
+  fill(255); textSize(11);
+  text("Green = aggressive (seeks)  Blue = fearful (flees)", 10, 16);
+}
+
+class Vehicle {
+  constructor(x, y, crossed) {
+    this.pos   = createVector(x, y);
+    this.angle = random(TWO_PI);
+    this.sensor = 20;
+    this.crossed = crossed; // true = aggression, false = fear
+  }
+
+  update(lx, ly) {
+    // Sensor positions
+    let lsx = this.pos.x + cos(this.angle - 0.3) * this.sensor;
+    let lsy = this.pos.y + sin(this.angle - 0.3) * this.sensor;
+    let rsx = this.pos.x + cos(this.angle + 0.3) * this.sensor;
+    let rsy = this.pos.y + sin(this.angle + 0.3) * this.sensor;
+
+    // Distance from each sensor to light
+    let ld = dist(lsx, lsy, lx, ly);
+    let rd = dist(rsx, rsy, lx, ly);
+
+    // Activation: closer = stronger
+    let la = 120 / (ld + 1);
+    let ra = 120 / (rd + 1);
+
+    // Wiring determines behavior
+    let leftMotor, rightMotor;
+    if (this.crossed) {
+      leftMotor  = ra; // crossed: right sensor -> left motor
+      rightMotor = la;
+    } else {
+      leftMotor  = la; // direct: left sensor -> left motor
+      rightMotor = ra;
+    }
+
+    // Differential steering
+    let turn = (rightMotor - leftMotor) * 0.08;
+    this.angle += turn;
+
+    let spd = constrain((leftMotor + rightMotor) * 0.5, 0.5, 3);
+    this.pos.x += cos(this.angle) * spd;
+    this.pos.y += sin(this.angle) * spd;
+
+    // Wrap edges
+    if (this.pos.x > width)  this.pos.x = 0;
+    if (this.pos.x < 0)     this.pos.x = width;
+    if (this.pos.y > height) this.pos.y = 0;
+    if (this.pos.y < 0)     this.pos.y = height;
+  }
+
+  display() {
+    push();
+    translate(this.pos.x, this.pos.y);
+    rotate(this.angle);
+    noStroke();
+    if (this.crossed) {
+      fill(100, 220, 120); // green = aggressive
+    } else {
+      fill(100, 160, 255); // blue = fearful
+    }
+    ellipse(0, 0, 28, 18);
+    fill(255, 80, 80);
+    circle(10, -6, 5);
+    circle(10,  6, 5);
+    pop();
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+      </div>
+
+      <p>Move your mouse around and observe the difference in behavior. The green vehicles home in on the light like heat-seeking missiles. The blue vehicles veer away. The remarkable thing is that both behaviors arise from the same mechanism&mdash;sensors connected to motors&mdash;with only the wiring pattern changed. Braitenberg argued that we instinctively anthropomorphize these simple machines, attributing &ldquo;fear&rdquo; and &ldquo;aggression&rdquo; to them even though they have no internal experience whatsoever.</p>
+
+      <h3>8.12.2 Artificial Life</h3>
+
+      <p>Agent systems are the foundation of <strong>artificial life</strong> (ALife) research. By giving agents rules for eating, reproducing, and dying, you can create simulated ecosystems that exhibit life-like properties: adaptation, self-organization, reproduction, and evolution.</p>
+
+      <p>Some notable examples from the history of artificial life:</p>
+
+      <ul>
+        <li><strong>Karl Sims&rsquo; Evolved Virtual Creatures</strong> (1994) &mdash; Sims evolved 3D creatures in simulation, starting from random body plans and neural networks, and selecting for creatures that could swim, walk, or compete for resources. The results were strange and surprising&mdash;creatures developed body forms and locomotion strategies that no human designer would have imagined.</li>
+        <li><strong>Lenia</strong> (2019, Bert Wang-Chak Chan) &mdash; A continuous generalization of Conway&rsquo;s Game of Life. Lenia produces stunning life-like patterns: creatures that glide, pulsate, divide, and interact. Unlike the sharp on/off cells of the Game of Life, Lenia uses smooth, continuous values, resulting in organic, almost biological forms.</li>
+        <li><strong>Clusters</strong> (Jeffrey Ventrella) &mdash; A system where agents attract and repel based on &ldquo;types,&rdquo; forming self-assembling structures that resemble molecules, organisms, and social groups.</li>
+      </ul>
+
+      <div class="callout callout-historical">
+        <div class="callout-title">&#128220; Historical Note</div>
+        <p>The field of artificial life was formally launched at a workshop organized by <strong>Christopher Langton</strong> at Los Alamos National Laboratory in 1987&mdash;the same year Reynolds published his Boids paper. Langton coined the term &ldquo;artificial life&rdquo; and defined it as the study of &ldquo;life as it could be&rdquo; in addition to &ldquo;life as we know it.&rdquo; The field sits at the intersection of computer science, biology, and philosophy, asking fundamental questions about what it means to be alive.</p>
+      </div>
+
+
+      <!-- ===============================================
+           SECTION 8.13 — EMERGENCE
+           =============================================== -->
+      <h2 id="emergence">8.13 Emergence</h2>
+
+      <p>If there is one idea that unites everything in this chapter, it is <strong>emergence</strong>.</p>
+
+      <div class="callout callout-definition">
+        <div class="callout-title">&#128214; Definition</div>
+        <p><strong>Emergence</strong> &mdash; The phenomenon where complex global patterns or behaviors arise from simple local rules and interactions. The emergent behavior is not explicitly programmed&mdash;it is a consequence of the system&rsquo;s structure and dynamics.</p>
+      </div>
+
+      <p>Consider what we have built in this chapter:</p>
+
+      <ul>
+        <li>A <strong>particle system</strong> with simple rules (gravity, fading lifespan) produces the visual impression of fire or a fountain&mdash;nobody programmed &ldquo;fire.&rdquo;</li>
+        <li>A <strong>boids simulation</strong> with three local rules (separation, alignment, cohesion) produces flocking&mdash;nobody programmed &ldquo;flock.&rdquo;</li>
+        <li><strong>Braitenberg vehicles</strong> with sensor-motor wiring produce behaviors that look like fear and aggression&mdash;nobody programmed emotions.</li>
+      </ul>
+
+      <p>In each case, the interesting behavior exists at the <em>collective</em> level, not the individual level. A single particle is just a fading dot. A single boid just wanders. But put them together with simple rules, and something greater appears&mdash;something that was not designed, not anticipated, not explicitly specified in the code.</p>
+
+      <p>This is the philosophical heart of simulation-based art. You are not painting an image. You are defining rules and watching something <em>emerge</em>. The artist becomes a designer of systems, not a designer of outcomes. The results are always partially surprising, partially beyond your control. This tension between authorship and emergence is what makes simulation one of the most compelling creative tools in computing arts.</p>
+
+      <p>We have seen emergence before in this course: cellular automata in Chapter 6, reaction-diffusion in Chapter 7. Particle systems and agent systems extend the idea into the domain of continuous motion, forces, and behavior. The thread connecting all of these is the same: simple rules, local interactions, and the unexpected beauty that arises from their combination.</p>
+
+      <div class="callout callout-key-concept">
+        <div class="callout-title">&#128161; Key Concept</div>
+        <p><strong>No designer necessary.</strong> The flock has no choreographer. The fire has no painter. The Braitenberg vehicle has no psychologist. Emergence means that complex, interesting, beautiful behavior can arise from the interaction of simple parts following simple rules. This is perhaps the deepest lesson of simulation: you do not need to specify the outcome. You only need to specify the process.</p>
+      </div>
+
+      <div class="quiz" data-id="ch08-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Which of the following best describes &ldquo;emergence&rdquo;?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch08-q5" value="a"> Complex behavior that is explicitly programmed by the developer</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q5" value="b"> Behavior that requires a central controller to coordinate</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q5" value="c" data-correct> Complex global patterns arising spontaneously from simple local rules and interactions</label></li>
+          <li class="option"><label><input type="radio" name="ch08-q5" value="d"> The process of adding new features to a simulation over time</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Emergence is the phenomenon where complex, organized behavior at the global level arises from simple interactions at the local level. No one programs the flock; it emerges from three simple steering rules. No one designs the fire; it emerges from many short-lived particles subject to gravity and fading. Emergence is bottom-up, not top-down.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER QUIZ
+           =============================================== -->
+      <div class="chapter-quiz">
+        <h2 class="chapter-quiz-title">Chapter 8 Review Quiz</h2>
+        <p class="chapter-quiz-subtitle">Test your understanding of particle systems, agent systems, and simulation.</p>
+
+        <div class="quiz" data-id="ch08-final-q1">
+          <div class="quiz-header">&#9997; Question 1</div>
+          <p class="question">In the Euler integration loop, why must we reset acceleration to zero at the end of each frame?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch08-fq1" value="a"> To prevent the object from moving</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq1" value="b" data-correct> Because forces must be re-applied each frame; otherwise acceleration accumulates indefinitely</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq1" value="c"> To conserve memory by freeing the vector</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq1" value="d"> Because p5.js requires it for rendering</label></li>
+          </ul>
+          <div class="explanation"><p>Forces in our simulation model are applied fresh every frame. If we do not reset acceleration to zero, the forces from previous frames persist and add to new forces, causing acceleration to grow without bound. The reset ensures a clean slate: only the forces that are actively applied this frame contribute to the object&rsquo;s acceleration.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch08-final-q2">
+          <div class="quiz-header">&#9997; Question 2</div>
+          <p class="question">In a particle system, what determines when a particle should be removed?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch08-fq2" value="a"> When it collides with another particle</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq2" value="b"> When it reaches the edge of the canvas</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq2" value="c" data-correct> When its lifespan reaches zero (the <code>isDead()</code> method returns true)</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq2" value="d"> When the emitter stops emitting</label></li>
+          </ul>
+          <div class="explanation"><p>Each particle has a lifespan that counts down each frame. When it reaches zero, the <code>isDead()</code> method returns <code>true</code>, and the emitter&rsquo;s <code>update()</code> method removes it from the array using <code>splice()</code>. This birth-death cycle is what gives particle systems their dynamic, ever-changing quality.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch08-final-q3">
+          <div class="quiz-header">&#9997; Question 3</div>
+          <p class="question">What are the three rules of Reynolds&rsquo; Boids algorithm?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch08-fq3" value="a"> Attract, repel, orbit</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq3" value="b" data-correct> Separation, alignment, cohesion</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq3" value="c"> Seek, flee, wander</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq3" value="d"> Gravity, friction, bounce</label></li>
+          </ul>
+          <div class="explanation"><p>Reynolds&rsquo; three rules are: (1) <strong>Separation</strong>&mdash;steer away from nearby neighbors to avoid crowding, (2) <strong>Alignment</strong>&mdash;steer toward the average heading of neighbors, and (3) <strong>Cohesion</strong>&mdash;steer toward the average position of neighbors. These three local rules, applied to each individual boid, produce realistic flocking behavior at the collective level.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch08-final-q4">
+          <div class="quiz-header">&#9997; Question 4</div>
+          <p class="question">In Reynolds&rsquo; steering model, how is the steering force computed?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch08-fq4" value="a"> Steering = current velocity + desired velocity</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq4" value="b"> Steering = desired velocity &times; mass</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq4" value="c" data-correct> Steering = desired velocity &minus; current velocity</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq4" value="d"> Steering = current velocity &minus; desired velocity</label></li>
+          </ul>
+          <div class="explanation"><p>Reynolds&rsquo; steering formula is: $\vec{f}_{\text{steering}} = \vec{v}_{\text{desired}} - \vec{v}_{\text{current}}$. The steering force is the difference between where you want to go (desired velocity) and where you are currently going (current velocity). This force corrects the agent&rsquo;s trajectory toward its goal.</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <div class="quiz" data-id="ch08-final-q5">
+          <div class="quiz-header">&#9997; Question 5</div>
+          <p class="question">In a Braitenberg vehicle with <strong>crossed wiring</strong>, the left sensor drives the right motor and vice versa. What behavior does this produce?</p>
+          <ul class="options">
+            <li class="option"><label><input type="radio" name="ch08-fq5" value="a"> The vehicle moves in a straight line regardless of stimuli</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq5" value="b"> The vehicle turns away from the stimulus (&ldquo;fear&rdquo;)</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq5" value="c" data-correct> The vehicle turns toward the stimulus (&ldquo;aggression&rdquo;)</label></li>
+            <li class="option"><label><input type="radio" name="ch08-fq5" value="d"> The vehicle spins in place</label></li>
+          </ul>
+          <div class="explanation"><p>With crossed wiring, a stronger signal on the left sensor speeds up the <em>right</em> motor, which turns the vehicle to the left&mdash;toward the stimulus. This produces approach behavior that Braitenberg called &ldquo;aggression.&rdquo; Direct wiring (left sensor &rarr; left motor) produces the opposite: the vehicle turns away (&ldquo;fear&rdquo;).</p></div>
+          <button class="btn btn-check">Check Answer</button>
+        </div>
+
+        <button class="btn btn-score" style="margin-top: 1rem;">Show Score</button>
+        <div class="quiz-score"></div>
+      </div>
+
+
+      <!-- ===============================================
+           CODE CHALLENGES
+           =============================================== -->
+      <h2 id="code-challenges">Code Challenges</h2>
+
+      <div class="code-challenge" data-id="ch08-c1">
+        <div class="code-challenge-header">&#127942; Code Challenge 1</div>
+        <p class="prompt">Write a function called <code>steeringForce</code> that takes three arguments: <code>desiredX</code>, <code>desiredY</code> (the components of the desired velocity vector), and <code>currentX</code>, <code>currentY</code> (the components of the current velocity vector). Return an object <code>{x, y}</code> representing the steering force (desired minus current).</p>
+        <textarea class="cm-editor">function steeringForce(desiredX, desiredY, currentX, currentY) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "steeringForce(5, 0, 3, 0)", "expected": {"x": 2, "y": 0}},
+          {"call": "steeringForce(0, 4, 0, 1)", "expected": {"x": 0, "y": 3}},
+          {"call": "steeringForce(3, 3, 1, 2)", "expected": {"x": 2, "y": 1}},
+          {"call": "steeringForce(0, 0, 2, 3)", "expected": {"x": -2, "y": -3}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch08-c2">
+        <div class="code-challenge-header">&#127942; Code Challenge 2</div>
+        <p class="prompt">Write a function called <code>applyGravity</code> that takes an object with properties <code>vy</code> (vertical velocity) and <code>mass</code>, plus a gravity constant <code>g</code>. The function should return the new vertical velocity after applying gravitational acceleration for one frame. Remember: gravitational force is $F = mg$, and acceleration is $a = F/m = g$, so simply add $g$ to the current velocity.</p>
+        <textarea class="cm-editor">function applyGravity(obj, g) {
+  // Your code here
+  // Return the new vertical velocity
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "applyGravity({vy: 0, mass: 1}, 0.1)", "expected": 0.1},
+          {"call": "applyGravity({vy: 2, mass: 5}, 0.3)", "expected": 2.3},
+          {"call": "applyGravity({vy: -1, mass: 10}, 0.5)", "expected": -0.5},
+          {"call": "applyGravity({vy: 0, mass: 1}, 0)", "expected": 0}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch08-c3">
+        <div class="code-challenge-header">&#127942; Code Challenge 3</div>
+        <p class="prompt">Write a function called <code>isDead</code> that takes a particle object with a <code>lifespan</code> property (a number). Return <code>true</code> if the lifespan is less than or equal to zero, and <code>false</code> otherwise.</p>
+        <textarea class="cm-editor">function isDead(particle) {
+  // Your code here
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "isDead({lifespan: 255})", "expected": false},
+          {"call": "isDead({lifespan: 1})", "expected": false},
+          {"call": "isDead({lifespan: 0})", "expected": true},
+          {"call": "isDead({lifespan: -5})", "expected": true}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+      <div class="code-challenge" data-id="ch08-c4">
+        <div class="code-challenge-header">&#127942; Code Challenge 4</div>
+        <p class="prompt">Write a function called <code>averagePosition</code> that takes an array of objects, each with <code>x</code> and <code>y</code> properties. Return an object <code>{x, y}</code> representing the average position. This is the same calculation used in the cohesion rule to find the center of a group of boids.</p>
+        <textarea class="cm-editor">function averagePosition(agents) {
+  // Your code here
+
+}</textarea>
+        <script type="application/json" class="test-cases">[
+          {"call": "averagePosition([{x:0,y:0},{x:10,y:10}])", "expected": {"x": 5, "y": 5}},
+          {"call": "averagePosition([{x:3,y:6}])", "expected": {"x": 3, "y": 6}},
+          {"call": "averagePosition([{x:0,y:0},{x:4,y:0},{x:8,y:0}])", "expected": {"x": 4, "y": 0}},
+          {"call": "averagePosition([{x:-2,y:3},{x:2,y:-3}])", "expected": {"x": 0, "y": 0}}
+        ]</script>
+        <div class="code-challenge-controls">
+          <button class="btn btn-submit">Submit</button>
+        </div>
+        <div class="test-results"></div>
+        <div class="test-summary" style="display:none"></div>
+      </div>
+
+
+      <!-- ===============================================
+           EXERCISES
+           =============================================== -->
+      <h2 id="exercises">Exercises</h2>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 8.1</div>
+        <p class="prompt">Modify the particle system so that particles shift from <strong>yellow</strong> (when born) to <strong>red</strong> (when dying). Use <code>lerpColor()</code> to interpolate between the two colors based on the particle&rsquo;s lifespan. Emit particles from the center of the canvas with an upward initial velocity.</p>
+        <textarea class="cm-editor">let emitter;
+
+function setup() {
+  createCanvas(400, 300);
+  emitter = new Emitter(width / 2, height - 30);
+}
+
+function draw() {
+  background(20);
+  emitter.applyForce(createVector(0, 0.04));
+  emitter.emit(2);
+  emitter.update();
+  emitter.display();
+}
+
+// --- Modify the Particle class below ---
+
+class Particle {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    this.velocity = createVector(random(-1, 1), random(-3, -1));
+    this.acceleration = createVector(0, 0);
+    this.lifespan = 255;
+    this.size = random(6, 14);
+  }
+
+  applyForce(f) { this.acceleration.add(f); }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+    this.lifespan -= 2;
+  }
+
+  display() {
+    noStroke();
+    // TODO: use lerpColor to fade from yellow to red
+    fill(255, 200, 0, this.lifespan);
+    circle(this.position.x, this.position.y, this.size);
+  }
+
+  isDead() { return this.lifespan <= 0; }
+}
+
+class Emitter {
+  constructor(x, y) {
+    this.origin = createVector(x, y);
+    this.particles = [];
+  }
+  emit(n) {
+    for (let i = 0; i < n; i++)
+      this.particles.push(new Particle(this.origin.x, this.origin.y));
+  }
+  applyForce(f) {
+    for (let p of this.particles) p.applyForce(f);
+  }
+  update() {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      this.particles[i].update();
+      if (this.particles[i].isDead()) this.particles.splice(i, 1);
+    }
+  }
+  display() {
+    for (let p of this.particles) p.display();
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let emitter;
+
+function setup() {
+  createCanvas(400, 300);
+  emitter = new Emitter(width / 2, height - 30);
+}
+
+function draw() {
+  background(20);
+  emitter.applyForce(createVector(0, 0.04));
+  emitter.emit(2);
+  emitter.update();
+  emitter.display();
+}
+
+class Particle {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    this.velocity = createVector(random(-1, 1), random(-3, -1));
+    this.acceleration = createVector(0, 0);
+    this.lifespan = 255;
+    this.size = random(6, 14);
+    // Store start and end colors
+    this.startColor = color(255, 255, 0);   // yellow
+    this.endColor   = color(255, 0, 0);     // red
+  }
+
+  applyForce(f) { this.acceleration.add(f); }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+    this.lifespan -= 2;
+  }
+
+  display() {
+    noStroke();
+    // Map lifespan to 0-1 range (1 = born, 0 = dead)
+    let t = map(this.lifespan, 255, 0, 0, 1);
+    let c = lerpColor(this.startColor, this.endColor, t);
+    let sz = map(this.lifespan, 255, 0, this.size, 0);
+    fill(red(c), green(c), blue(c), this.lifespan);
+    circle(this.position.x, this.position.y, sz);
+  }
+
+  isDead() { return this.lifespan <= 0; }
+}
+
+class Emitter {
+  constructor(x, y) {
+    this.origin = createVector(x, y);
+    this.particles = [];
+  }
+  emit(n) {
+    for (let i = 0; i < n; i++)
+      this.particles.push(new Particle(this.origin.x, this.origin.y));
+  }
+  applyForce(f) {
+    for (let p of this.particles) p.applyForce(f);
+  }
+  update() {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      this.particles[i].update();
+      if (this.particles[i].isDead()) this.particles.splice(i, 1);
+    }
+  }
+  display() {
+    for (let p of this.particles) p.display();
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 8.2</div>
+        <p class="prompt">Add a <strong>fourth rule</strong> to the Boids system: attraction to the mouse cursor. Each boid should compute a steering force toward <code>(mouseX, mouseY)</code> using Reynolds&rsquo; steering formula. Weight this rule with a variable and observe how it changes the flock&rsquo;s behavior.</p>
+        <textarea class="cm-editor">let flock = [];
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 60; i++) {
+    flock.push(new Boid(random(width), random(height)));
+  }
+}
+
+function draw() {
+  background(30);
+  // Draw mouse attractor
+  noFill(); stroke(255, 255, 0, 80);
+  circle(mouseX, mouseY, 30);
+
+  for (let b of flock) {
+    b.flock(flock);
+    b.update();
+    b.edges();
+    b.display();
+  }
+}
+
+class Boid {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    this.velocity = p5.Vector.random2D().setMag(random(2, 4));
+    this.acceleration = createVector(0, 0);
+    this.maxForce = 0.2;
+    this.maxSpeed = 4;
+  }
+
+  flock(boids) {
+    let sep = this.separation(boids);
+    let ali = this.alignment(boids);
+    let coh = this.cohesion(boids);
+
+    sep.mult(1.5);
+    ali.mult(1.0);
+    coh.mult(1.0);
+
+    // TODO: Add mouse attraction rule here
+    // let attract = this.seekMouse();
+    // attract.mult(???);
+    // this.applyForce(attract);
+
+    this.applyForce(sep);
+    this.applyForce(ali);
+    this.applyForce(coh);
+  }
+
+  // TODO: Implement seekMouse() using Reynolds' steering formula
+
+  separation(boids) {
+    let r = 50, s = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x,this.position.y,o.position.x,o.position.y);
+      if (o !== this && d < r) { let diff = p5.Vector.sub(this.position,o.position); diff.div(d*d); s.add(diff); n++; }
+    }
+    if (n>0) { s.div(n).setMag(this.maxSpeed); s.sub(this.velocity).limit(this.maxForce); }
+    return s;
+  }
+  alignment(boids) {
+    let r = 50, s = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x,this.position.y,o.position.x,o.position.y);
+      if (o !== this && d < r) { s.add(o.velocity); n++; }
+    }
+    if (n>0) { s.div(n).setMag(this.maxSpeed); s.sub(this.velocity).limit(this.maxForce); }
+    return s;
+  }
+  cohesion(boids) {
+    let r = 50, s = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x,this.position.y,o.position.x,o.position.y);
+      if (o !== this && d < r) { s.add(o.position); n++; }
+    }
+    if (n>0) { s.div(n).sub(this.position).setMag(this.maxSpeed); s.sub(this.velocity).limit(this.maxForce); }
+    return s;
+  }
+
+  applyForce(f) { this.acceleration.add(f); }
+  update() {
+    this.velocity.add(this.acceleration).limit(this.maxSpeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+  }
+  edges() {
+    if (this.position.x>width) this.position.x=0;
+    if (this.position.x<0) this.position.x=width;
+    if (this.position.y>height) this.position.y=0;
+    if (this.position.y<0) this.position.y=height;
+  }
+  display() {
+    push(); translate(this.position.x,this.position.y);
+    rotate(this.velocity.heading());
+    fill(200,220,255); noStroke();
+    triangle(10,0,-5,5,-5,-5); pop();
+  }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let flock = [];
+
+function setup() {
+  createCanvas(400, 400);
+  for (let i = 0; i < 60; i++) {
+    flock.push(new Boid(random(width), random(height)));
+  }
+}
+
+function draw() {
+  background(30);
+  noFill(); stroke(255, 255, 0, 80);
+  circle(mouseX, mouseY, 30);
+
+  for (let b of flock) {
+    b.flock(flock);
+    b.update();
+    b.edges();
+    b.display();
+  }
+}
+
+class Boid {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    this.velocity = p5.Vector.random2D().setMag(random(2, 4));
+    this.acceleration = createVector(0, 0);
+    this.maxForce = 0.2;
+    this.maxSpeed = 4;
+  }
+
+  flock(boids) {
+    let sep = this.separation(boids);
+    let ali = this.alignment(boids);
+    let coh = this.cohesion(boids);
+    let attract = this.seekMouse();
+
+    sep.mult(1.5);
+    ali.mult(1.0);
+    coh.mult(1.0);
+    attract.mult(0.5); // Moderate attraction weight
+
+    this.applyForce(sep);
+    this.applyForce(ali);
+    this.applyForce(coh);
+    this.applyForce(attract);
+  }
+
+  seekMouse() {
+    // Desired velocity: vector from me to mouse, at maxSpeed
+    let target = createVector(mouseX, mouseY);
+    let desired = p5.Vector.sub(target, this.position);
+    desired.setMag(this.maxSpeed);
+
+    // Steering = desired - current
+    let steer = p5.Vector.sub(desired, this.velocity);
+    steer.limit(this.maxForce);
+    return steer;
+  }
+
+  separation(boids) {
+    let r = 50, s = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x,this.position.y,o.position.x,o.position.y);
+      if (o !== this && d < r) { let diff = p5.Vector.sub(this.position,o.position); diff.div(d*d); s.add(diff); n++; }
+    }
+    if (n>0) { s.div(n).setMag(this.maxSpeed); s.sub(this.velocity).limit(this.maxForce); }
+    return s;
+  }
+  alignment(boids) {
+    let r = 50, s = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x,this.position.y,o.position.x,o.position.y);
+      if (o !== this && d < r) { s.add(o.velocity); n++; }
+    }
+    if (n>0) { s.div(n).setMag(this.maxSpeed); s.sub(this.velocity).limit(this.maxForce); }
+    return s;
+  }
+  cohesion(boids) {
+    let r = 50, s = createVector(0,0), n = 0;
+    for (let o of boids) {
+      let d = dist(this.position.x,this.position.y,o.position.x,o.position.y);
+      if (o !== this && d < r) { s.add(o.position); n++; }
+    }
+    if (n>0) { s.div(n).sub(this.position).setMag(this.maxSpeed); s.sub(this.velocity).limit(this.maxForce); }
+    return s;
+  }
+
+  applyForce(f) { this.acceleration.add(f); }
+  update() {
+    this.velocity.add(this.acceleration).limit(this.maxSpeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+  }
+  edges() {
+    if (this.position.x>width) this.position.x=0;
+    if (this.position.x<0) this.position.x=width;
+    if (this.position.y>height) this.position.y=0;
+    if (this.position.y<0) this.position.y=height;
+  }
+  display() {
+    push(); translate(this.position.x,this.position.y);
+    rotate(this.velocity.heading());
+    fill(200,220,255); noStroke();
+    triangle(10,0,-5,5,-5,-5); pop();
+  }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-header">&#9998; Exercise 8.3</div>
+        <p class="prompt">Create a particle emitter that spawns particles in a <strong>ring pattern</strong> (initial velocity pointing outward in all directions) instead of a fountain pattern. Use <code>p5.Vector.random2D()</code> for the initial velocity direction and give each particle a random speed between 1 and 3. The visual effect should resemble a firework burst. Emit particles only when the mouse is clicked.</p>
+        <textarea class="cm-editor">let particles = [];
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(10, 10, 20);
+
+  let gravity = createVector(0, 0.05);
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].applyForce(gravity);
+    particles[i].update();
+    particles[i].display();
+    if (particles[i].isDead()) {
+      particles.splice(i, 1);
+    }
+  }
+
+  fill(255); noStroke(); textSize(12);
+  text("Click to burst! Particles: " + particles.length, 10, 20);
+}
+
+function mousePressed() {
+  // TODO: Spawn 50 particles at mouseX, mouseY
+  // Each should have a random outward velocity
+}
+
+class Particle {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    // TODO: Use p5.Vector.random2D() and setMag()
+    this.velocity = createVector(0, -2);
+    this.acceleration = createVector(0, 0);
+    this.lifespan = 255;
+    this.size = random(3, 8);
+    this.col = color(random(100,255), random(100,255), random(200,255));
+  }
+
+  applyForce(f) { this.acceleration.add(f); }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+    this.lifespan -= 3;
+  }
+
+  display() {
+    noStroke();
+    let sz = map(this.lifespan, 255, 0, this.size, 0);
+    fill(red(this.col), green(this.col), blue(this.col), this.lifespan);
+    circle(this.position.x, this.position.y, sz);
+  }
+
+  isDead() { return this.lifespan <= 0; }
+}</textarea>
+        <div class="code-runner-controls">
+          <button class="btn btn-run">&#9654; Run</button>
+          <button class="btn btn-stop">&#9632; Stop</button>
+          <button class="btn btn-reset">&#8635; Reset</button>
+        </div>
+        <div class="preview-container"></div>
+        <div class="error-display"></div>
+        <div class="console-output"></div>
+        <details class="solution-reveal">
+          <summary>Show Solution</summary>
+          <div class="solution-content">
+            <textarea class="cm-editor" readonly>let particles = [];
+
+function setup() {
+  createCanvas(400, 400);
+}
+
+function draw() {
+  background(10, 10, 20);
+
+  let gravity = createVector(0, 0.05);
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].applyForce(gravity);
+    particles[i].update();
+    particles[i].display();
+    if (particles[i].isDead()) {
+      particles.splice(i, 1);
+    }
+  }
+
+  fill(255); noStroke(); textSize(12);
+  text("Click to burst! Particles: " + particles.length, 10, 20);
+}
+
+function mousePressed() {
+  // Spawn 50 particles in a ring burst
+  for (let i = 0; i < 50; i++) {
+    particles.push(new Particle(mouseX, mouseY));
+  }
+}
+
+class Particle {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    // Random outward direction at random speed
+    this.velocity = p5.Vector.random2D();
+    this.velocity.setMag(random(1, 3));
+    this.acceleration = createVector(0, 0);
+    this.lifespan = 255;
+    this.size = random(3, 8);
+    this.col = color(random(100,255), random(100,255), random(200,255));
+  }
+
+  applyForce(f) { this.acceleration.add(f); }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+    this.lifespan -= 3;
+  }
+
+  display() {
+    noStroke();
+    let sz = map(this.lifespan, 255, 0, this.size, 0);
+    fill(red(this.col), green(this.col), blue(this.col), this.lifespan);
+    circle(this.position.x, this.position.y, sz);
+  }
+
+  isDead() { return this.lifespan <= 0; }
+}</textarea>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- ===============================================
+           CHAPTER NAVIGATION
+           =============================================== -->
+      <nav class="chapter-nav">
+        <a href="../ch07/index.html" class="nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <span class="nav-title">Chapter 7: Reaction-Diffusion &amp; Pattern Formation</span>
+        </a>
+        <a href="../ch09/index.html" class="nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <span class="nav-title">Chapter 9: Physics, ODEs &amp; Forces</span>
+        </a>
+      </nav>
+
+    </article>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" aria-label="Scroll to top">&uarr;</button>
+
+  <!-- Engine (must be last) -->
+  <script src="../shared/engine.js"></script>
+</body>
+</html>
