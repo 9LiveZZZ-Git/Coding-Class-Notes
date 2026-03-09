@@ -1,0 +1,40 @@
+{
+  "name": "computing-arts-textbook",
+  "version": "1.0.0",
+  "description": "MAT 200C: Computing Arts — Interactive Textbook",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux"
+  },
+  "author": "MAT 200C",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0"
+  },
+  "build": {
+    "appId": "com.mat200c.computing-arts-textbook",
+    "productName": "Computing Arts Textbook",
+    "files": [
+      "main.js",
+      "preload.js",
+      "content/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": null
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
