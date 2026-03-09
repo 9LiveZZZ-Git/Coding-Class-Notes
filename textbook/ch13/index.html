@@ -1496,7 +1496,7 @@ void main() {
       <p>The most common types in shaders:</p>
       <ul>
         <li><strong>Value noise:</strong> Random values at integer grid points, interpolated between them. Simple but can show grid-aligned artifacts.</li>
-        <li><strong>Gradient noise (Perlin):</strong> Random gradients at grid points, producing smoother results than value noise. Invented by Ken Perlin in 1983 for the movie <em>Tron</em>, for which he won an Academy Award for Technical Achievement.</li>
+        <li><strong>Gradient noise (Perlin):</strong> Random gradients at grid points, producing smoother results than value noise. Invented by Ken Perlin in 1983, inspired by his work on visual effects for <em>Tron</em> (1982). He won an Academy Award for Technical Achievement in 1997.</li>
         <li><strong>Simplex noise:</strong> A more efficient variant of Perlin noise with fewer directional artifacts. Also invented by Perlin (2001). Uses a simplex grid (triangles in 2D, tetrahedra in 3D) instead of a square/cubic grid.</li>
         <li><strong>Worley/Cellular noise:</strong> Computes distance to randomly placed feature points. Creates cell-like, organic patterns. Used for water caustics, stone textures, and biological patterns.</li>
         <li><strong>Fractal Brownian Motion (fBm):</strong> Multiple octaves of noise layered together at different frequencies and amplitudes. Each octave doubles the frequency and halves the amplitude:
@@ -1884,7 +1884,7 @@ float circle = smoothstep(0.5, 0.5 - pixelSize * 2.0, length(uv));</code></pre>
 mat2 rotate2D(float angle) {
     float s = sin(angle);
     float c = cos(angle);
-    return mat2(c, -s, s, c);
+    return mat2(c, s, -s, c);
 }
 // --- END LLM-GENERATED CODE ---</code></pre>
 

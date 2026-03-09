@@ -576,7 +576,7 @@ float moire = sin(d1 * 60.0) * 0.5 + sin(d2 * 60.0) * 0.5;</code></pre>
       <pre><code>vec2 rotate2D(vec2 p, float angle) {
   float c = cos(angle);
   float s = sin(angle);
-  return mat2(c, -s, s, c) * p;
+  return mat2(c, s, -s, c) * p;
 }</code></pre>
 
       <p>Applying this before a pattern computation rotates the entire pattern. Animate the angle with <code>u_time</code> for spinning effects:</p>
@@ -1159,7 +1159,7 @@ Phase 1:  Phase 2:      Phase 1:    Phase 2:
 
       <h4>Other Noteworthy Patterns</h4>
       <ul>
-        <li><strong>Garden of Eden:</strong> A pattern that cannot be reached from any predecessor &mdash; it can only exist as an initial state. Roger Banks proved such patterns exist for the Game of Life.</li>
+        <li><strong>Garden of Eden:</strong> A pattern that cannot be reached from any predecessor &mdash; it can only exist as an initial state. Edward F. Moore proved in 1962 that such patterns must exist for the Game of Life, and the first explicit example was found by Roger Banks and others in 1971.</li>
         <li><strong>Methuselahs:</strong> Small patterns that take a very long time to stabilize. The "R-pentomino" (5 cells) takes 1,103 generations to reach a stable state and produces 6 gliders along the way.</li>
         <li><strong>Puffers:</strong> Moving patterns that leave a trail of debris behind them, like a spaceship with exhaust.</li>
         <li><strong>Rakes:</strong> Puffers whose debris consists of spaceships &mdash; essentially mobile glider guns.</li>
@@ -1650,7 +1650,7 @@ uniform float u_time;
 
 vec2 rotate2D(vec2 p, float a) {
   float c = cos(a), s = sin(a);
-  return mat2(c, -s, s, c) * p;
+  return mat2(c, s, -s, c) * p;
 }
 
 void main() {
@@ -2052,7 +2052,7 @@ uniform float u_time;
 
 vec2 rotate2D(vec2 p, float a) {
   float c = cos(a), s = sin(a);
-  return mat2(c, -s, s, c) * p;
+  return mat2(c, s, -s, c) * p;
 }
 
 void main() {

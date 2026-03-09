@@ -590,7 +590,7 @@ if (iterations < MAX_ITER) {
 
       <p>This technique is harder to implement in a single-pass GLSL shader (it requires computing the histogram over all pixels, which needs texture readback or compute shaders), but produces excellent results in CPU-based renderers or multi-pass GPU implementations. It ensures that no color is "wasted" on iteration count ranges that cover very few pixels, maximizing the visual information content of the image.</p>
 
-      <h3>4.4.4 Distance Estimation Coloring</h3>
+      <h3>4.4.5 Distance Estimation Coloring</h3>
 
       <p>The <strong>distance estimator</strong> computes an approximation of the distance from a point $c$ to the boundary of the Mandelbrot set. During iteration, we also track the derivative $z'_n$ of the orbit:</p>
 
@@ -1115,7 +1115,7 @@ function draw() {
         <div class="console-output"></div>
       </div>
 
-      <h3>4.6.3 CIELAB (L*a*b*)</h3>
+      <h3>4.6.4 CIELAB (L*a*b*)</h3>
 
       <p><a href="https://en.wikipedia.org/wiki/CIELAB_color_space">CIELAB</a> is a color space designed by the International Commission on Illumination (CIE) to be <strong>perceptually uniform</strong>. This means a distance of 1 unit in CIELAB looks like the same "amount of color change" everywhere in the space.</p>
 
@@ -1378,7 +1378,7 @@ void main() {
 vec2 dz = cx_div(cx_sin(z), cx_cos(z));
 z = z - dz;</code></pre>
 
-      <h3>4.7.6 Artistic Variations</h3>
+      <h3>4.7.7 Artistic Variations</h3>
 
       <p>Beyond changing the polynomial, several modifications produce artistically interesting results:</p>
 
@@ -1594,7 +1594,7 @@ function draw() {
         <div class="console-output"></div>
       </div>
 
-      <h3>4.8.4 Frame Feedback for Visual Effects</h3>
+      <h3>4.8.5 Frame Feedback for Visual Effects</h3>
 
       <p>Frame feedback is not limited to cellular automata. It opens up a wide range of visual effects:</p>
 
@@ -1637,7 +1637,7 @@ gl_FragColor = vec4(newA, newB, 0.0, 1.0);</code></pre>
 vec2 center = vec2(0.5, 0.5);
 vec2 offset = vTexCoord - center;
 float angle = 0.01; // slight rotation per frame
-mat2 rot = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+mat2 rot = mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
 vec2 samplePos = center + rot * offset * 0.99; // 0.99 = zoom in
 vec4 prev = texture2D(prevFrame, samplePos) * 0.98;</code></pre>
 

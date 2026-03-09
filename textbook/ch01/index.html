@@ -99,7 +99,7 @@
 
       <div class="callout callout-historical">
         <div class="callout-title">&#128220; Historical Note</div>
-        <p>In February 1965, two of the first exhibitions of computer art opened almost simultaneously: Georg Nees exhibited at the Studiengalerie of the University of Stuttgart, and A. Michael Noll exhibited at the Howard Wise Gallery in New York. These exhibitions mark the public birth of computer art as a recognized artistic practice.</p>
+        <p>In early 1965, two of the first exhibitions of computer art opened: Georg Nees exhibited at the Studiengalerie of the University of Stuttgart in February, and A. Michael Noll exhibited at the Howard Wise Gallery in New York in April. These exhibitions mark the public birth of computer art as a recognized artistic practice.</p>
       </div>
 
       <p>The arrival of personal computers in the late 1970s and 1980s democratized computational art. Artists no longer needed access to expensive mainframes. By the mid-1990s, the World Wide Web offered a global platform for distributing and experiencing interactive digital art.</p>
@@ -1270,6 +1270,21 @@ for (let i = 0; i &lt; colors.length; i++) {
         <p><strong>Nested loops and computational cost:</strong> A single loop over $n$ items does $n$ operations. Two nested loops each iterating $n$ times do $n \times n = n^2$ operations. For a grid of 100&times;100, that is 10,000 iterations per frame. At 60 fps, that is 600,000 iterations per second. Keep this in mind as your sketches grow more complex&mdash;deeply nested loops can slow things down.</p>
       </div>
 
+      <div class="quiz" data-id="ch01-q4b">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What are the three parts of a <code>for</code> loop declaration in JavaScript?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q4b" value="a"> Start, stop, step</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q4b" value="b" data-correct> Initialization, condition, update</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q4b" value="c"> Input, process, output</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q4b" value="d"> Declaration, comparison, increment only</label></li>
+        </ul>
+        <div class="explanation">
+          <p>A <code>for</code> loop has three parts: <strong>initialization</strong> (<code>let i = 0</code>), a <strong>condition</strong> checked before each iteration (<code>i &lt; 10</code>), and an <strong>update</strong> executed after each iteration (<code>i++</code>). The update can be any expression, not just an increment.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
 
       <!-- ===============================================
            SECTION 1.11 — FUNCTIONS
@@ -1934,6 +1949,21 @@ function mousePressed() {
         <p><strong>Experimentation is the creative coder's core practice.</strong> Professional creative coders spend most of their time tweaking parameters, observing results, and iterating. The simulation you built is a <em>playground</em>&mdash;change a number, see what happens. This exploratory loop (code &rarr; observe &rarr; modify &rarr; repeat) is how creative coding ideas develop.</p>
       </div>
 
+      <div class="quiz" data-id="ch01-q7">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Why do we use <code>atan2(dy, dx)</code> instead of <code>atan(dy/dx)</code> to calculate the angle from the cannon to the mouse?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q7" value="a"> <code>atan2</code> is faster than <code>atan</code></label></li>
+          <li class="option"><label><input type="radio" name="ch01-q7" value="b"> <code>atan</code> only works with integers</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q7" value="c" data-correct> <code>atan2</code> correctly handles all four quadrants, while <code>atan</code> cannot distinguish opposite directions</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q7" value="d"> <code>atan</code> returns degrees, but we need radians</label></li>
+        </ul>
+        <div class="explanation">
+          <p><code>atan(y/x)</code> cannot distinguish between opposite quadrants because the ratio is the same (e.g., $1/1$ and $-1/-1$). <code>atan2(y, x)</code> takes both values separately and returns the correct angle in all four quadrants, from $-\pi$ to $\pi$.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
 
       <!-- ===============================================
            SECTION 1.17 — GENERATIVE ART
@@ -2005,6 +2035,21 @@ function mousePressed() {
       <div class="callout callout-key-concept">
         <div class="callout-title">&#128161; Key Concept</div>
         <p>Generative art is not about replacing human creativity with algorithms. It is about <strong>extending</strong> human creativity. The artist designs the system; the system explores a possibility space that no human could traverse by hand. The interplay between human intention and algorithmic surprise is what makes generative art compelling.</p>
+      </div>
+
+      <div class="quiz" data-id="ch01-q8">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What is generative art?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch01-q8" value="a"> Art created entirely by artificial intelligence without human input</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q8" value="b" data-correct> Art produced by an autonomous system whose rules and parameters are designed by the artist</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q8" value="c"> Art that uses only random numbers to create images</label></li>
+          <li class="option"><label><input type="radio" name="ch01-q8" value="d"> Digital art that imitates traditional painting techniques</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Generative art is art produced by an <strong>autonomous system</strong> designed by the artist. The artist controls the rules and parameters; the system generates the output. The interplay between human intention and algorithmic exploration is what distinguishes generative art.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
       </div>
 
 

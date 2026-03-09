@@ -641,7 +641,7 @@ function draw() {
   // ellipse(xPos, yPos, 50, 50);
 
   // ERROR 3: Wrong number of arguments
-  // rect(100, 100, 50); // missing height
+  // rect(100, 100); // missing width and height
 
   // ERROR 4: Typo in function name
   // elipse(200, 200, 50, 50);
@@ -776,7 +776,7 @@ if (frameCount % 60 === 0) {
       </div>
 
       <!-- INTERACTIVE: Debugging Exercise -->
-      <h3>11.5.7 Debugging Exercise</h3>
+      <h3>11.5.8 Debugging Exercise</h3>
 
       <p>The sketch below has several bugs. It is supposed to draw bouncing circles that change color when they hit the edges. Try to find and fix all the bugs:</p>
 
@@ -1223,7 +1223,7 @@ function draw() {
     let angle = (fc + i * HALF_STEP) * 0.01745329; // radians
     let sinA = Math.sin(angle);
     let cosA = Math.cos(angle);
-    let r = 50 + sinA * 0.1 * 150;  // simplified
+    let r = 50 + Math.sin(angle * 0.1) * 150;  // simplified
     let x = cx + cosA * (50 + Math.sin(angle * 0.1) * 150);
     let y = cy + sinA * (50 + Math.sin(angle * 0.1) * 150);
 
@@ -1498,6 +1498,21 @@ function draw() {
       <div class="callout callout-key-concept">
         <div class="callout-title">&#128161; Key Concept</div>
         <p><strong>The goal of using AI in this course is to learn faster, not to avoid learning.</strong> If you use an LLM to generate code, your responsibility is to understand that code well enough to explain it, modify it, and debug it. The AI is a tutor, not a ghostwriter.</p>
+      </div>
+
+      <div class="quiz" data-id="ch11-q5">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">According to the course policy, what is the most important thing you must do when using LLM-generated code?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch11-q5" value="a"> Only use free/open-source LLMs</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q5" value="b" data-correct> Document your usage and understand the code well enough to explain, modify, and debug it</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q5" value="c"> Never use LLMs for more than one function at a time</label></li>
+          <li class="option"><label><input type="radio" name="ch11-q5" value="d"> Always rewrite the generated code in a different programming style</label></li>
+        </ul>
+        <div class="explanation">
+          <p>The course policy requires that you document any AI assistance and demonstrate understanding of the generated code. The AI should be used as a tutor to accelerate learning, not as a ghostwriter to avoid it.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
       </div>
 
 

@@ -157,7 +157,7 @@
 
       <p>The dot product is used extensively in creative coding: lighting calculations in shaders, detecting whether an agent can "see" a target (field of view), computing projections, and measuring alignment between motion and a desired direction.</p>
 
-      <h3>14.1.8 Scalar Projection</h3>
+      <h3>14.1.7 Scalar Projection</h3>
 
       <p>The <strong>scalar projection</strong> of $\vec{a}$ onto $\vec{b}$ tells you how far along $\vec{b}$ the vector $\vec{a}$ reaches:</p>
 
@@ -174,7 +174,7 @@
         <p>Given two non-parallel vectors, you can create two perpendicular vectors using projection. Subtract the projection of $\vec{b}$ onto $\vec{a}$ from $\vec{b}$: the result $\vec{b} - \text{proj}_{\vec{a}}\vec{b}$ is perpendicular to $\vec{a}$. This process, extended to more vectors, is called Gram-Schmidt orthogonalization.</p>
       </div>
 
-      <h3>14.1.7 The Cross Product (3D)</h3>
+      <h3>14.1.8 The Cross Product (3D)</h3>
 
       <p>The <strong>cross product</strong> is defined only for 3D vectors and produces a new vector that is perpendicular to both inputs:</p>
 
@@ -349,6 +349,21 @@ function mouseReleased() {
         <div class="preview-container"></div>
         <div class="error-display"></div>
         <div class="console-output"></div>
+      </div>
+
+      <div class="quiz" data-id="ch14-q0">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">What does the dot product $\vec{a} \cdot \vec{b} = 0$ tell you about two vectors?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch14-q0" value="a"> They are parallel</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q0" value="b" data-correct> They are perpendicular (orthogonal)</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q0" value="c"> They have the same magnitude</label></li>
+          <li class="option"><label><input type="radio" name="ch14-q0" value="d"> One of them is a zero vector</label></li>
+        </ul>
+        <div class="explanation">
+          <p>Since $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}|\cos\theta$, a dot product of zero means $\cos\theta = 0$, so $\theta = 90°$. The vectors are perpendicular. This is used extensively in shaders for lighting calculations and field-of-view checks.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
       </div>
 
 
@@ -963,7 +978,7 @@ function draw() {
 
       <h3>14.5.1 The Evolution: WebGL to WebGPU</h3>
 
-      <p><strong>WebGL</strong> (2011) brought GPU rendering to the browser. It is based on OpenGL ES, a specification from the 1990s. While powerful, WebGL has limitations:</p>
+      <p><strong>WebGL</strong> (2011) brought GPU rendering to the browser. It is based on OpenGL ES 2.0 (released 2007), a mobile-oriented subset of OpenGL. While the original OpenGL dates to 1992, OpenGL ES is a separate specification &mdash; ES 1.0 was released in 2003, and ES 2.0 (which WebGL is based on) in 2007. While powerful, WebGL has limitations:</p>
 
       <ul>
         <li>No compute shaders &mdash; you must "hack" general computation through fragment shaders and textures</li>

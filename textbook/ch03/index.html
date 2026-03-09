@@ -1284,7 +1284,7 @@ function draw() {
       </div>
 
 
-      <h3>Anatomy of the Mandelbrot Set</h3>
+      <h3>Detailed Geometry of the Mandelbrot Set</h3>
 
       <p>The Mandelbrot set has a rich and well-studied geometry. Understanding its parts helps you navigate when zooming and exploring:</p>
 
@@ -1403,8 +1403,6 @@ function draw() {
       <p><strong>Line 24: Escape test</strong> &mdash; We compare $|z|^2 &gt; 4$ instead of $|z| &gt; 2$ to avoid computing a square root, which is a significant optimization when performed 300 x 300 x 80 = 7.2 million times.</p>
 
       <p><strong>Lines 29-33: Bernstein polynomial coloring</strong> &mdash; The formula <code>9*(1-t)*t*t*t</code> etc. uses Bernstein basis polynomials to create a smooth blue-gold-brown palette. This is a classic technique for Mandelbrot coloring.</p>
-
-      <h3>Performance Considerations</h3>
 
       <h3>Understanding the Color Mapping</h3>
 

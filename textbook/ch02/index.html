@@ -942,7 +942,7 @@ function draw() {
 
       <h3>2.9.2 Linear Congruential Generator (LCG)</h3>
 
-      <p>The oldest widely-used PRNG formula, dating to 1958:</p>
+      <p>The oldest widely-used PRNG formula, dating to 1951 (Lehmer):</p>
 
       <p>$$x_{n+1} = (a \cdot x_n + c) \mod m$$</p>
 
@@ -992,7 +992,7 @@ let b = random(100);     // Always the same next value
 
       <h3>2.9.6 Noise Functions: Structured Randomness</h3>
 
-      <p>Pure random numbers (<code>random()</code>) produce harsh, jagged variation. For many artistic applications, we want <strong>smooth</strong> randomness &mdash; values that change gradually rather than jumping erratically. p5.js provides <code>noise()</code>, an implementation of <strong>Perlin noise</strong>, invented by Ken Perlin in 1983 for the film <em>Tron</em>.</p>
+      <p>Pure random numbers (<code>random()</code>) produce harsh, jagged variation. For many artistic applications, we want <strong>smooth</strong> randomness &mdash; values that change gradually rather than jumping erratically. p5.js provides <code>noise()</code>, an implementation of <strong>Perlin noise</strong>, invented by Ken Perlin in 1983, inspired by his work on the visual effects for the film <em>Tron</em> (1982) at MAGI/Synthavision.</p>
 
       <pre><code>// random() -- harsh, uncorrelated values
 let y1 = random(height);  // Each call is independent
@@ -1389,6 +1389,21 @@ Level 10: 3.4 px  (1024 branches -- base case)</code></pre>
 
       <p>Total branches drawn: $1 + 2 + 4 + \ldots + 512 = 2^{10} - 1 = 1023$ branches plus 1024 leaves. The tree <em>looks</em> enormously complex, but the program that generates it is only about 20 lines. This is Kolmogorov complexity in action: a short program producing high visual complexity.</p>
 
+      <div class="quiz" data-id="ch02-q5b">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">In a recursive fractal tree that splits into 2 branches at each level, how many total branches are drawn at depth 8?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q5b" value="a"> 8</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q5b" value="b"> 128</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q5b" value="c" data-correct> 255</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q5b" value="d"> 256</label></li>
+        </ul>
+        <div class="explanation">
+          <p>At each level $k$, we draw $2^k$ branches. Total is $\sum_{k=0}^{7} 2^k = 2^8 - 1 = 255$. This is a geometric series where doubling at each level leads to exponential growth, which is why recursive fractals must have a base case to stop.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
+
 
       <!-- ===================================================================
            2.12  Bitwise Operations and Enumeration
@@ -1665,11 +1680,11 @@ function rleEncode(str) {
           <tr><th>Symbol</th><th>Frequency</th><th>Huffman Code</th><th>Fixed-Width Code</th></tr>
         </thead>
         <tbody>
-          <tr><td>A</td><td>5</td><td><code>0</code> (1 bit)</td><td><code>00</code> (2 bits)</td></tr>
-          <tr><td>B</td><td>2</td><td><code>10</code> (2 bits)</td><td><code>01</code> (2 bits)</td></tr>
-          <tr><td>R</td><td>2</td><td><code>110</code> (3 bits)</td><td><code>10</code> (2 bits)</td></tr>
-          <tr><td>C</td><td>1</td><td><code>1110</code> (4 bits)</td><td><code>11</code> (2 bits)</td></tr>
-          <tr><td>D</td><td>1</td><td><code>1111</code> (4 bits)</td><td><code>11</code> (2 bits)</td></tr>
+          <tr><td>A</td><td>5</td><td><code>0</code> (1 bit)</td><td><code>000</code> (3 bits)</td></tr>
+          <tr><td>B</td><td>2</td><td><code>10</code> (2 bits)</td><td><code>001</code> (3 bits)</td></tr>
+          <tr><td>R</td><td>2</td><td><code>110</code> (3 bits)</td><td><code>010</code> (3 bits)</td></tr>
+          <tr><td>C</td><td>1</td><td><code>1110</code> (4 bits)</td><td><code>011</code> (3 bits)</td></tr>
+          <tr><td>D</td><td>1</td><td><code>1111</code> (4 bits)</td><td><code>100</code> (3 bits)</td></tr>
         </tbody>
       </table>
 
@@ -1744,6 +1759,21 @@ function rleEncode(str) {
       </div>
 
       <p>This is why RLE makes <code>ABCDEFGH</code> longer: the algorithm compresses repetitive data at the cost of expanding non-repetitive data. No free lunch.</p>
+
+      <div class="quiz" data-id="ch02-q6b">
+        <div class="quiz-header">&#9997; Knowledge Check</div>
+        <p class="question">Why can't a lossless compression algorithm make <em>every</em> input smaller?</p>
+        <ul class="options">
+          <li class="option"><label><input type="radio" name="ch02-q6b" value="a"> Computers don't have enough memory</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q6b" value="b" data-correct> By the pigeonhole principle, mapping all $n$-bit strings to fewer bits would make decompression ambiguous</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q6b" value="c"> Compression algorithms only work on text, not binary data</label></li>
+          <li class="option"><label><input type="radio" name="ch02-q6b" value="d"> Random data is inherently incompressible, but structured data always compresses</label></li>
+        </ul>
+        <div class="explanation">
+          <p>If you try to map every $n$-bit string to fewer than $n$ bits, there are more possible inputs ($2^n$) than possible outputs ($&lt; 2^n$). By the pigeonhole principle, multiple inputs would map to the same output, making it impossible to decompress unambiguously. Therefore, any lossless algorithm must expand some inputs.</p>
+        </div>
+        <button class="btn btn-check">Check Answer</button>
+      </div>
 
 
       <!-- ===================================================================
